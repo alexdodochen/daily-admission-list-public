@@ -1,0 +1,23 @@
+# Credentials and session cache
+*.json
+
+# Legacy local Excel files
+*.xlsx
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+
+# Claude Code local settings
+.claude/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Screenshots (user pastes these per session)
+*.jpg
+*.png
