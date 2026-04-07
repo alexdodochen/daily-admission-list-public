@@ -1,0 +1,1029 @@
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<title>心臟科報告系統</title>
+
+<script type="text/javascript" src="../js/jquery/jquery-1.2.6.js"></script>
+
+
+
+
+
+
+    <link rel="STYLESHEET" type="text/css" href="../css/button.css">
+    <link rel="STYLESHEET" type="text/css" href="../css/combobox.css">
+
+
+
+    <link href="../css/table3d.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="../css/table3d.js"></script>
+
+
+    <link href="../css/displaytag.css" rel="stylesheet" type="text/css">
+
+
+	<link rel="STYLESHEET" type="text/css" href="../js/dhtmlxMenu/dhtmlxmenu.css">
+    <link rel="STYLESHEET" type="text/css" href="../js/dhtmlxMenu/common/test.css">
+
+    <script type="text/javascript" src="../fileupload/common.jsp"></script>
+    <script type="text/javascript" src="../js/fileupload.js"></script>
+    <script language="JavaScript" src="../js/wait.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="../js/calendar.css" type="text/css">
+
+
+    <link rel="stylesheet" type="text/css" href="../js/dtree/dtree.css">
+ 
+    <link rel="stylesheet" type="text/css" href="../js/dojo/resources/dojo.css">
+    <link rel="stylesheet" type="text/css" href="../js/dijit/themes/tundra/tundra.css">
+
+    <script type="text/javascript" src="../js/tiny_mce/tiny_mce.js"></script>
+<script type="text/javascript">
+    var currentSessionID = "076B4333685A478093087B41D4672CB4";
+</script>
+
+<style type="text/css">
+<!--
+
+body {
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+/*	background-color: #CCCCCC;*/
+}
+-->
+</style>
+</head>
+
+
+
+
+
+
+
+<body class="tundra">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" valign="top">
+	<tbody><tr><td height="0"></td></tr>
+	<tr>
+		 <td width="100%" align="center" valign="top">
+			
+			
+
+
+<script type="text/javascript">
+// 保存原生 console，避免被 dojo 覆蓋
+window.nativeConsole = window.console;
+</script>
+<script type="text/javascript" src="../js/dojo/dojo.js" djconfig="isDebug: false, parseOnLoad: true"></script>
+<script type="text/javascript">
+// 恢復原生 console 方法
+if (window.nativeConsole) {
+    window.console.log = window.nativeConsole.log;
+    window.console.debug = window.nativeConsole.debug;
+    window.console.info = window.nativeConsole.info;
+    window.console.warn = window.nativeConsole.warn;
+    window.console.error = window.nativeConsole.error;
+}
+</script>
+<script type="text/javascript" src="../js/fix_ieflash.js" defer="defer"></script>
+
+<style type="text/css">
+    <!--
+
+    body {
+        margin-left: 0px;
+        margin-right: 0px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+
+    }
+
+    .style2 {
+        color: #FFFF00;
+        font-weight: bold;
+    }
+
+    a {
+        color: #FFFF00;
+    }
+
+    -->
+</style>
+<script language="javascript">
+
+    function logout() {
+        location.href = "../index.htm";
+    }
+
+</script>
+
+
+<table width="100%" height="36" border="0" cellpadding="0" cellspacing="0" bgcolor="#0099CB">
+    <tbody><tr>
+        <td height="22" align="left" valign="top"><img src="../images/top1.jpg"></td>
+        <td align="left" valign="bottom">
+            <div style="display: flex; justify-content: space-between; padding-left: 10px; padding-right: 10px;">
+                <div>
+                    107614(陳常胤)192.168.62.187
+                    <a href="javascript:top.location.href='../comm/logout.do'" class="linka">
+                        登出
+                    </a>
+                </div>
+                <div>
+                    v2.16.4
+                </div>
+            </div>
+        </td>
+
+    </tr>
+</tbody></table>
+
+
+	     </td>
+	</tr>
+	<tr>
+	     <td width="100%" align="center" valign="top">
+	     <div id="xpstyle" style="width:100%; background-color:#f5f5f5;border :0px solid Silver;"><table cellpadding="0" cellspacing="0" class="menuTable" width="100%" height="23px" unselectable="on" style="z-index: 30;"><tbody><tr><td width="3px" style="display:none"><div class="menuHandle">&nbsp;</div></td><td class="menuName" style="display:none"></td><td align="center" nowrap="" id="menuItem_EMN20081229102711" class="menuButton" style="margin-bottom: 20px;"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">主要作業</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td><td align="center" nowrap="" id="menuItem_EMN20090716211825" class="menuButton" style="margin-bottom: 20px;"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">心導管作業</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td><td align="center" nowrap="" id="menuItem_EMN20081229102820" class="menuButton" style="margin-bottom: 20px;"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">基本資料</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td><td align="center" nowrap="" id="menuItem_EMN20081229102845" class="menuButton" style="margin-bottom: 20px;"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">查詢</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td><td align="center" nowrap="" id="menuItem_EMN20091002141627" class="menuButton" style="margin-bottom: 20px;"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">密碼變更</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td><td></td><td align="right" width="100%" class="menuName">&nbsp;</td><td>&nbsp;</td></tr></tbody></table><form style="display: none;"></form><table cellpadding="0" cellspacing="0" class="secondMenuTable" width="120px" unselectable="on" style="display: none; z-index: 30; position: absolute;"><tbody><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up1.gif"></td></tr><tr style="display: none;"><td class="menuName" style="display:none">undefined</td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20081229110701" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">報到</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20081229110756" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">檢查室</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20081229110825" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">報告輸入</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up2.gif"></td></tr><tr style="display: none;"><td align="right" class="menuName" style="display:none">undefined</td></tr><tr style="display: none;"><td></td></tr></tbody></table><table cellpadding="0" cellspacing="0" class="secondMenuTable" width="120px" unselectable="on" style="display: none; z-index: 30; position: absolute;"><tbody><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up1.gif"></td></tr><tr style="display: none;"><td class="menuName" style="display:none">undefined</td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20090716212111" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">心導管排程作業</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up2.gif"></td></tr><tr style="display: none;"><td align="right" class="menuName" style="display:none">undefined</td></tr><tr style="display: none;"><td></td></tr></tbody></table><table cellpadding="0" cellspacing="0" class="secondMenuTable" width="120px" unselectable="on" style="display: none; z-index: 30; position: absolute;"><tbody><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up1.gif"></td></tr><tr style="display: none;"><td class="menuName" style="display:none">undefined</td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20081229111610" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">電腦資料維護</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20081229111641" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">罐頭片語維護</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up2.gif"></td></tr><tr style="display: none;"><td align="right" class="menuName" style="display:none">undefined</td></tr><tr style="display: none;"><td></td></tr></tbody></table><table cellpadding="0" cellspacing="0" class="secondMenuTable" width="120px" unselectable="on" style="display: none; z-index: 30; position: absolute;"><tbody><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up1.gif"></td></tr><tr style="display: none;"><td class="menuName" style="display:none">undefined</td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20090421140613" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">報告KEYWORD查詢</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up2.gif"></td></tr><tr style="display: none;"><td align="right" class="menuName" style="display:none">undefined</td></tr><tr style="display: none;"><td></td></tr></tbody></table><table cellpadding="0" cellspacing="0" class="secondMenuTable" width="120px" unselectable="on" style="display: none; z-index: 30; position: absolute;"><tbody><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up1.gif"></td></tr><tr style="display: none;"><td class="menuName" style="display:none">undefined</td></tr><tr style="vertical-align: top;"><td align="center" nowrap="" id="menuItem_EMN20091002142310" class="menuButton"><table align="left" cellpadding="0" cellspacing="0" border="0" style=" height:100%;"><tbody><tr><td width="20px" style=" display:none;"><img src="../js/dhtmlxMenu/imgs/blank.gif" border="0" width="18px" height="18px"></td><td width="100%" align="left" style="  overflow:hidden;"><table width="100%" height="100%" cellpadding="0" cellspacing="0"><tbody><tr><td title="" class="defaultMenuText" nowrap="nowrap">修改密碼</td><td width="12px"><img style="display:none" src="../js/dhtmlxMenu/imgs/blank.gif"></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td></td></tr><tr><td class="menuScrollerDisabled" style="display:none"><img src="../js/dhtmlxMenu/imgs/btn_up2.gif"></td></tr><tr style="display: none;"><td align="right" class="menuName" style="display:none">undefined</td></tr><tr style="display: none;"><td></td></tr></tbody></table></div>
+	     </td> 
+			
+		
+	</tr>
+</tbody></table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%" valign="top">
+	<tbody><tr><td height="0"></td></tr>
+	<tr>
+		<td width="100%" align="center" valign="top">
+			
+				
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../css/jquery/jquery.tooltip.css" type="text/css">
+<style type="text/css">
+span.pagelinks .defaultButton {
+    overflow:visible;
+    width:auto;
+    _width:0;
+
+	border:1px solid #222222;
+	vertical-align: middle;
+	margin: 2px;
+    background:#e4e4e4 url(../js/dijit/themes/tundra/images/buttonDisabled.png) top repeat-x;
+    padding:2px 3px 2px 3px;
+   /* height:25px;*/
+    text-decoration: none;
+	/*
+    height: 30px;
+	visibility: hidden;*/
+}
+
+.displaytag tr.bad{
+    background-color: #FFFF99;
+}
+.displaytag tr.good{
+    background-color: #FFB6FF;
+}
+.displaytag tr.examroomclass_xa-CATH2{
+    background-color: #FFFF99;
+}
+.displaytag tr.examroomclass_xa-CATH1{
+    background-color: #FFB6FF;
+}
+.displaytag tr.examroomclass_xa-TEE{
+    background-color: #5EBEEF;
+}
+.displaytag tr.examroomclass_xa-hybrid1{
+    background-color: #b4eeb4;
+}
+.displaytag tr.examroomclass_xa-hybrid2{
+    background-color: #dcb5ff;
+}
+
+#tooltip.right { width: 700px; }
+</style>
+<script type="text/javascript" src="../js/jquery/jquery.bgiframe.js"></script>
+<script type="text/javascript" src="../js/json2.js"></script>
+<script src="../js/jquery/jquery.bgiframe.js" type="text/javascript"></script>
+<script src="../js/jquery/jquery.dimensions.js" type="text/javascript"></script>
+<script src="../js/jquery/jquery.tooltip.js" type="text/javascript"></script>
+<script src="../js/jquery/chili-1.7.pack.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	addRowHandlers('row', 'rowMouseOver', 0);
+	
+	if('false'=='true'){
+		var hiscallurl = 'null';
+	    window.open('../MJB/openimg.jsp?imgurl='+encodeURIComponent(encodeURIComponent(hiscallurl))+'&openimg='+encodeURIComponent(encodeURIComponent('false')));
+	}
+	if(''=='1'){
+		//如果刪除成功重新查詢
+	    window.HCO1WForm.buttonName.name = "QRY";
+	    window.HCO1WForm.buttonName.value = "QRY";
+	    window.HCO1WForm.submit();
+	}
+	if(''=='U'){
+		//如果修改失敗，繼續enable 修改按鈕
+		document.getElementById("modButton").disabled=false;
+		document.getElementsByName("state")[0].value="";
+	}
+	var checkIsgetHcoList= false;
+	var ips =  $("#ipaddress").val();
+
+	//查詢登入者的ip對應到的檢查室
+	 if(!checkIsgetHcoList){
+		$.getJSON("../ajax/AJAXAction.do?pageid=findexamroom&querymethod=findexamroom",
+				{ipaddress: $("#ipaddress").val()},
+				function(result){
+					if(result.length != 0){
+						var mcrid = result[0]["comMcrid"];
+						$("#querymcrid option[value='"+ mcrid +"']").attr("selected", true);
+					}
+				});
+	}
+
+	//新表單按鈕
+	$(".NewForm").click(function(){
+		//用病患號碼開啟新導管頁面
+		var patno = $(this).parent().parent().find("#hes_patno").val();
+		var referno = $(this).parent().parent().find("#hes_referno").val();
+		var paramValue = '\"../MJB/MJB3H008.do?index=0&pageid=MJB3H008&patno=' + patno + '&referno=' + referno + '\", \"TranslatePanel\", \"width = \" + screen.width +\", height = \" + screen.height +\", top = 0, left = 0, toolbar=no, menubar=yes, scrollbars=yes, resizable=yes, location=no, status=yes\"';
+		eval('newwin=window.open ('+paramValue+');');
+	});
+	//登記類別碼
+	$("#hctbt").click(function(){
+		window.open ('../HCO/HCO1N001.do?pageid=HCO1N001&hctjson='+encodeURIComponent(document.getElementById("hctjson").value), '', 'height=200, width=450, top=200, left=200,toolbar=yes, menubar=no, scrollbars=no, resizable=no,location=yes, status=no');
+	});
+	//術前
+	$("#pdibt").click(function(){
+		window.open ('../HCO/HCO1N002.do?pageid=HCO1N002&pdijson='+encodeURIComponent(document.getElementById("pdijson").value), '', 'height=500, width=500, top=200, left=200,toolbar=no, menubar=no, scrollbars=yes, resizable=no,location=yes, status=no');
+	});
+	/**
+	//術後
+	$("#adibt").click(function(){
+		window.open ('../HCO/HCO1N003.do?pageid=HCO1N003&adijson='+encodeURIComponent(document.getElementById("adijson").value), '', 'height=500, width=500, top=200, left=200,toolbar=no, menubar=no, scrollbars=yes, resizable=no,location=yes, status=no');
+	});
+	*/
+	//術後
+	$("#adiNewBt").click(function(){
+		window.open ('../HCO/HCO1N_AfterDiagnosis.jsp?adijson='+encodeURIComponent(document.getElementsByName("adijson")[0].value)+'&adiFlag='+encodeURIComponent(document.getElementById("adiFlag").value), '', 'height=500, width=500, top=200, left=200,toolbar=no, menubar=no, scrollbars=yes, resizable=no,location=yes, status=no');
+	});
+	//預計
+	$("#phcbt").click(function(){
+		window.open ('../HCO/HCO1N004.do?pageid=HCO1N004&phcjson='+encodeURIComponent(document.getElementById("phcjson").value), '', 'height=500, width=500, top=200, left=200,toolbar=no, menubar=no, scrollbars=yes, resizable=no,location=no, status=no');
+	});
+	$(document).keydown(function(){
+		if(event.keyCode==13){
+			event.keyCode=35;//轉換成end
+		}
+	});
+	$(":text[name=patno2]").click(function() {
+		//清除Form
+		allclearid();
+		$("[name=hctjson]").val("");
+		$("[name=pdijson]").val("");
+		$("[name=phcjson]").val("");
+		$("[name=adijson]").val("");
+		$("#patgender").css("display","");
+		$("#displaytxt").empty();
+		  document.getElementById("patno2").readOnly=false;
+		  document.getElementById("patname").readOnly=false;
+		  document.getElementById("bedno").readOnly=false;
+		  document.getElementById("patbirthday").readOnly=false;
+		  document.getElementById("patgender").readOnly=false;
+		  document.getElementById("referno").readOnly=false;
+		$("#flagdiv img").css('display','none');
+		$("#allergyimg").css('display','none');
+		$("#allergyimg").attr("alt","");
+	});
+	//輸入病歷號自動帶出資料
+  	$(":text[name=patno2]").keydown(function(e) {
+		//alert(e.keyCode);
+		if(e.keyCode == 13) {
+	  		if($(":text[name=patno2]").val()!=""){
+	  			var date = new Date();
+	  			$.ajax({
+	  				url: "/WEBCVIS/ajax/AJAXAction.do?pageid=RptQueryPatientInfo&querymethod=RptQueryPatientInfo",
+	  				type : "POST",
+	  				data: $.param({patno: $(":text[name=patno2]").val()}),
+	  				dataType:"json",
+	  				success:function(data){
+	  					if(data[0].ErrorMessage!=undefined && data[0].ErrorMessage!=""){
+	  						alert(data[0].ErrorMessage);
+	  						return;
+	  					}
+		  				var flagidList=data[0].Flag_Id.split(",");
+		  				for ( var key in flagidList) {
+							$("#flagid"+flagidList[key]).css('display','block');
+						}
+			            if(data[0].Allergy!=""){
+		  					$("#allergyimg").css('display','block');
+		  					$("#allergyimg").attr("title",data[0].Allergy);
+		  					allergyimgShow();
+			            }
+			            if(data[0].Patient_Name!=""){
+		  					$(":text[name='patname']").val(data[0].Patient_Name);
+			            }
+			            if(data[0].Bed_No!=""){
+		  					$(":text[name='bedno']").val(data[0].Bed_No);
+			            }
+			            if(data[0].Birth_Date!=""){
+		  					$(":text[name='patbirthday']").val(data[0].Birth_Date.replace(/-/g,"/"));
+			            }
+			            if(data[0].Sex_Id!=""){
+		  					$(":text[name='patgender']").val(data[0].Sex_Id);
+	  						$("#patgender").css("display","none");
+	  						var appendtext;
+							if(data[0].Sex_Id=="2"){
+								appendtext ="女";
+							}else if(data[0].Sex_Id=="1"){
+								appendtext ="男";
+							}
+	  						$("#displaytxt").empty();
+	  						$("#displaytxt").append(appendtext);
+			            }
+	  				},
+	  				error:function(xhr,status,error){
+	  					alert("臨床查詢錯誤!"+" status:"+status+" error:"+error);
+	  				}
+	  			});
+	  		}
+  		}
+  	});
+	//觸發SaveButton時,比對有變動的資料才放入json
+	$("#SaveButton").click(function(){
+		document.getElementById('buttonName').value="";
+		var finishTojson=new Array();
+		var refernoTojson=new Array();
+		$("#row tr:not(:has(th))").each(function(){
+			var prevalue=$(this).find("#finishflgstate").val();
+			var nowvalue=$(this).find("#casestate").val();
+			if(prevalue!=nowvalue){
+				var i =0;
+				var finish =new Object;
+				finish.indexparam=$(this).find("input[name=chk]").val();
+				finish.valueparam=nowvalue;
+				finishTojson.splice(i++, 0, finish);
+
+				// 傳送檢察單號到action當中
+				var ro = new Object;
+				var referno = $(this).find("#hes_referno").val();
+				ro.hesReferno = referno;
+				refernoTojson.splice(i++, 0, ro);
+			}
+
+		});
+		var finishobj =new Object(JSON.stringify(finishTojson));
+		var refernoobj =new Object(JSON.stringify(refernoTojson));
+		document.getElementsByName('finishjson')[0].value = encodeURIComponent(finishobj.toString());
+		document.getElementsByName('refernojson')[0].value = refernoobj.toString();
+		document.HCO1WForm.buttonName.name = "SAVE";
+		document.HCO1WForm.buttonName.value = "SAVE";
+	    document.HCO1WForm.submit();
+	});
+
+    $("#QueryButton").click(function(){
+        	document.HCO1WForm.buttonName.name = "QRY";
+        	document.HCO1WForm.buttonName.value = "QRY";
+        	document.HCO1WForm.submit();
+    });
+    $("#PrintButton").click(function(){
+            document.HCO1WForm.buttonName.name = "PRT";
+            document.HCO1WForm.buttonName.value = "PRT";
+            document.HCO1WForm.submit();
+    });
+    $("#AddButton").click(function(){
+        document.HCO1WForm.buttonName.name = "ADD";
+        document.HCO1WForm.buttonName.value = "ADD";
+        document.HCO1WForm.submit();
+    });
+    $("#deleteButton").click(function(){
+        if(deleteMsg()){
+            document.HCO1WForm.buttonName.name = "DEL";
+            document.HCO1WForm.buttonName.value = "DEL";
+            document.HCO1WForm.submit();
+        }
+    });
+    $("#modButton").click(function(){
+        document.HCO1WForm.buttonName.name = "UPT";
+        document.HCO1WForm.buttonName.value = "UPT";
+        document.HCO1WForm.submit();
+    });
+});
+function allergyimgShow(){
+ 	$("#allergyimg").tooltip({
+		track: true,
+		delay: 0,
+		left: -120,
+		extraClass: "right",
+		showURL:false
+	});
+}
+function addRowHandlers(tableId, rowClassName, columnIndex) {
+    var previousClass = null;
+    $("#"+tableId+" tr:not(:has(th))").each(function(){
+		$(this).mouseover(function(){
+            previousClass = $(this).attr("class");
+            $(this).attr("class",$(this).attr("class") + " " + rowClassName);
+		});
+		$(this).mouseout(function(){
+			$(this).attr("class",previousClass);
+		});
+		/*將修改的資料入到欄位*/
+		$(this).click(function(event){
+			if($(event.target).is(":input[type=checkbox]")||$(event.target).is("select")||$(event.target).is("option")){
+
+			}else{
+				document.getElementsByName("patno2")[0].value=$(this).find("#hes_patno").val();
+				document.getElementsByName("patname")[0].value=$(this).find("#hes_patname").val();
+				document.getElementsByName("bedno")[0].value=$(this).find("#hes_room").val();
+				document.getElementsByName("patbirthday")[0].value=$(this).find("#hes_birthday").val();
+				document.getElementsByName("patgender")[0].value=$(this).find("#hes_gender").val();
+				document.getElementsByName("heartcathetertypeid")[0].value=$(this).find("#hes_hct").val();
+				document.getElementsByName("examroom")[0].value=$(this).find("#hes_mcrid").val();
+				document.getElementsByName("inspectiondate")[0].value=$(this).find("#hes_schdate").val();
+				document.getElementsByName("inspectiontime")[0].value=$(this).find("#hes_schtime").val();
+				document.getElementsByName("prediagnosisitem")[0].value=$(this).find("#hes_pdi").val();
+				document.getElementsByName("preheartcatheter")[0].value=$(this).find("#hes_phc").val();
+				document.getElementsByName("note")[0].value=$(this).find("#hes_note").val();
+				document.getElementsByName("afterdiagnosisitem")[0].value=$(this).find("#hes_adi").val();
+				document.getElementsByName("adiContentTx")[0].value=$(this).find("#hes_adicontent").val();
+				document.getElementById("adiFlag").value=$(this).find("#hes_adiflag").val();
+				document.getElementsByName("attendingdoctor1")[0].value=$(this).find("#hes_doctor1").val();
+				document.getElementsByName("attendingdoctor2")[0].value=$(this).find("#hes_doctor2").val();
+				document.getElementsByName("generaldoctor1")[0].value=$(this).find("#hes_doctor3").val();
+				document.getElementsByName("generaldoctor2")[0].value=$(this).find("#hes_doctor4").val();
+				document.getElementsByName("technician")[0].value=$(this).find("#hes_doctor5").val();
+				document.getElementsByName("recommendationDoctor")[0].value=$(this).find("#hes_doctor6").val();
+				document.getElementsByName("referno")[0].value=$(this).find("#hes_referno").val();
+				document.getElementsByName("refernojson")[0].value=$(this).find("#hes_refernojson").val();
+				document.getElementsByName("hctjson")[0].value=(decodeURIComponent($(this).find("#hctjson").val())=='[null]'||decodeURIComponent($(this).find("#hctjson").val())=='null'?"":decodeURIComponent($(this).find("#hctjson").val()));
+				document.getElementsByName("pdijson")[0].value=(decodeURIComponent($(this).find("#pdijson").val())=='[null]'||decodeURIComponent($(this).find("#pdijson").val())=='null'?"":decodeURIComponent($(this).find("#pdijson").val()));
+				document.getElementsByName("adijson")[0].value=(decodeURIComponent($(this).find("#adijson").val())=='[null]'||decodeURIComponent($(this).find("#adijson").val())=='null'?"":decodeURIComponent($(this).find("#adijson").val()));
+				document.getElementsByName("phcjson")[0].value=(decodeURIComponent($(this).find("#phcjson").val())=='[null]'||decodeURIComponent($(this).find("#phcjson").val())=='null'?"":decodeURIComponent($(this).find("#phcjson").val()));
+	             document.getElementsByName("patno2")[0].readOnly=true;
+	             document.getElementsByName("patname")[0].readOnly=true;
+	             //document.getElementById("bedno").readOnly=true;
+	             document.getElementsByName("patbirthday")[0].readOnly=true;
+	             document.getElementsByName("patgender")[0].readOnly=true;
+	             //document.getElementById("referno").readOnly=true;
+
+	             document.getElementById("modButton").disabled=false;
+	             document.getElementsByName("index")[0].value=$(this).find("input").eq(0).val();
+
+	     		 $("#flagdiv img").css('display','none');
+	     		 $("#allergyimg").css('display','none');
+	     		 $("#allergyimg").attr("title","");
+
+	             var flagidList=$(this).find("#pad_flagid").val().split(",");
+	             for ( var key in flagidList) {
+	             	$("#flagid"+flagidList[key]).css('display','block');
+	             }
+	             if($(this).find("#pad_allergy").val()!=""){
+		             $("#allergyimg").css('display','block');
+		             $("#allergyimg").attr("title",$(this).find("#pad_allergy").val());
+		             allergyimgShow();
+	             }
+			}
+		});
+
+        if($(this).find("#pad_allergy").val()!=""){
+        	$(this).find("#padallergyimg").tooltip({
+        		track : true,
+        		delay : 0,
+        		left : -120,
+        		extraClass : "right",
+        		showURL:false
+        	});
+        }
+    });
+}
+function removedata(){
+	$("#table2 tr:not(:has(th))").click(function(){
+		document.getElementById("patname").value = $(this).find("td").get(0).innerHTML;
+		document.getElementById("bedno").value = $(this).find("td").get(1).innerHTML=="&nbsp;"?"":$(this).find("td").get(1).innerHTML;
+		document.getElementById("patbirthday").value = $(this).find("td").get(2).innerHTML;
+		document.getElementById("patid").value = $(this).find("input").get(0).value;
+		document.getElementById("patgender").value = $(this).find("input").get(1).value;
+		$("#table2 tr:not(:has(th))").remove();
+		$("#Repeatdata1").hide();
+	});
+
+}
+
+/*刪除按鈕訊息 */
+function deleteMsg(){
+  if(confirm("您確定要刪除嗎？")){
+     return true;
+  }else{
+     return false;
+  }
+}
+
+function allclearid(){
+	$(":text").each(function(){
+    	if(!eqid($(this).attr("id"))){
+        	$(this).val("");
+    	}
+	});
+	$("textarea").each(function(){
+    	if(!eqid($(this).attr("id"))){
+        	$(this).val("");
+    	}
+	});
+    $("select").each(function () {
+    	if(!eqid($(this).attr("id"))){
+        	$(this).val("");
+    	}
+    });
+};
+function eqid(id){
+	var Ignoreid=["daySelect1","daySelect2"];
+     for ( var i = 0; i < Ignoreid.length; i++) {
+	     if (Ignoreid[i] == id) {
+	     	return true;
+	     }
+     }
+};
+function clearid(){
+	var needclearid=["hctselect2","selectidtxt2"];
+	for ( var i = 0; i < needclearid.length; i++) {
+		$("#"+needclearid[i]).val("");
+    }
+};
+</script>
+<div class="text" id="popupcalendar"></div>
+<form name="HCO1WForm" method="post" action="/WEBCVIS/HCO/HCO1W001.do"><div><input type="hidden" name="org.apache.struts.taglib.html.TOKEN" value="f3a96086cf40f80c9e49e44949dcef07"></div>
+  <input type="hidden" name="pageid" value="HCO1W001" id="pageid">
+  <input type="hidden" name="buttonName" value="" id="buttonName">
+  <input type="hidden" name="pageSize" value="9999" id="pageSize">
+  <input type="hidden" name="index" value="0" id="index">
+  <input type="hidden" name="hesid" value="" id="hesid">
+  <input type="hidden" name="hctjson" value="" id="hctjson">
+  <input type="hidden" name="pdijson" value="" id="pdijson">
+  <input type="hidden" name="phcjson" value="" id="phcjson">
+  <input type="hidden" name="adijson" value="" id="adijson">
+  <input type="hidden" name="adiContentTx" value="" id="adiContentTx">
+  <input type="hidden" name="finishjson" value="" id="finishjson">
+  <input type="hidden" name="state" value="" id="state">
+  <input type="hidden" name="refernojson" value="" id="refernojson">
+  <input type="hidden" id="adiFlag">
+
+  
+<table border="0" cellpadding="0" cellspacing="0" width="100%" valign="top">
+  <tbody><tr>
+    <td height="20"></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" valign="top">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tbody><tr>
+            <td height="5" width="10"></td>
+            <td height="5" colspan="3"></td>
+            <td height="5" width="10"></td>
+        </tr>
+          <tr>
+            <td width="10" height="1"><img alt="" border="0" src="../images/boxltopcorner.jpg" width="10" height="27"></td>
+            <td width="16" height="21" class="boxicon" background="../images/boxtopbg.jpg"><img alt="" border="0" src="../images/icon/16x16/page_find.gif" width="16" height="16"></td>
+            <td class="boxTitle" width="50%" height="1" background="../images/boxtopbg.jpg" align="left">心導管排程</td>
+            <td width="50%" height="21" class="boxicon" background="../images/boxtopbg.jpg" align="right"></td>
+            <td width="10" height="1"><img alt="" border="0" src="../images/boxrtopcorner.jpg" width="10" height="27"></td>
+        </tr>
+          <tr>
+            <td width="10" height="1" background="../images/boxleftedge.jpg"></td>
+            <td class="boxContent" height="1" bgcolor="#F4F4F4" colspan="3">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table3d">
+                  <tbody><tr>
+                    <td width="15%" nowrap="" class="table-title-theme">日期</td>
+                    <td width="15%" nowrap="" class="row-theme" colspan="4">
+                    <input type="text" name="daySelect1" id="daySelect1" readonly="" size="15" maxlength="60" value="2026/04/04">
+      				<script language="JavaScript" src="../js/calendarcode.js"></script><a class="so-BtnLink" onmouseover="calSwapImg('BTN_date1', 'img_Date_OVER',true);" onclick="calSwapImg('BTN_date1', 'img_Date_DOWN'); showCalendar('HCO1WForm','daySelect1','BTN_date1');return false;" onmouseout="calSwapImg('BTN_date1', 'img_Date_UP',true);" href="javascript:calClick();return false;"> <img height="17" alt="daySelect1" src="../images/btn_date_up.gif" width="22" align="absMiddle" border="0" name="BTN_date1"></a>
+      				~
+      				<input type="text" name="daySelect2" id="daySelect2" readonly="" size="15" maxlength="60" value="2026/04/04">
+      				<a class="so-BtnLink" onmouseover="calSwapImg('BTN_date2', 'img_Date_OVER',true);" onclick="calSwapImg('BTN_date2', 'img_Date_DOWN'); showCalendar('HCO1WForm','daySelect2','BTN_date2');return false;" onmouseout="calSwapImg('BTN_date2', 'img_Date_UP',true);" href="javascript:calClick();return false;"> <img height="17" alt="daySelect2" src="../images/btn_date_up.gif" width="22" align="absMiddle" border="0" name="BTN_date2"></a>
+                    </td>
+                    <td width="15%" nowrap="" class="table-title-theme">病歷號</td>
+                    <td width="15%" class="row-theme"><input type="text" name="patno1" size="15" value="" id="patno1"></td>
+                    
+                    <td width="15%" nowrap="" class="table-title-theme">
+                    <!-- 單日查詢按鈕 -->
+	                  <button id="QueryButton" class="defaultButton" name="QueryButton" type="button">
+	                    <span class="queryIcon"></span>查詢
+	                  </button>
+						
+						<button id="PrintButton" name="PrintButton" class="defaultButton" type="button" disabled="">
+						<span class="PrintIcon"></span>列印
+						</button>
+						
+						<button id="SaveButton" type="button" name="SaveButton" class="defaultButton" disabled="">
+						<span class="SaveIcon"></span>儲存表單
+						</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="15%" nowrap="" class="table-title-theme">主治醫師</td>
+                    <td width="15%" nowrap="" class="row-theme" colspan="4">
+            			<select name="addoctor" id="addoctor"><option value="" selected="selected"></option><option value="meeting">公用帳號</option><option value="102720">王思翰</option><option value="019982">王玠能</option><option value="626917">甘宗旦</option><option value="103785">吳承諭</option><option value="605520">吳俊明</option><option value="053120">李文煌</option><option value="107997">李見賢</option><option value="632301">李冠穎</option><option value="035289">李威廷</option><option value="053146">李柏增</option><option value="610258">李貽恆</option><option value="102130">李禎元</option><option value="047966">阮俊能</option><option value="605485">林立人</option><option value="031138">林志展</option><option value="054143">林佳淩</option><option value="047043">林寶彥</option><option value="049499">柯呈諭</option><option value="636042">洪晨惠</option><option value="104314">胡展瀚</option><option value="313929">胡祐寧</option><option value="107288">徐麒翔</option><option value="104031">張倉惟</option><option value="103521">張竣皓</option><option value="315460">張獻元</option><option value="032894">許志新</option><option value="101696">許毓軨</option><option value="103018">連思涵</option><option value="600525">陳志鴻</option><option value="054185">陳則瑋</option><option value="100922">陳昭佑</option><option value="044547">陳柏升</option><option value="315444">陳柏偉</option><option value="046721">陳迪詠</option><option value="107614">陳常胤</option><option value="033047">陳儒逸</option><option value="636092">陳澔昀</option><option value="046226">黃睦翔</option><option value="315452">黃鼎鈞</option><option value="028626">黃耀毅</option><option value="046686">楊博凱</option><option value="030567">溫日昇</option><option value="105430">葉立浩</option><option value="105234">葉建寬</option><option value="023835">詹世鴻</option><option value="054193">廖瑀</option><option value="622890">趙庭興</option><option value="626105">劉秉彥</option><option value="036030">劉嚴文</option><option value="603714">蔡良敏</option><option value="051578">蔡孟達</option><option value="618024">蔡惟全</option><option value="101056">鄭朝允</option><option value="xasch01">導管保養</option><option value="053196">謝志成</option><option value="510463">謝旻玲</option><option value="049568">魏昱仁</option><option value="102180">蘇奕嘉</option><option value="101979">蘇柏學</option></select>
+                    </td>
+                    <td width="15%" nowrap="" class="table-title-theme">登記類別碼</td>
+                    <td width="15%" class="row-theme">
+						<input type="text" name="queryhct" size="15" value="" id="queryhct">
+                    </td>
+                    <td width="15%" nowrap="" class="table-title-theme">
+                    	&nbsp;
+                    </td>
+                  </tr>
+				  <tr>
+                    <td width="15%" nowrap="" class="table-title-theme"></td>
+                    <td width="15%" nowrap="" class="row-theme" colspan="4">
+						<input type="hidden" name="ipaddress" id="ipaddress" readonly="" size="15" maxlength="60" value="192.168.62.187">
+						<input type="hidden" name="macaddress" id="macaddress" readonly="" size="15" maxlength="60" value="null">
+                    </td>
+                    <td width="15%" nowrap="" class="table-title-theme">檢查室</td>
+                    <td width="15%" nowrap="" class="row-theme" colspan="4">
+						<select name="querymcrid" id="querymcrid"><option value=""></option><option value="xa-BIKE">BIKE(心超)</option><option value="xa-CATH1">CATH1(第一導管室)</option><option value="xa-CATH2">CATH2(第二導管室)</option><option value="xa-DOBU">DOBU(心超)</option><option value="xa-Hybrid1">Hybrid1(第一導管室)</option><option value="xa-Hybrid2">Hybrid2(第二導管室)</option><option value="xa-TEE">TEE(心超)</option><option value="xa-TTT">眩暈傾斜床檢查室</option><option value="xa-外科開刀房25房">外科開刀房25房</option></select>
+                    </td>
+                    <td width="15%" nowrap="" class="table-title-theme">
+                    	&nbsp;
+                    </td>
+                  </tr>
+                </tbody></table>
+                <div><br></div>
+
+
+                <div id="Repeatdata1" style="display:none">
+					<table width="450" border="1" cellpadding="1" cellspacing="1" class="table1" id="table2">
+					<tbody><tr align="center"><th>病患姓名</th><th>床號</th><th>生日</th><th>性別</th></tr>
+					</tbody></table>
+				</div>
+
+
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="table3d">
+					<tbody><tr>
+						<td width="120" height="19" class="table-title-theme">*病歷號</td>
+						<td width="174"><input type="text" name="patno2" size="15" value="" id="patno2"></td>
+						<td width="113" class="table-title-theme">*檢查室</td>
+						<td width="190"><select name="examroom" id="examroom"><option value=""></option><option value="xa-BIKE">BIKE(心超)</option><option value="xa-CATH1">CATH1(第一導管室)</option><option value="xa-CATH2">CATH2(第二導管室)</option><option value="xa-DOBU">DOBU(心超)</option><option value="xa-Hybrid1">Hybrid1(第一導管室)</option><option value="xa-Hybrid2">Hybrid2(第二導管室)</option><option value="xa-TEE">TEE(心超)</option><option value="xa-TTT">眩暈傾斜床檢查室</option><option value="xa-外科開刀房25房">外科開刀房25房</option></select></td>
+						<td width="128" class="table-title-theme">主刀醫師</td>
+						<td width="150"><select name="attendingdoctor1" id="attendingdoctor1"><option value=""></option><option value="019982">王玠能</option><option value="023835">詹世鴻</option><option value="028626">黃耀毅</option><option value="030567">溫日昇</option><option value="031138">林志展</option><option value="032894">許志新</option><option value="033047">陳儒逸</option><option value="035289">李威廷</option><option value="036030">劉嚴文</option><option value="044547">陳柏升</option><option value="046226">黃睦翔</option><option value="046686">楊博凱</option><option value="046721">陳迪詠</option><option value="047043">林寶彥</option><option value="047966">阮俊能</option><option value="049499">柯呈諭</option><option value="049568">魏昱仁</option><option value="051578">蔡孟達</option><option value="053120">李文煌</option><option value="053146">李柏增</option><option value="053196">謝志成</option><option value="054143">林佳淩</option><option value="054185">陳則瑋</option><option value="054193">廖瑀</option><option value="100922">陳昭佑</option><option value="101056">鄭朝允</option><option value="101696">許毓軨</option><option value="101979">蘇柏學</option><option value="102180">蘇奕嘉</option><option value="102720">王思翰</option><option value="103018">連思涵</option><option value="103785">吳承諭</option><option value="104031">張倉惟</option><option value="105234">葉建寬</option><option value="105430">葉立浩</option><option value="313929">胡祐寧</option><option value="315444">陳柏偉</option><option value="315452">黃鼎鈞</option><option value="315460">張獻元</option><option value="510463">謝旻玲</option><option value="600525">陳志鴻</option><option value="603714">蔡良敏</option><option value="605485">林立人</option><option value="605520">吳俊明</option><option value="610258">李貽恆</option><option value="618024">蔡惟全</option><option value="622890">趙庭興</option><option value="626105">劉秉彥</option><option value="626917">甘宗旦</option><option value="636042">洪晨惠</option><option value="xasch01">導管保養</option></select></td>
+						<td width="128" class="table-title-theme">推薦醫師</td>
+						<td width="150"><select name="recommendationDoctor" id="recommendationDoctor"><option value=""></option><option value="019982">王玠能</option><option value="023835">詹世鴻</option><option value="028626">黃耀毅</option><option value="030567">溫日昇</option><option value="031138">林志展</option><option value="032894">許志新</option><option value="033047">陳儒逸</option><option value="035289">李威廷</option><option value="036030">劉嚴文</option><option value="044547">陳柏升</option><option value="046226">黃睦翔</option><option value="046686">楊博凱</option><option value="046721">陳迪詠</option><option value="047043">林寶彥</option><option value="047966">阮俊能</option><option value="049499">柯呈諭</option><option value="049568">魏昱仁</option><option value="051578">蔡孟達</option><option value="053120">李文煌</option><option value="053146">李柏增</option><option value="053196">謝志成</option><option value="054143">林佳淩</option><option value="054185">陳則瑋</option><option value="054193">廖瑀</option><option value="100922">陳昭佑</option><option value="101056">鄭朝允</option><option value="101696">許毓軨</option><option value="101979">蘇柏學</option><option value="102180">蘇奕嘉</option><option value="102720">王思翰</option><option value="103018">連思涵</option><option value="103785">吳承諭</option><option value="104031">張倉惟</option><option value="105234">葉建寬</option><option value="105430">葉立浩</option><option value="313929">胡祐寧</option><option value="315444">陳柏偉</option><option value="315452">黃鼎鈞</option><option value="315460">張獻元</option><option value="510463">謝旻玲</option><option value="600525">陳志鴻</option><option value="603714">蔡良敏</option><option value="605485">林立人</option><option value="605520">吳俊明</option><option value="610258">李貽恆</option><option value="618024">蔡惟全</option><option value="622890">趙庭興</option><option value="626105">劉秉彥</option><option value="626917">甘宗旦</option><option value="636042">洪晨惠</option><option value="xasch01">導管保養</option></select></td>
+					</tr>
+					<tr>
+						<td class="table-title-theme">*病患姓名</td>
+						<td><input type="text" name="patname" size="15" value="" id="patname"></td>
+						<td class="table-title-theme">*檢查時間</td>
+						<td><input type="text" name="inspectiondate" maxlength="60" size="15" value="">
+							<a class="so-BtnLink" onmouseover="calSwapImg('BTN_date3', 'img_Date_OVER',true);" onclick="calSwapImg('BTN_date3', 'img_Date_DOWN'); showCalendar('HCO1WForm','inspectiondate','BTN_date3');return false;" onmouseout="calSwapImg('BTN_date3', 'img_Date_UP',true);" href="javascript:calClick();return false;"> <img height="17" alt="inspectiondate" src="../images/btn_date_up.gif" width="22" align="absMiddle" border="0" name="BTN_date3"></a>
+							<input type="text" name="inspectiontime" size="5" value="" id="inspectiontime"></td>
+						<td class="table-title-theme">主刀醫師</td>
+						<td><select name="attendingdoctor2" id="attendingdoctor2"><option value=""></option><option value="019982">王玠能</option><option value="023835">詹世鴻</option><option value="028626">黃耀毅</option><option value="030567">溫日昇</option><option value="031138">林志展</option><option value="032894">許志新</option><option value="033047">陳儒逸</option><option value="035289">李威廷</option><option value="036030">劉嚴文</option><option value="044547">陳柏升</option><option value="046226">黃睦翔</option><option value="046686">楊博凱</option><option value="046721">陳迪詠</option><option value="047043">林寶彥</option><option value="047966">阮俊能</option><option value="049499">柯呈諭</option><option value="049568">魏昱仁</option><option value="051578">蔡孟達</option><option value="053120">李文煌</option><option value="053146">李柏增</option><option value="053196">謝志成</option><option value="054143">林佳淩</option><option value="054185">陳則瑋</option><option value="054193">廖瑀</option><option value="100922">陳昭佑</option><option value="101056">鄭朝允</option><option value="101696">許毓軨</option><option value="101979">蘇柏學</option><option value="102180">蘇奕嘉</option><option value="102720">王思翰</option><option value="103018">連思涵</option><option value="103785">吳承諭</option><option value="104031">張倉惟</option><option value="105234">葉建寬</option><option value="105430">葉立浩</option><option value="313929">胡祐寧</option><option value="315444">陳柏偉</option><option value="315452">黃鼎鈞</option><option value="315460">張獻元</option><option value="510463">謝旻玲</option><option value="600525">陳志鴻</option><option value="603714">蔡良敏</option><option value="605485">林立人</option><option value="605520">吳俊明</option><option value="610258">李貽恆</option><option value="618024">蔡惟全</option><option value="622890">趙庭興</option><option value="626105">劉秉彥</option><option value="626917">甘宗旦</option><option value="636042">洪晨惠</option><option value="xasch01">導管保養</option></select></td>
+						<td colspan="2">
+							<div id="flagdiv">
+								<img id="flagid108" alt="" src="../images/rpticon/108.png" style="display: none; float: left;"> <img id="flagid109" alt="" src="../images/rpticon/109.png" style="display: none; float: left;"> <img id="flagid124" alt="" src="../images/rpticon/124.png" style="display: none; float: left;"> <img id="flagid135" alt="" src="../images/rpticon/135.png" style="display: none; float: left;"> <img id="flagid142" alt="" src="../images/rpticon/142.png" style="display: none; float: left;"> <img id="flagidHRSP" alt="" src="../images/rpticon/HRSP.png" style="display: none; float: left;"> <img id="flagidIDS" alt="" src="../images/rpticon/IDS.png" style="display: none; float: left;"> <img id="flagidTRA1" alt="" src="../images/rpticon/TRA1.png" style="display: none; float: left;"> <img id="flagidTRA2" alt="" src="../images/rpticon/TRA2.png" style="display: none; float: left;"> <img id="flagidTRA3" alt="" src="../images/rpticon/TRA3.png" style="display: none; float: left;">
+							</div></td>
+					</tr>
+					<tr>
+						<td class="table-title-theme">床號</td>
+						<td><input type="text" name="bedno" size="15" value="" id="bedno"></td>
+						<td class="table-title-theme">*術前診斷</td>
+						<td>
+							<table width="100">
+								<tbody><tr>
+									<td width="50">
+										<textarea name="prediagnosisitem" rows="1" readonly="readonly" id="prediagnosisitem"></textarea>
+									</td>
+									<td><input name="pdibt" id="pdibt" type="button" class="btnIn" value="..."></td>
+								</tr>
+							</tbody></table>
+						</td>
+						<td class="table-title-theme">總醫師</td>
+						<td><select name="generaldoctor1" id="generaldoctor1"><option value=""></option><option value="102130">李禎元</option><option value="103521">張竣皓</option><option value="104314">胡展瀚</option><option value="107288">徐麒翔</option><option value="107614">陳常胤</option><option value="107997">李見賢</option><option value="632301">李冠穎</option><option value="636092">陳澔昀</option><option value="meeting">公用帳號</option></select></td>
+						<td colspan="2"><img id="allergyimg" src="../images/rpticon/star.png" title="" style="display: none; width: 30px"></td>
+					</tr>
+					<tr>
+						<td class="table-title-theme">病患生日</td>
+						<td><input type="text" name="patbirthday" size="15" value="" id="patbirthday"></td>
+						<td class="table-title-theme">*預計心導管</td>
+						<td>
+							<table width="100">
+								<tbody><tr>
+									<td width="50">
+										<textarea name="preheartcatheter" rows="1" readonly="readonly" id="preheartcatheter"></textarea>
+									</td>
+									<td><input name="phcbt" id="phcbt" type="button" class="btnIn" value="..."></td>
+								</tr>
+							</tbody></table>
+						</td>
+						<td class="table-title-theme">總醫師</td>
+						<td><select name="generaldoctor2" id="generaldoctor2"><option value=""></option><option value="102130">李禎元</option><option value="103521">張竣皓</option><option value="104314">胡展瀚</option><option value="107288">徐麒翔</option><option value="107614">陳常胤</option><option value="107997">李見賢</option><option value="632301">李冠穎</option><option value="636092">陳澔昀</option><option value="meeting">公用帳號</option></select></td>
+						<td colspan="2">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="table-title-theme">性別</td>
+						<td>
+							<div id="displaytxt" align="left"></div> <select name="patgender" id="patgender">
+								<option value="">--請選擇--</option>
+								<option value="0">女</option>
+								<option value="1">男</option>
+						</select>
+						</td>
+						<td class="table-title-theme">備註</td>
+						<td><input type="text" name="note" size="15" value="" id="note"></td>
+						<td class="table-title-theme">技術師</td>
+						<td><select name="technician" id="technician"><option value=""></option><option value="007136">劉明端</option><option value="016870">洪淑芬</option><option value="021508">徐蕙玲</option><option value="032262">林雅真</option><option value="043003">汪佩儀</option><option value="048836">黃雅菱</option><option value="052464">王亦聖</option><option value="115086">李怡潔</option><option value="117551">劉晉佑</option><option value="131092">周彩琳</option><option value="143369">黃培瑜</option><option value="148483">蔡智凱</option><option value="148578">黃郁茵</option><option value="149276">黃惠雅</option><option value="149567">林冠橙</option><option value="149610">王伊婷</option><option value="153547">方東瓏</option><option value="154578">徐嘉駿</option><option value="155747">楊景智</option><option value="165753">林宜慧</option><option value="166102">張昀翔</option><option value="166665">林子群</option><option value="167339">毛婉竹</option><option value="167458">郭怡霆</option><option value="167903">徐若瑄</option><option value="168516">林昱志</option><option value="181743">邱玉琳</option><option value="182007">陳怡伶</option><option value="183498">黃郁茵</option><option value="926570">蔡姿妃</option><option value="940405">柯惠珍</option><option value="940704">張元耀</option><option value="947232">吳宇豪</option><option value="947369">侯琇云</option><option value="953208">柯志昌</option><option value="954726">侯琇云</option><option value="969139">林君潔</option><option value="975171">羅曉嵐</option><option value="990508">蕭苑伶</option><option value="992740">莊宗達</option><option value="993628">黃耀新</option><option value="994453">郭怡伶</option><option value="996526">朱以恬</option></select></td>
+						<td colspan="2">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="table-title-theme">登記類別碼</td>
+						<td>
+							<table width="100">
+								<tbody><tr>
+									<td width="50">
+										<textarea name="heartcathetertypeid" rows="1" readonly="readonly" id="heartcathetertypeid"></textarea>
+									</td>
+									<td width="50"><input name="hctbt" id="hctbt" type="button" class="btnIn" value="..."></td>
+								</tr>
+							</tbody></table>
+						</td>
+						<td class="table-title-theme">*術後診斷</td>
+						<td>
+							<table width="100">
+								<tbody><tr>
+									<td width="50">
+										<textarea name="afterdiagnosisitem" rows="1" readonly="readonly" id="afterdiagnosisitem"></textarea>
+									</td>
+									<td>
+										
+										<input name="adiNewBt" id="adiNewBt" type="button" class="btnIn" value="...">
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						<td class="table-title-theme">檢查單號</td>
+						<td><input type="text" name="referno" size="15" value="" id="referno"></td>
+						<td colspan="2">
+							<!-- 新增按鈕 -->
+							<button id="AddButton" class="defaultButton" name="AddButton" type="button">
+								<span class="addIcon"></span>
+								新增
+							</button> <!-- 刪除按鈕 -->
+							<button id="deleteButton" class="defaultButton" name="deleteButton" type="button" disabled="">
+								<span class="delIcon"></span>
+								刪除
+							</button> <!-- 修改按鈕 -->
+							<button id="modButton" class="defaultButton" name="modButton" type="button" disabled="">
+								<span class="modIcon"></span>
+								修改
+							</button>
+						</td>
+					</tr>
+				</tbody></table>
+				<div><br></div>
+
+
+
+
+
+
+
+
+
+
+
+
+			<div id="list">
+              
+ 			
+              
+<table class="displaytag" id="row">
+<thead>
+<tr>
+<th>刪除</th>
+<th class="sortable">臨床註記</th>
+<th class="sortable">過敏史</th>
+<th class="sortable">檢查室</th>
+<th class="sortable">登記類別</th>
+<th class="sortable">日期</th>
+<th class="sortable">時間</th>
+<th class="sortable">完成</th>
+<th class="sortable">病患資料</th>
+<th class="sortable">術前診斷</th>
+<th class="sortable">預計心導管</th>
+<th class="sortable">操作人員</th>
+<th class="sortable">備註</th>
+<th class="sortable">術後診斷</th>
+<th class="sortable"></th>
+<th class="sortable">檢查單號</th></tr></thead>
+<tbody><tr class="empty"><td colspan="16">Nothing found to display.</td></tr></tbody></table><span id="displaytagInfo" class="pagebanner"><span id="displaytagResultNo">0</span></span><span id="displaytagPageSizeURL" style="display:none"><a href="?pageid=HCO1W001&amp;d-16544-p=">#</a></span><span id="showDisplaytagInfoPanel" class="showDisplaytagInfo">總筆數：  <span class="displaytagNumberStyle">0</span> 筆資料  </span><span id="displaytagPageSizePanel" class="displaytagPageSize"> | 每頁列表筆數 <select name="displaytagPageSizeSelector" class="pageSizeInput" classname="pageSizeInput"><option value="0">0</option></select></span>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </td>
+            <td width="10" height="1" background="../images/boxrightedge.jpg"></td>
+        </tr>
+          <tr>
+            <td width="10" height="1"><img alt="" border="0" src="../images/boxlbottomcorner.jpg" width="10" height="10"></td>
+            <td height="1" background="../images/boxbottombg.jpg" colspan="3"></td>
+            <td width="10" height="1"><img alt="" border="0" src="../images/boxrbottomcorner.jpg" width="10" height="10"></td>
+        </tr>
+      </tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+</form>
+
+
+			
+		</td>
+	</tr>
+</tbody></table>
+   
+
+    <script language="JavaScript" src="../js/dhtmlxMenu/dhtmlxprotobar.js"></script>
+	<script language="JavaScript" src="../js/dhtmlxMenu/dhtmlxmenubar.js"></script>
+	<script language="JavaScript" src="../js/dhtmlxMenu/dhtmlxcommon.js"></script>
+    
+
+
+
+
+    
+    
+<script>
+
+	
+	    aMenuBar=new dhtmlXMenuBarObject(document.getElementById('xpstyle'),'100%',23,"");
+		aMenuBar.setGfxPath("../js/dhtmlxMenu/imgs/");
+		
+		
+        
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229102711","主要作業","", null, null, null, "null");
+        
+			
+			var panel = aMenuBar.getPanel("");
+			aMenuBar.addItem(panel,item);
+			
+			    
+			    new dhtmlXMenuBarPanelObject(panel,item,false,120,true);
+		    
+        
+        var item = new dhtmlXMenuItemObject("EMN20090716211825","心導管作業","", null, null, null, "null");
+        
+			
+			var panel = aMenuBar.getPanel("");
+			aMenuBar.addItem(panel,item);
+			
+			    
+			    new dhtmlXMenuBarPanelObject(panel,item,false,120,true);
+		    
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229102820","基本資料","", null, null, null, "null");
+        
+			
+			var panel = aMenuBar.getPanel("");
+			aMenuBar.addItem(panel,item);
+			
+			    
+			    new dhtmlXMenuBarPanelObject(panel,item,false,120,true);
+		    
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229102845","查詢","", null, null, null, "null");
+        
+			
+			var panel = aMenuBar.getPanel("");
+			aMenuBar.addItem(panel,item);
+			
+			    
+			    new dhtmlXMenuBarPanelObject(panel,item,false,120,true);
+		    
+        
+        var item = new dhtmlXMenuItemObject("EMN20091002141627","密碼變更","", null, null, null, "null");
+        
+			
+			var panel = aMenuBar.getPanel("");
+			aMenuBar.addItem(panel,item);
+			
+			    
+			    new dhtmlXMenuBarPanelObject(panel,item,false,120,true);
+		    
+        
+        var item = new dhtmlXMenuItemObject("EMN20090716212111","心導管排程作業","", null, null, null, "../HCO/HCO1W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20090716211825");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20091002142310","修改密碼","", null, null, null, "../ADM/ADM13W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20091002141627");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229110701","報到","", null, null, null, "../MJB/MJB1W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102711");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20090421140613","報告KEYWORD查詢","", null, null, null, "../QRY/QRY2W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102845");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229110756","檢查室","", null, null, null, "../MJB/MJB2W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102711");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229110825","報告輸入","", null, null, null, "../MJB/MJB3W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102711");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229111610","電腦資料維護","", null, null, null, "../ADM/ADM6W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102820");
+			aMenuBar.addItem(panel,item);
+			
+        
+        var item = new dhtmlXMenuItemObject("EMN20081229111641","罐頭片語維護","", null, null, null, "../ADM/ADM9W001.do");
+        
+			
+			var panel = aMenuBar.getPanel("EMN20081229102820");
+			aMenuBar.addItem(panel,item);
+			
+        
+        aMenuBar.showBar();
+        
+	</script>
+
+
+<script type="text/javascript" src="../js/button.js"></script>
+
+    <script type="text/javascript" src="../comm/displaytag.jsp"></script>
+    <script language="JavaScript">
+    if(document.getElementById("displaytagInfo")){
+	  checkDisplaytag();
+    }
+    </script>
+
+    <script language="JavaScript" src="../js/checkall.js"></script>
+
+    <script language="JavaScript" src="../js/dictionary.js"></script>
+
+    <script type="text/javascript" src="../js/OptionList.js"></script>
+<!-- Open Window -->
+    <script type="text/javascript" src="../js/window_control.js"></script>	
+
+    <script src="../js/dtree/dtree.js"></script>
+
+  
+    <script type="text/javascript" src="../js/getremotedata.js"></script>
+
+
+    
+
+ 
+
+ <script>
+ //document.getElementById('loading').style.display = "none";
+</script>
+
+
+ <div id="tooltip" style="display: none;"><h3></h3><div class="body"></div><div class="url"></div></div></body></html>

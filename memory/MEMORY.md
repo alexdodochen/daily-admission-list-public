@@ -1,0 +1,16 @@
+# MEMORY INDEX
+
+- [EMR HTML 擷取範圍規則](feedback_emr_html_parsing.md) — 只看含 SOAP note 的 div.small，略過 iportlet-content / plan / medicine
+- [EMR 資料驗證](feedback_emr_validation.md) — 病歷號↔姓名吻合才寫入，不符合要標記錯誤
+- [無資料病人工作表功能](feedback_no_data_patients.md) — H欄寫「無資料病人」→一聲令下整理到無資料病人工作表（取代模式）
+- [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）
+- [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師最後才加入，需問是否與每日續等清單合併
+- [入院序列清單欄位順序](feedback_ordering_columns.md) — N-T欄：序號|主治醫師|病人姓名|備註|術前診斷|預計心導管|每日續等清單
+- [導管排程時間規則](feedback_cathlab_times.md) — PM用1730+、非時段H1 1800+、備註不排程直接跳過
+- [不在選單的項目填備註](feedback_cathlab_note_fallback.md) — 預計心導管不在WEBCVIS選單時，改填note欄位
+- [導管排程keyin成功流程](feedback_cathlab_keyin_flow.md) — 完整WEBCVIS自動化技術：ADD新增、UPT修改、dTree popup ID映射、常用PDI/PHC ID
+- [無資料病人仍排導管](feedback_nodata_still_keyin.md) — 無診斷/心導管的病人也要key入排程，照主治醫師時段排
+- [CathDuration工作表](reference_cathduration.md) — Google Sheet中各類導管手術預估時間參考表（5大分類）
+- [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，Playwright帶URL查詢；摘要完自動寫入Sheet
+- [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
+- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，T欄標1

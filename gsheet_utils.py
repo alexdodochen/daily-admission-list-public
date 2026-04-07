@@ -1,0 +1,404 @@
+"""
+Google Sheet 工具模組 — 取代 openpyxl 的所有操作
+所有 admission skill 共用此模組
+"""
+import time
+import gspread
+from google.oauth2.service_account import Credentials
+
+# --- Constants ---
+SHEET_ID = '1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI'
+CREDS_FILE = 'sigma-sector-492215-d2-0612bef3b39b.json'
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+
+# --- Color constants (Google Sheets RGB format) ---
+BLUE_HEADER = {"red": 0.741, "green": 0.843, "blue": 0.933}    # FFBDD7EE
+ORANGE_DATA = {"red": 0.988, "green": 0.894, "blue": 0.839}    # FFFCE4D6
+WHITE = {"red": 1, "green": 1, "blue": 1}
+GREEN_SECTION = {"red": 0.886, "green": 0.937, "blue": 0.855}  # E2EFDA
+BLACK = {"red": 0, "green": 0, "blue": 0}
+
+# --- Connection ---
+_gc = None
+_sh = None
+
+def get_client():
+    """Get authenticated gspread client (singleton)"""
+    global _gc
+    if _gc is None:
+        creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
+        _gc = gspread.authorize(creds)
+    return _gc
+
+def get_spreadsheet():
+    """Get the main spreadsheet (singleton)"""
+    global _sh
+    if _sh is None:
+        gc = get_client()
+        _sh = gc.open_by_key(SHEET_ID)
+    return _sh
+
+def get_worksheet(name):
+    """Get worksheet by name, returns None if not found"""
+    sh = get_spreadsheet()
+    try:
+        return sh.worksheet(name)
+    except gspread.exceptions.WorksheetNotFound:
+        return None
+
+def create_worksheet(name, rows=100, cols=20):
+    """Create a new worksheet, delete if exists first"""
+    sh = get_spreadsheet()
+    existing = get_worksheet(name)
+    if existing:
+        sh.del_worksheet(existing)
+        time.sleep(1)
+    ws = sh.add_worksheet(title=name, rows=rows, cols=cols)
+    time.sleep(1)
+    return ws
+
+def list_sheets():
+    """List all worksheet names"""
+    sh = get_spreadsheet()
+    return [ws.title for ws in sh.worksheets()]
+
+# --- Read operations ---
+
+def read_all_values(ws):
+    """Read all values from worksheet as 2D list"""
+    return ws.get_all_values()
+
+def read_cell(ws, row, col):
+    """Read single cell value (1-indexed)"""
+    return ws.cell(row, col).value
+
+def read_range(ws, range_str):
+    """Read a range like 'A1:C10'"""
+    return ws.get(range_str)
+
+def get_max_row(ws):
+    """Get last row with data"""
+    vals = ws.get_all_values()
+    for i in range(len(vals) - 1, -1, -1):
+        if any(v.strip() for v in vals[i]):
+            return i + 1
+    return 0
+
+# --- Write operations ---
+
+def write_cell(ws, row, col, value):
+    """Write single cell (1-indexed)"""
+    ws.update_cell(row, col, value)
+
+def write_range(ws, range_str, data, raw=True):
+    """Write 2D data to range. data = [[row1], [row2], ...]"""
+    ws.update(values=data, range_name=range_str,
+              value_input_option='RAW' if raw else 'USER_ENTERED')
+
+def write_row(ws, row, values, start_col=1):
+    """Write a row of values starting from start_col"""
+    col_letter = gspread.utils.rowcol_to_a1(row, start_col).split('$')[-1][0] if start_col > 26 else chr(64 + start_col)
+    end_letter = chr(64 + start_col + len(values) - 1) if start_col + len(values) - 1 <= 26 else gspread.utils.rowcol_to_a1(row, start_col + len(values) - 1)
+    range_str = f"{gspread.utils.rowcol_to_a1(row, start_col)}:{gspread.utils.rowcol_to_a1(row, start_col + len(values) - 1)}"
+    ws.update(values=[values], range_name=range_str, value_input_option='RAW')
+
+def clear_range(ws, range_str):
+    """Clear a range of cells"""
+    ws.batch_clear([range_str])
+
+def clear_area(ws, start_row, start_col, end_row, end_col):
+    """Clear a rectangular area"""
+    range_str = f"{gspread.utils.rowcol_to_a1(start_row, start_col)}:{gspread.utils.rowcol_to_a1(end_row, end_col)}"
+    ws.batch_clear([range_str])
+
+# --- Formatting ---
+
+def format_header_row(ws, row, num_cols, start_col=1):
+    """Apply blue header formatting to a row"""
+    sh = get_spreadsheet()
+    requests = [{
+        "repeatCell": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": row - 1,
+                "endRowIndex": row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": start_col + num_cols - 1
+            },
+            "cell": {
+                "userEnteredFormat": {
+                    "backgroundColor": BLUE_HEADER,
+                    "textFormat": {"bold": True, "fontSize": 11},
+                    "horizontalAlignment": "CENTER",
+                    "verticalAlignment": "MIDDLE"
+                }
+            },
+            "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)"
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def format_data_rows(ws, start_row, end_row, num_cols, start_col=1, bg_color=None):
+    """Apply data formatting to rows"""
+    sh = get_spreadsheet()
+    cell_format = {
+        "textFormat": {"fontSize": 11},
+        "verticalAlignment": "MIDDLE"
+    }
+    fields = "userEnteredFormat(textFormat,verticalAlignment"
+    if bg_color:
+        cell_format["backgroundColor"] = bg_color
+        fields += ",backgroundColor"
+    fields += ")"
+
+    requests = [{
+        "repeatCell": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": start_col + num_cols - 1
+            },
+            "cell": {"userEnteredFormat": cell_format},
+            "fields": fields
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def set_column_widths(ws, widths_dict):
+    """Set column widths. widths_dict = {col_index: pixel_width} (1-indexed)"""
+    sh = get_spreadsheet()
+    requests = []
+    for col, width in widths_dict.items():
+        requests.append({
+            "updateDimensionProperties": {
+                "range": {
+                    "sheetId": ws.id,
+                    "dimension": "COLUMNS",
+                    "startIndex": col - 1,
+                    "endIndex": col
+                },
+                "properties": {"pixelSize": width},
+                "fields": "pixelSize"
+            }
+        })
+    if requests:
+        sh.batch_update({"requests": requests})
+
+def merge_cells(ws, start_row, start_col, end_row, end_col):
+    """Merge a range of cells"""
+    sh = get_spreadsheet()
+    requests = [{
+        "mergeCells": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": end_col
+            },
+            "mergeType": "MERGE_ALL"
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def add_borders(ws, start_row, start_col, end_row, end_col):
+    """Add thin borders to a range"""
+    sh = get_spreadsheet()
+    border_style = {"style": "SOLID", "color": BLACK}
+    requests = [{
+        "updateBorders": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": end_col
+            },
+            "top": border_style,
+            "bottom": border_style,
+            "left": border_style,
+            "right": border_style,
+            "innerHorizontal": border_style,
+            "innerVertical": border_style
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def set_wrap_text(ws, start_row, start_col, end_row, end_col):
+    """Enable text wrapping for a range"""
+    sh = get_spreadsheet()
+    requests = [{
+        "repeatCell": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": end_col
+            },
+            "cell": {
+                "userEnteredFormat": {"wrapStrategy": "WRAP"}
+            },
+            "fields": "userEnteredFormat.wrapStrategy"
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def add_note(ws, row, col, note_text):
+    """Add a note (comment) to a cell"""
+    sh = get_spreadsheet()
+    requests = [{
+        "updateCells": {
+            "rows": [{"values": [{"note": note_text[:5000]}]}],
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": row - 1,
+                "endRowIndex": row,
+                "startColumnIndex": col - 1,
+                "endColumnIndex": col
+            },
+            "fields": "note"
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+# --- Data Validation (Dropdowns) ---
+
+def set_dropdown(ws, start_row, start_col, end_row, end_col, values):
+    """Set dropdown data validation for a range"""
+    sh = get_spreadsheet()
+    condition_values = [{"userEnteredValue": v} for v in values]
+    requests = [{
+        "setDataValidation": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": end_col
+            },
+            "rule": {
+                "condition": {
+                    "type": "ONE_OF_LIST",
+                    "values": condition_values
+                },
+                "showCustomUi": True,
+                "strict": False
+            }
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+def set_dropdown_from_range(ws, start_row, start_col, end_row, end_col, source_sheet_id, source_range):
+    """Set dropdown from another sheet range"""
+    sh = get_spreadsheet()
+    requests = [{
+        "setDataValidation": {
+            "range": {
+                "sheetId": ws.id,
+                "startRowIndex": start_row - 1,
+                "endRowIndex": end_row,
+                "startColumnIndex": start_col - 1,
+                "endColumnIndex": end_col
+            },
+            "rule": {
+                "condition": {
+                    "type": "ONE_OF_RANGE",
+                    "values": [{"userEnteredValue": source_range}]
+                },
+                "showCustomUi": True,
+                "strict": False
+            }
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+# --- Column Grouping ---
+
+def group_columns(ws, start_col, end_col):
+    """Group columns (collapsible). 1-indexed."""
+    sh = get_spreadsheet()
+    requests = [{
+        "addDimensionGroup": {
+            "range": {
+                "sheetId": ws.id,
+                "dimension": "COLUMNS",
+                "startIndex": start_col - 1,
+                "endIndex": end_col
+            }
+        }
+    }]
+    sh.batch_update({"requests": requests})
+
+# --- Batch operations (for efficiency) ---
+
+def batch_update_requests(requests):
+    """Execute raw batch update requests"""
+    sh = get_spreadsheet()
+    if requests:
+        batch_size = 500
+        for i in range(0, len(requests), batch_size):
+            batch = requests[i:i+batch_size]
+            sh.batch_update({"requests": batch})
+            if i + batch_size < len(requests):
+                time.sleep(1)
+
+# --- Helper: build full doctor table section ---
+
+def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
+    """
+    Write a doctor patient table block.
+    patients = [{'name': ..., 'chart_no': ..., 'emr': '', 'emr_summary': '', ...}]
+    Returns next available row.
+    """
+    sh = get_spreadsheet()
+    sub_headers = ['姓名', '病歷號', 'EMR', 'EMR摘要', '手動設定入院序',
+                   '術前診斷', '預計心導管', '註記'][:num_cols]
+
+    # Doctor title (merged)
+    title = f'{doctor_name}（{len(patients)}人）'
+    write_cell(ws, start_row, 1, title)
+    merge_cells(ws, start_row, 1, start_row, num_cols)
+    format_header_row(ws, start_row, num_cols)
+
+    # Sub-headers
+    write_row(ws, start_row + 1, sub_headers)
+    format_header_row(ws, start_row + 1, num_cols)
+
+    # Patient data
+    for pi, pt in enumerate(patients):
+        row = start_row + 2 + pi
+        vals = [
+            pt.get('name', ''),
+            pt.get('chart_no', ''),
+            pt.get('emr', ''),
+            pt.get('emr_summary', ''),
+            pt.get('order', ''),
+            pt.get('diagnosis', ''),
+            pt.get('cathlab', ''),
+            pt.get('note', '')
+        ][:num_cols]
+        write_row(ws, row, vals)
+
+    # Borders for entire block
+    end_row = start_row + 1 + len(patients)
+    add_borders(ws, start_row, 1, end_row, num_cols)
+
+    # Set dropdowns for F (col 6, 術前診斷) and G (col 7, 預計心導管) patient rows
+    if num_cols >= 7 and len(patients) > 0:
+        data_start = start_row + 2
+        data_end = start_row + 1 + len(patients)
+        # F col (6) = 術前診斷, G col (7) = 預計心導管
+        set_dropdown_from_range(ws, data_start, 6, data_end, 6,
+                                None, "='下拉選單'!$A$2:$A$66")
+        set_dropdown_from_range(ws, data_start, 7, data_end, 7,
+                                None, "='下拉選單'!$D$2:$D$23")
+        time.sleep(0.3)
+
+    time.sleep(0.5)
+    return end_row + 2  # next available row (with 1 blank row gap)
