@@ -14,3 +14,4 @@
 - [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，Playwright帶URL查詢；摘要完自動寫入Sheet
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
 - [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，T欄標1
+- [Service Account金鑰權限](reference_service_account.md) — admission-bot SA：Sheets讀寫+Drive存取，只能操作被共享的文件
