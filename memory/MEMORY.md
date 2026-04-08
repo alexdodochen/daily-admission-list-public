@@ -15,3 +15,4 @@
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
 - [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，V欄標1
 - [術前診斷只用子項目名稱](feedback_diag_short_names.md) — 不需母清單前綴，EP study/RFA > pAf 只寫 pAf
+- [EMR姓名自動校正不需提醒](feedback_emr_auto_name_fix.md) — 讀到EMR姓名就自動更新Sheet所有位置，不問使用者
