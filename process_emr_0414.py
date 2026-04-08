@@ -49,10 +49,19 @@ CATH_RULES = [
 ]
 
 def match_rules(text, rules):
+    text_lower = text.lower()
     for keywords, value in rules:
         for kw in keywords:
-            if kw.lower() in text.lower():
-                return value
+            kw_lower = kw.lower()
+            # Use word boundary matching for short keywords (<=4 chars) to avoid false positives
+            # e.g. 'PTA' should not match 'PTCA', 'AT' should not match 'CAT'
+            if len(kw) <= 4:
+                pattern = r'(?<![a-zA-Z])' + re.escape(kw_lower) + r'(?![a-zA-Z])'
+                if re.search(pattern, text_lower):
+                    return value
+            else:
+                if kw_lower in text_lower:
+                    return value
     return ''
 
 def generate_summary(emr_text, age='', gender=''):
