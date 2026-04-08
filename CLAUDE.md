@@ -87,7 +87,7 @@ Full details in `每日入院清單工作流程.txt`.
 ### OCR & EMR
 6. **Chart number verification**: After OCR import, always list all 病歷號 for user confirmation. Chart numbers are 8 digits, stored as text (preserve leading zeros).
 7. **Image OCR**: Low-resolution screenshots must be enlarged 3-6x with PIL and cropped in sections before reading. Never rely on raw Read tool preview for table data.
-8. **EMR name authority**: EMR system names override OCR-imported names. Update all locations in the sheet. No records = write "無本院一年內主治醫師門診紀錄".
+8. **EMR name authority**: EMR system names override OCR-imported names. Update all locations in the sheet. No records = C欄 write "無本院一年內主治醫師門診紀錄", H欄 auto-write "無資料病人", and auto-populate 無資料病人 worksheet.
 9. **EMR manual login**: Never auto-open browser to login EMR. Wait for user to manually login and paste session URL, then use Playwright with that session.
 10. **EMR auto-write**: After extraction, write summaries to Sheet immediately without asking user confirmation.
 
