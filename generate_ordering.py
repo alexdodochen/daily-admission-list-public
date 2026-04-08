@@ -1,8 +1,8 @@
 """
-生成 20260408 / 20260409 住院序列 (N-T columns)
+生成住院序列 (N-V columns)
 讀取 Google Sheet 醫師病人表格的 F/G/H 欄，
 依據已有的 round-robin 醫師順序 + E 欄手動排序，
-寫入正確的 N-T 欄位：序號|主治醫師|病人姓名|備註|術前診斷|預計心導管|每日續等清單
+寫入正確的 N-V 欄位：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單
 """
 import sys, time, json
 sys.path.insert(0, '.')
@@ -10,8 +10,15 @@ from gsheet_utils import (get_spreadsheet, get_worksheet, read_all_values,
                            write_range, clear_range, format_header_row,
                            format_data_rows, add_borders, batch_update_requests)
 
-# 正確的 N-T 欄位標題 (col N=14 to T=20)
-ORDERING_HEADERS = ['序號', '主治醫師', '病人姓名', '備註', '術前診斷', '預計心導管', '每日續等清單']
+# 正確的 N-V 欄位標題 (col N=14 to V=22)
+ORDERING_HEADERS = ['序號', '主治醫師', '病人姓名', '備註(住服)', '備註', '病歷號', '術前診斷', '預計心導管', '每日續等清單']
+
+
+def strip_diag_prefix(name):
+    """去掉術前診斷的母清單前綴，如 'EP study/RFA > pAf' → 'pAf'"""
+    if ' > ' in name:
+        return name.split(' > ', 1)[1].strip()
+    return name
 
 def extract_doctor_tables(all_data):
     """從工作表資料中提取各醫師病人表格，回傳 {醫師: [患者dict]}"""
@@ -176,10 +183,12 @@ def generate_ordering(doctor_order, doctor_tables, patient_notes):
                     str(seq),           # N: 序號
                     doc,                # O: 主治醫師
                     patient['name'],    # P: 病人姓名
-                    note,               # Q: 備註
-                    patient['diagnosis'],  # R: 術前診斷
-                    patient['cathlab'],    # S: 預計心導管
-                    '',                 # T: 每日續等清單
+                    '',                 # Q: 備註(住服) — 住服用，LINE推播用此欄
+                    note,               # R: 備註
+                    patient['chart'],   # S: 病歷號
+                    strip_diag_prefix(patient['diagnosis']),  # T: 術前診斷（去母清單前綴）
+                    patient['cathlab'],    # U: 預計心導管
+                    '',                 # V: 每日續等清單
                 ])
                 seq += 1
 
@@ -190,28 +199,28 @@ def generate_ordering(doctor_order, doctor_tables, patient_notes):
 
 
 def write_ordering_to_sheet(ws, ordering, all_data):
-    """寫入 N-T 欄位 (columns 14-20)"""
-    # 1. 先修正標題列 (row 1, N-T)
-    header_range = 'N1:T1'
+    """寫入 N-V 欄位 (columns 14-22)"""
+    # 1. 先修正標題列 (row 1, N-V)
+    header_range = 'N1:V1'
     write_range(ws, header_range, [ORDERING_HEADERS])
     time.sleep(0.5)
 
-    # 2. 清除舊的 N-T 資料 (row 2 onwards, enough rows)
-    clear_range(ws, 'N2:T50')
+    # 2. 清除舊的 N-V 資料 (row 2 onwards, enough rows)
+    clear_range(ws, 'N2:V50')
     time.sleep(0.5)
 
     # 3. 寫入新的排序資料
     if ordering:
         end_row = len(ordering) + 1
-        data_range = f'N2:T{end_row}'
+        data_range = f'N2:V{end_row}'
         write_range(ws, data_range, ordering)
         time.sleep(0.5)
 
     # 4. 格式化
-    format_header_row(ws, 1, 7, start_col=14)  # N-T header
+    format_header_row(ws, 1, 9, start_col=14)  # N-V header (9 cols)
     time.sleep(0.3)
     if ordering:
-        add_borders(ws, 1, 14, len(ordering) + 1, 20)
+        add_borders(ws, 1, 14, len(ordering) + 1, 22)
     time.sleep(0.3)
 
     return len(ordering)
@@ -269,10 +278,10 @@ def main():
                     output.append(f'    {name}{e_str} | {diag} | {cath} | {note}')
 
             output.append(f'\nGenerated ordering ({result["count"]} entries):')
-            output.append(f'  {"Seq":<4} {"Doctor":<8} {"Patient":<12} {"Note":<20} {"Diagnosis":<30} {"Cathlab"}')
-            output.append(f'  {"---":<4} {"------":<8} {"-------":<12} {"----":<20} {"---------":<30} {"-------"}')
+            output.append(f'  {"Seq":<4} {"Doctor":<8} {"Patient":<12} {"Note(住服)":<12} {"Note":<20} {"Chart":<10} {"Diagnosis":<30} {"Cathlab"}')
+            output.append(f'  {"---":<4} {"------":<8} {"-------":<12} {"--------":<12} {"----":<20} {"-----":<10} {"---------":<30} {"-------"}')
             for row in result['ordering']:
-                output.append(f'  {row[0]:<4} {row[1]:<8} {row[2]:<12} {row[3]:<20} {row[4]:<30} {row[5]}')
+                output.append(f'  {row[0]:<4} {row[1]:<8} {row[2]:<12} {row[3]:<12} {row[4]:<20} {row[5]:<10} {row[6]:<30} {row[7]}')
 
             output.append(f'\nDone! Wrote {result["count"]} entries to {sheet_name} N-T columns.')
 

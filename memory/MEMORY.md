@@ -13,4 +13,5 @@
 - [CathDuration工作表](reference_cathduration.md) — Google Sheet中各類導管手術預估時間參考表（5大分類）
 - [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，Playwright帶URL查詢；摘要完自動寫入Sheet
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
-- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，T欄標1
+- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，V欄標1
+- [術前診斷只用子項目名稱](feedback_diag_short_names.md) — 不需母清單前綴，EP study/RFA > pAf 只寫 pAf
