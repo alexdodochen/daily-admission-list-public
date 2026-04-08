@@ -40,7 +40,42 @@ window._listVisits = function() {
 window._extractEMR = function() {
     try {
         var mainDoc = window.frames['mainFrame'].document;
-        var text = mainDoc.body ? mainDoc.body.innerText : '';
-        return text;
+        // Only extract div.small containing SOAP sections
+        // Skip: div.medicine, div.plan, div.iportlet-content
+        var divs = mainDoc.querySelectorAll('div.small');
+        var texts = [];
+        for (var i = 0; i < divs.length; i++) {
+            var parent = divs[i].parentElement;
+            // Skip if parent is iportlet-content (medicine/plan blocks)
+            if (parent && parent.className && (
+                parent.className.indexOf('iportlet-content') >= 0 ||
+                parent.className.indexOf('medicine') >= 0 ||
+                parent.className.indexOf('plan') >= 0)) {
+                continue;
+            }
+            var t = divs[i].innerText.trim();
+            if (t && (t.indexOf('[Diagnosis]') >= 0 || t.indexOf('[Subjective]') >= 0 ||
+                t.indexOf('[Objective]') >= 0 || t.indexOf('[Assessment') >= 0)) {
+                texts.push(t);
+            }
+        }
+        if (texts.length > 0) return texts.join('\n');
+        // Fallback: if no div.small with SOAP found, try getting text
+        // but still exclude medicine/plan blocks
+        var allDivs = mainDoc.querySelectorAll('div');
+        var fallback = [];
+        for (var j = 0; j < allDivs.length; j++) {
+            var cls = allDivs[j].className || '';
+            if (cls.indexOf('medicine') >= 0 || cls.indexOf('plan') >= 0 ||
+                cls.indexOf('iportlet') >= 0) continue;
+            var txt = allDivs[j].innerText.trim();
+            if (txt && (txt.indexOf('[Diagnosis]') >= 0 || txt.indexOf('[Subjective]') >= 0 ||
+                txt.indexOf('[Objective]') >= 0 || txt.indexOf('[Assessment') >= 0)) {
+                fallback.push(txt);
+                break;  // take first match to avoid duplicates
+            }
+        }
+        if (fallback.length > 0) return fallback[0];
+        return mainDoc.body ? mainDoc.body.innerText : '';
     } catch(e) { return 'ERROR: ' + e.message; }
 };
