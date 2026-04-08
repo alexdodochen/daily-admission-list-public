@@ -15,3 +15,6 @@
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
 - [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，T欄標1
 - [匯入後自動EMR摘要](feedback_auto_emr_after_import.md) — 病人確認後自動開始整理醫師病人清單+EMR，不需額外指令
+- [Web App 改造計畫](project_webapp_migration.md) — Phase 1-4 完成，專案在 每日入院清單_本地化/，下次做 Phase 5
+- [Session Limit 管控](feedback_session_limit.md) — 每次最多用 70% context，到達時停下通知
+- [LINE Reminder Bot repo](reference_line_reminder_bot.md) — line-reminder-bot repo位置、架構、新增提醒流程（W01-W05）
