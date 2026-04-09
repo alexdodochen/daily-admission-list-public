@@ -1,6 +1,6 @@
 ---
-description: End-of-session review — save progress/corrections to memory, evaluate skills, update workflow documentation
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(ls:*), Bash(cat:*), Bash(head:*), Bash(wc:*)
+description: End-of-session review — save progress/corrections to memory, evaluate skills, update workflow documentation, sync GitHub
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(ls:*), Bash(cat:*), Bash(head:*), Bash(wc:*), Bash(git:*)
 ---
 
 ## Current Project State
@@ -100,7 +100,22 @@ Check if any of these need updating:
 
 ---
 
-### Step 5: Summary Report
+### Step 5: Sync GitHub
+
+Commit all changes from this session and push to GitHub:
+
+1. `git status` — check all modified/untracked files
+2. `git add` — stage all relevant files (skip `.claude/settings.local.json`, `.claude/worktrees/`)
+3. `git commit` — concise message summarizing session changes, include `Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>`
+4. If on a feature branch: `git checkout main && git merge <branch>` → `git push origin main`
+5. If on main: `git push origin main`
+6. Verify: `git log --oneline -3` to confirm push
+
+**Do not push without user confirmation if there are unexpected changes.**
+
+---
+
+### Step 6: Summary Report
 
 After completing all steps, output this structured summary:
 
