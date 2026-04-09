@@ -69,7 +69,7 @@ document.querySelectorAll("#row tr").forEach(row => {
 - 系統會跳 "資料內容是空的" 的 Message，但操作仍會成功
 - 不在 phcjson 選單的項目（如 Cardioversion）改填 `input[name="note"]` 備註欄
 - 李柏增不填入主刀/第二主刀醫師欄位
-- AM 時間 0600+，PM 時間 1730+，非時段 H1 1800+
+- 有時段 AM 0600+，有時段 PM 1800+，無時段 H1 2100+（備註「本日無時段」）
 
 **Why:** 第一次嘗試用 SaveButton 失敗（disabled），改用 AddButton+UPT 流程成功。popup ID 映射是關鍵步驟。
 **How to apply:** 每次導管排程 keyin 前先 scrape popup 頁面取最新 ID 映射，再逐筆 ADD+UPT。

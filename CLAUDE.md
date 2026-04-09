@@ -51,7 +51,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 3. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
 4. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1
 5. **Cathlab safety**: Only add new entries, never modify or delete existing ones
-6. **Cathlab times**: AM=0600+, PM=1730+, non-schedule=H1 1800+
+6. **Cathlab times**: scheduled AM=0600+, scheduled PM=1800+, non-schedule=H1 2100+ (note="本日無時段")
 7. **No-data patients**: Still key into cathlab schedule at doctor's time slot, note="無資料病人"
 8. **Skip rule**: 備註含「不排程」或「檢查」→ skip cathlab keyin（「非導管床」「HF AE」不一定跳過，只有「檢查」才確定跳過）
 9. **Sheet no-overwrite**: 寫入 Sheet 前必須先讀取目標區域，確認為空才寫入，絕不覆蓋現有資料
