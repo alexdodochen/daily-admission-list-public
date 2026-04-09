@@ -35,6 +35,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 - `cathlab_page.html` — Saved HTML of WEBCVIS cathlab system for form field analysis.
 - `cathlab_id_maps.json` — pdijson/phcjson ID mappings (diagnosis→PDI ID, procedure→PHC ID).
 - `schedule_readable.txt` — Human-readable doctor schedule table (Mon–Fri, AM/PM rooms).
+- `verify_cathlab.py` — Verify all admission patients appear in next-day WEBCVIS cathlab schedule. Usage: `python verify_cathlab.py 20260409`
 
 ## Workflow (6 steps)
 

@@ -13,7 +13,7 @@
 - [CathDuration工作表](reference_cathduration.md) — Google Sheet中各類導管手術預估時間參考表（5大分類）
 - [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，Playwright帶URL查詢；摘要完自動寫入Sheet
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
-- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，V欄標1
+- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師續等加入佇列重跑round-robin、無時段醫師最後，V欄標1
 - [術前診斷只用子項目名稱](feedback_diag_short_names.md) — 不需母清單前綴，EP study/RFA > pAf 只寫 pAf
 - [EMR姓名自動校正不需提醒](feedback_emr_auto_name_fix.md) — 讀到EMR姓名就自動更新Sheet所有位置，不問使用者
 - [匯入後自動EMR摘要](feedback_auto_emr_after_import.md) — 病人確認後自動開始整理醫師病人清單+EMR，不需額外指令
@@ -22,3 +22,4 @@
 - [LINE Reminder Bot repo](reference_line_reminder_bot.md) — line-reminder-bot repo位置、架構、新增提醒流程（W01-W05）
 - [EMR完成後自動預填F/G欄](feedback_emr_prefill_fg.md) — EMR摘要完成後自動預填術前診斷/預計心導管，列出讓使用者檢查
 - [導管排程跳過檢查病人+第二醫師優先](feedback_cathlab_skip_exam.md) — 備註含「檢查」不排導管；第二醫師多人時葉立浩優先key，其餘放備註
+- [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄，純數字跳過
