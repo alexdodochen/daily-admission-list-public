@@ -16,7 +16,9 @@ type: feedback
 - 「3 W1.3.5洗腎」→ H 寫「W1.3.5洗腎」
 - 「23 (3/11無床延期)」→ H 寫「3/11無床延期」
 
-**實作位置：** admission-lottery skill 建立子表格時（write_doctor_table），以及 admission-ordering 整合入院序的備註欄（Q 欄）。
+**H 欄已有資料時：合併，不覆蓋。** 用分號串接，例如 `Replacement; 12/11無床延期`。只有當入院提示文字已包含在 H 欄內容中時才跳過。
+
+**實作位置：** admission-lottery skill 建立子表格時（write_doctor_table），以及 admission-ordering 整合入院序的備註欄。
 
 **Why:** 使用者需要在子表格直接看到入院提示的重要資訊（如無床延期、特殊備註），不用回去對照主資料。
-**How to apply:** 用正則表達式提取括號內文字或去掉前導數字後的非數字文字。
+**How to apply:** 用正則表達式提取括號內文字或去掉前導數字後的非數字文字。H 欄有值時合併（`{existing}; {new}`），已含則跳過。

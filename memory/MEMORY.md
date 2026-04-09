@@ -22,4 +22,5 @@
 - [LINE Reminder Bot repo](reference_line_reminder_bot.md) — line-reminder-bot repo位置、架構、新增提醒流程（W01-W05）
 - [EMR完成後自動預填F/G欄](feedback_emr_prefill_fg.md) — EMR摘要完成後自動預填術前診斷/預計心導管，列出讓使用者檢查
 - [導管排程跳過檢查病人+第二醫師優先](feedback_cathlab_skip_exam.md) — 備註含「檢查」不排導管；第二醫師多人時葉立浩優先key，其餘放備註
-- [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄，純數字跳過
+- [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄（已有則合併），純數字跳過
+- [星期五入院用星期五抽籤表](feedback_friday_admission_schedule.md) — 週五入院查週五時段表（週六無抽籤表）

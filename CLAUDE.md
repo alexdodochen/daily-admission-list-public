@@ -47,6 +47,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 
 1. **Ordering columns N–U (8 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 (user has corrected this multiple times — do not reorder, do not omit 病歷號)
 2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
+2a. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 3. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
 4. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1
 5. **Cathlab safety**: Only add new entries, never modify or delete existing ones
