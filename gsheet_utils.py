@@ -389,5 +389,16 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
     end_row = start_row + 1 + len(patients)
     add_borders(ws, start_row, 1, end_row, num_cols)
 
+    # Set dropdowns for F (col 6, 術前診斷) and G (col 7, 預計心導管) patient rows
+    if num_cols >= 7 and len(patients) > 0:
+        data_start = start_row + 2
+        data_end = start_row + 1 + len(patients)
+        # F col (6) = 術前診斷, G col (7) = 預計心導管
+        set_dropdown_from_range(ws, data_start, 6, data_end, 6,
+                                None, "='下拉選單'!$A$2:$A$66")
+        set_dropdown_from_range(ws, data_start, 7, data_end, 7,
+                                None, "='下拉選單'!$D$2:$D$23")
+        time.sleep(0.3)
+
     time.sleep(0.5)
     return end_row + 2  # next available row (with 1 blank row gap)

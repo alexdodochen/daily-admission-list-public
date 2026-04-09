@@ -1,23 +1,23 @@
-# Credentials and session cache
-*.json
+# Credentials
+sigma-sector-492215-d2-0612bef3b39b.json
 
-# Legacy local Excel files
-*.xlsx
+# Temp files
+_*.txt
+_*.html
+*.png
+*.zip
 
 # Python
 __pycache__/
 *.pyc
 
-# Environment
-.env
+# Playwright
+emr_lookup.py
+emr_extract.py
+emr_extract_0409.py
+cathlab_*_error_*.png
+cathlab_*_final.png
+cathlab_*_log.txt
 
-# Claude Code local settings
-.claude/
-
-# OS
-Thumbs.db
-Desktop.ini
-
-# Screenshots (user pastes these per session)
-*.jpg
-*.png
+# IDE
+.vscode/
