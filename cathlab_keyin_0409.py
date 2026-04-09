@@ -1,6 +1,7 @@
 """
 20260408 入院 → 20260409 (Thu) 心導管排程 key-in
 完整流程：ADD 新增 + UPT 補 pdijson/phcjson
+跳過：沈桂英(非導管床/檢查)、陳郭明珠(HF AE)、王劉愛雪(Cardioversion不排)、黃鉦傑(不在排序)
 """
 import time
 import json
@@ -24,7 +25,6 @@ DOCTOR_CODES = {
 
 ROOM_CODES = {"H1": "xa-Hybrid1", "H2": "xa-Hybrid2", "C1": "xa-CATH1", "C2": "xa-CATH2"}
 
-# ID mappings (from cathlab_id_maps.json)
 DIAG_IDS = {
     "CAD": "PDI20090908120009",
     "CHF": "PDI20090908120050",
@@ -34,10 +34,12 @@ DIAG_IDS = {
     "EP study/RFA > Sinus nodal dysfunction": "PDI20090908120038",
     "EP study/RFA > pAf": "PDI20090908120040",
     "EP study/RFA > PSVT": "PDI20090908120033",
+    "EP study/RFA > AV nodal dysfunction": "PDI20090908120039",
     "AMI > Others:NSTEMI": "PDI20090908120011",
 }
 PROC_IDS = {
     "Left heart cath.": "PHC20090907120001",
+    "PCI": "PHC20090907120004",
     "PPM": "PHC20170406095748",
     "RF ablation": "PHC20090907120009",
     "CRT": "PHC20170406100014",
@@ -47,41 +49,43 @@ PROC_IDS = {
 }
 
 # Thu schedule:
-# AM H2=陳柏偉  C1=黃鼎鈞(浩)  C2=柯呈諭
-# PM H2=黃睦翔  C1=黃鼎鈞(浩)  C2=柯呈諭
-# 張獻元 Thu=無時段 → H1 1800
+# AM C2=柯呈諭  C1=黃鼎鈞(浩、晨)  H2=陳柏偉
+# PM H2=黃睦翔(結構)  C1=黃鼎鈞(浩、晨)
+# 跳過: 沈桂英(非導管床), 陳郭明珠(HF AE), 王劉愛雪(Cardioversion), 黃鉦傑(不在排序)
 
 PATIENTS = [
-    # AM
-    {"name": "邱調水", "chart": "19990690", "doctor": "黃鼎鈞", "room": "C1",
-     "time": "0600", "second": "葉立浩",
-     "diagnosis": "CHF", "procedure": "CRT"},
-    {"name": "傅榮珂", "chart": "00050212", "doctor": "黃鼎鈞", "room": "C1",
-     "time": "0601", "second": "葉立浩",
-     "diagnosis": "EP study/RFA > Sinus nodal dysfunction", "procedure": "PPM"},
-    {"name": "陳秀玲", "chart": "07575235", "doctor": "陳柏偉", "room": "H2",
-     "time": "0600", "second": None,
-     "diagnosis": "PAOD", "procedure": "PTA"},
+    # AM - 柯呈諭 C2 (2 patients)
     {"name": "施金士", "chart": "13531746", "doctor": "柯呈諭", "room": "C2",
      "time": "0600", "second": None,
      "diagnosis": "Carotid stenting", "procedure": "Carotid angiography + stenting"},
     {"name": "郭惠蘭", "chart": "13940053", "doctor": "柯呈諭", "room": "C2",
      "time": "0601", "second": None,
      "diagnosis": "CHF", "procedure": "Left heart cath."},
-    # PM
+    # AM - 陳柏偉 H2 (1 patient)
+    {"name": "陳秀玲", "chart": "07575235", "doctor": "陳柏偉", "room": "H2",
+     "time": "0600", "second": None,
+     "diagnosis": "PAOD", "procedure": "PTA"},
+    # AM - 黃鼎鈞 C1 (2nd=葉立浩, note=晨, 3 patients)
+    {"name": "邱調水", "chart": "19990690", "doctor": "黃鼎鈞", "room": "C1",
+     "time": "0600", "second": "葉立浩",
+     "diagnosis": "CHF", "procedure": "CRT", "note": "晨"},
+    {"name": "傅榮珂", "chart": "00050212", "doctor": "黃鼎鈞", "room": "C1",
+     "time": "0601", "second": "葉立浩",
+     "diagnosis": "EP study/RFA > Sinus nodal dysfunction", "procedure": "PPM", "note": "晨"},
+    {"name": "林素珍", "chart": "02050962", "doctor": "黃鼎鈞", "room": "C1",
+     "time": "0602", "second": "葉立浩",
+     "diagnosis": "EP study/RFA > PSVT", "procedure": "RF ablation", "note": "晨"},
+    # PM - 黃睦翔 H2 (1 patient)
     {"name": "楊明樂", "chart": "08863646", "doctor": "黃睦翔", "room": "H2",
      "time": "1730", "second": None,
-     "diagnosis": "CAD", "procedure": "Left heart cath."},
-    {"name": "林素珍", "chart": "02050962", "doctor": "黃鼎鈞", "room": "C1",
-     "time": "1730", "second": "葉立浩",
-     "diagnosis": "EP study/RFA > PSVT", "procedure": "RF ablation"},
+     "diagnosis": "CAD", "procedure": "Left heart cath.", "note": "CAD3VD, Syntax 33"},
+    # PM - 黃鼎鈞 C1 (2nd=葉立浩, note=晨, 2 patients, 續等)
     {"name": "張皓傑", "chart": "14650529", "doctor": "黃鼎鈞", "room": "C1",
+     "time": "1730", "second": "葉立浩",
+     "diagnosis": "Angina pectoris", "procedure": "Left heart cath.", "note": "晨"},
+    {"name": "曾松棋", "chart": "04852274", "doctor": "黃鼎鈞", "room": "C1",
      "time": "1731", "second": "葉立浩",
-     "diagnosis": "Angina pectoris", "procedure": "Left heart cath."},
-    # 非時段
-    {"name": "黃鉦傑", "chart": "04697942", "doctor": "張獻元", "room": "H1",
-     "time": "1800", "second": None,
-     "diagnosis": "", "procedure": "", "note": "無資料病人"},
+     "diagnosis": "EP study/RFA > AV nodal dysfunction", "procedure": "PPM", "note": "晨"},
 ]
 
 LOG = []
@@ -166,24 +170,20 @@ def add_patient(page, patient, existing_charts):
     proc_json = build_json(proc, proc_id) if proc_id else ""
     note = patient.get("note", "")
 
-    # If procedure not in system, put it in note
     if proc and not proc_id:
         note = (note + " " + proc).strip() if note else proc
 
     log(f"  ADD: {patient['name']} ({chart}) {patient['room']} {patient['time']} {patient['doctor']}")
 
     try:
-        # Clear form
         page.click('input[name="patno2"]')
         time.sleep(0.5)
 
-        # Fill chart, press Enter for AJAX lookup
         page.fill('input[name="patno2"]', chart)
         time.sleep(0.3)
         page.press('input[name="patno2"]', 'Enter')
         time.sleep(2)
 
-        # Fill fields
         page.evaluate(f'() => {{ document.querySelector(\'input[name="inspectiondate"]\').value = "{CATHLAB_DATE}"; }}')
         page.fill('input[name="inspectiontime"]', patient["time"])
         page.select_option('select[name="examroom"]', value=room_code)
@@ -191,19 +191,16 @@ def add_patient(page, patient, existing_charts):
         if second_code:
             page.select_option('select[name="attendingdoctor2"]', value=second_code)
 
-        # Set pdijson/phcjson
         page.evaluate('''([dj, pj]) => {
             if (dj) document.querySelector('[name="pdijson"]').value = dj;
             if (pj) document.querySelector('[name="phcjson"]').value = pj;
         }''', [diag_json, proc_json])
 
-        # Set note if needed
         if note:
             page.fill('input[name="note"]', note)
 
         time.sleep(0.3)
 
-        # Submit ADD
         page.evaluate('''() => {
             document.HCO1WForm.buttonName.name = "ADD";
             document.HCO1WForm.buttonName.value = "ADD";
@@ -222,7 +219,6 @@ def add_patient(page, patient, existing_charts):
 
 
 def fix_diag(page, patient):
-    """UPT to set pdijson/phcjson after ADD"""
     chart = patient["chart"]
     diag = patient["diagnosis"]
     proc = patient["procedure"]
@@ -230,12 +226,11 @@ def fix_diag(page, patient):
     proc_id = PROC_IDS.get(proc, "")
 
     if not diag_id and not proc_id:
-        return  # Nothing to fix
+        return
 
     diag_json = build_json(diag, diag_id) if diag_id else ""
     proc_json = build_json(proc, proc_id) if proc_id else ""
 
-    # Click the row
     found = page.evaluate('''(chart) => {
         let rows = document.querySelectorAll("#row tr");
         for (let row of rows) {

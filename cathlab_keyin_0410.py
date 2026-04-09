@@ -46,12 +46,10 @@ PROC_IDS = {
 }
 
 # Fri schedule:
-# AM C2=詹世鴻  C1=陳儒逸(嘉)
-# PM C1=鄭朝允
-# 詹惠蘭 4/3已做 不排程 → skip
+# AM C2=詹世鴻  C1=陳儒逸(嘉)  PM H2=柯呈諭  PM C1=鄭朝允
 
 PATIENTS = [
-    # AM - 詹世鴻 C2
+    # AM - 詹世鴻 C2 (7 patients)
     {"name": "余鄭秀美", "chart": "04762762", "doctor": "詹世鴻", "room": "C2",
      "time": "0600", "second": None,
      "diagnosis": "CAD", "procedure": "Left heart cath."},
@@ -61,14 +59,30 @@ PATIENTS = [
     {"name": "黃淑佩", "chart": "07472739", "doctor": "詹世鴻", "room": "C2",
      "time": "0602", "second": None,
      "diagnosis": "CAD", "procedure": "Left heart cath."},
-    # AM - 陳儒逸 C1 (2nd=蘇奕嘉)
-    {"name": "郭黃惠霞", "chart": "13404922", "doctor": "陳儒逸", "room": "C1",
-     "time": "0600", "second": "蘇奕嘉",
-     "diagnosis": "", "procedure": "", "note": "無資料病人"},
+    {"name": "許志鋒", "chart": "02407466", "doctor": "詹世鴻", "room": "C2",
+     "time": "0603", "second": None,
+     "diagnosis": "CAD", "procedure": "Left heart cath.", "note": "4/7延後"},
+    {"name": "朱素蘭", "chart": "10335834", "doctor": "詹世鴻", "room": "C2",
+     "time": "0604", "second": None,
+     "diagnosis": "CAD", "procedure": "Left heart cath.", "note": "4/7改期"},
+    {"name": "陳雪紅", "chart": "06779181", "doctor": "詹世鴻", "room": "C2",
+     "time": "0605", "second": None,
+     "diagnosis": "Angina pectoris", "procedure": "Left heart cath."},
+    {"name": "郭榮財", "chart": "20926474", "doctor": "詹世鴻", "room": "C2",
+     "time": "0606", "second": None,
+     "diagnosis": "CAD", "procedure": "Left heart cath."},
+    # AM - 陳儒逸 C1 (2nd=蘇奕嘉, 2 patients)
     {"name": "鄭能慧", "chart": "00790747", "doctor": "陳儒逸", "room": "C1",
+     "time": "0600", "second": "蘇奕嘉",
+     "diagnosis": "CAD", "procedure": "Left heart cath."},
+    {"name": "郭黃惠霞", "chart": "13404922", "doctor": "陳儒逸", "room": "C1",
      "time": "0601", "second": "蘇奕嘉",
      "diagnosis": "CAD", "procedure": "Left heart cath."},
-    # PM - 鄭朝允 C1
+    # PM - 柯呈諭 H2 (1 patient)
+    {"name": "莊再發", "chart": "02177819", "doctor": "柯呈諭", "room": "H2",
+     "time": "1730", "second": None,
+     "diagnosis": "CAD", "procedure": "Left heart cath."},
+    # PM - 鄭朝允 C1 (3 patients)
     {"name": "劉富欽", "chart": "16160484", "doctor": "鄭朝允", "room": "C1",
      "time": "1730", "second": None,
      "diagnosis": "CAD", "procedure": "Left heart cath."},

@@ -17,8 +17,8 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
    - 搜尋框 ID: `txtChartNo`
    - EMR frame 結構：`top.aspx`(病人資料) → `list3.aspx`(就醫紀錄樹) → content frame(SOAP note)
    - **搜尋策略**（依優先順序）：
-     1. 心臟血管科門診紀錄
-     2. 同一位主治醫師的門診紀錄（不限科別）
+     1. **主治醫師本人**的最新門診紀錄（不限科別）← 最優先！
+     2. 心臟血管科任何醫師的門診紀錄
      3. 任何門診紀錄
    - 從 `top.aspx` 取得正確姓名，與 Sheet 比對並更新錯誤名字
 
@@ -30,8 +30,13 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
    四、本次住院計畫
    ```
 
-4. **自動寫入 Sheet**（不需再問使用者確認）：
-   - C 欄 = 完整 EMR 原文
+4. **C 欄原文只保留 SOAP 四區塊**：
+   - [Diagnosis]、[Subjective]、[Objective]、[Assessment & Plan]
+   - **砍掉不要的**：[檢驗報告]、[Medicine]、[Plan : 依類別]、掛號作業、執行時間
+   - 碰到這些標記時截斷，不繼續擷取
+
+5. **自動寫入 Sheet**（不需再問使用者確認）：
+   - C 欄 = SOAP 四區塊原文（已清理雜訊）
    - D 欄 = 四段式摘要
    - 無紀錄 → C 欄寫「無本院一年內主治醫師門診紀錄」
 
