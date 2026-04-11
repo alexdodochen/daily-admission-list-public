@@ -187,17 +187,26 @@
 步驟五：LINE 推播入院序
 --------------------------------------------
   每天 07:50 自動推播當日入院序到「成醫-心內」LINE 群組
+  週六 07:50 自動推播離週六最近一天的入院序（先查週日，沒有再查週一...）
 
-  推播格式（純文字，方便群組成員複製）：
+  推播內容只有 N-Q 四欄（住服需要的資訊）：
     📋 2026/04/07（二）入院名單
 
-    1. 詹世鴻 - 施焱騰（之前無床延期）17131818
-    2. 黃睦翔 - 曾永雄（3/31無床延期）20192163
+    1. 詹世鴻 - 施焱騰（請盡量9B 非導管床）
+    2. 黃睦翔 - 曾永雄
     ...
 
-  欄位：序號、主治醫師、病人姓名、（備註）、病歷號
-  排程：cron-job.org 每天 07:50 呼叫 /trigger-admission
-  程式：admission_push.py（讀取 Google Sheet N-V 欄）
+  欄位：序號、主治醫師、病人姓名、備註(住服)
+  備註(住服) 來自 Q 欄（不是 R 欄的備註）
+
+  排程（cron-job.org）：
+    主 job：每天 07:50 /trigger-admission
+    備援：  每天 07:55 /trigger-admission（防 Render 休眠 503）
+    週六主：07:50 /trigger-admission-weekend
+    週六備：07:55 /trigger-admission-weekend
+    ─ Redis dedup 防止重複推播（07:50 成功 → 07:55 自動跳過）
+
+  程式：admission_push.py（讀取 Google Sheet N-Q 欄）
   Bot：NCKUH-CV-CYChen（@500wcxsy，獨立 LINE Official Account）
 
   手動觸發：
@@ -205,8 +214,9 @@
     可加 &date=20260407 指定日期
 
   【安全規則】
-  未經使用者明確許可，不得推播到成醫-心內群組。
-  只有 07:50 自動推播是預先授權的。
+  未經使用者明確許可，Claude 不得自行觸發推播到成醫-心內群組。
+  只有 cron-job.org 自動排程是預先授權的。
+  Claude 修改程式碼可以，但絕對不能自己打推播 endpoint。
 
 --------------------------------------------
 步驟六：心導管排程 key-in [skill: admission-cathlab-keyin]
