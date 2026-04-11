@@ -45,7 +45,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 
 Full details in `每日入院清單工作流程.txt`. Critical rules:
 
-1. **Ordering columns N–U (8 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 (user has corrected this multiple times — do not reorder, do not omit 病歷號)
+1. **Ordering columns N–V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服.
 2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
 2a. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 3. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
@@ -79,8 +79,8 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 Columns A–L (row 1 = header, row 2+ = patients):
   Main patient data from OCR (12 columns). Col J=病歷號碼, Col L=入院提示
 
-Columns N–T (row 1 = header, row 2+ = ordered list):
-  序號 | 主治醫師 | 病人姓名 | 備註 | 術前診斷 | 預計心導管 | 每日續等清單
+Columns N–V (row 1 = header, row 2+ = ordered list):
+  序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單
 
 Below main data: Doctor sub-tables (8 cols A–H per doctor block):
   [Doctor title row, merged]  e.g. "柯呈諭（2人）"
