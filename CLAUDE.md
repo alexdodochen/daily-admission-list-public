@@ -17,11 +17,13 @@ Hospital admission list management system for a cardiology department (成大醫
 
 ## Architecture
 
-All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format/dropdown helpers). The typical data flow:
+All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format/dropdown helpers). Each workflow step has a corresponding skill in `.claude/skills/`. The typical data flow:
 
-1. **Image → Sheet**: OCR screenshot → write patient data to columns A–L of a date sheet (e.g., `20260408`)
-2. **Lottery → Ordering**: `generate_ordering.py` reads doctor sub-tables (below main data), applies round-robin, writes N–T columns
-3. **Cathlab keyin**: Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
+1. **Image → Sheet** (`admission-image-to-excel`): OCR screenshot → write patient data to columns A–L of a date sheet (e.g., `20260408`). If the date sheet already exists, performs **diff-update** (match by 病歷號 → add new / remove cancelled / preserve existing EMR/F/G/ordering).
+2. **Lottery** (`admission-lottery`): Random draw → doctor sub-tables (A–H below main data) + round-robin ordering (N–P)
+3. **EMR extraction** (`admission-emr-extraction`): Playwright reads Web EMR (`http://hisweb.hosp.ncku/Emrquery/`) → writes C/D cols in sub-tables → auto-prefills F/G
+4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–V columns
+5. **Cathlab keyin** (`admission-cathlab-keyin`): Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
