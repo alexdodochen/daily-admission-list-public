@@ -28,3 +28,7 @@
 - [術前診斷下拉清單必須包含 CAD](feedback_dropdown_cad.md) — 即使 CAD 是母分類，user 仍要在 `下拉選單!A2:A66` 保留為可選項
 - [入院名單工作表格式統一規範](feedback_sheet_formatting.md) — 主表+所有子表區塊統一藍標題/白資料/邊框/全部靠左/G欄≥160；參考 4/13
 - [入院清單變動差異更新](feedback_admission_list_update.md) — 同日期新截圖要做 diff，保留 EMR/F/G/入院序，僅增刪變動病人
+- [子表格識別標頭](feedback_subtable_marker.md) — 整理主治醫師清單時在子表格第一列加識別字串方便定位
+- [星期五入院導管排同日](feedback_friday_cathlab_same_day.md) — 週五入院 cathlab 也排同天週五（非 N+1 週六）
+- [李柏增 2026/08 前不 key-in](feedback_libenzeng_skip.md) — 202608 前 李柏增 不填入主刀/第二主刀欄位
+- [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-V 入院序

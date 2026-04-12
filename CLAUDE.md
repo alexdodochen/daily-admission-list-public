@@ -37,7 +37,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 - `cathlab_page.html` — Saved HTML of WEBCVIS cathlab system for form field analysis.
 - `cathlab_id_maps.json` — pdijson/phcjson ID mappings (diagnosis→PDI ID, procedure→PHC ID).
 - `schedule_readable.txt` — Human-readable doctor schedule table (Mon–Fri, AM/PM rooms).
-- `verify_cathlab.py` — Verify all admission patients appear in next-day WEBCVIS cathlab schedule. Usage: `python verify_cathlab.py 20260409`
+- `verify_cathlab.py` — Verify all admission patients appear in the corresponding WEBCVIS cathlab schedule. Reads from **sub-table (統整資料)**, not N-V (which is a住服 subset). Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`
 
 ## Workflow (6 steps)
 
@@ -51,7 +51,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
 3. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 4. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
-5. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1
+5. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1. **Exception**: Friday admissions → Friday cathlab (same day, since Saturday has no schedule).
 6. **Cathlab safety**: Only add new entries, never modify or delete existing ones
 7. **Cathlab times**: scheduled AM=0600+, scheduled PM=1800+, non-schedule=H1 2100+ (note="本日無時段")
 8. **No-data patients**: Still key into cathlab schedule at doctor's time slot, note="無資料病人"

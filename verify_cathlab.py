@@ -1,7 +1,11 @@
 """
-驗證導管排程：比對入院序 (Sheet N-U) vs WEBCVIS 隔日排程
+驗證導管排程：比對子表格（統整資料）vs WEBCVIS 排程
 用法: python verify_cathlab.py 20260409
-  → 讀取 20260409 入院序，查 20260410 WEBCVIS 排程，輸出比對結果
+  → 讀取 20260409 子表格病人清單，查對應 WEBCVIS 排程日，輸出比對結果
+
+資料來源：子表格（主治醫師病人清單），欄位 A=姓名 B=病歷號 F=術前診斷 G=預計心導管 H=註記。
+子表格位置：日期工作表中的「X人）」title 行以下、空白行為區塊界線。
+不使用 N-V 入院序欄位（那是住服通知清單，是子表格的子集）。
 """
 import sys
 import time
@@ -18,36 +22,52 @@ SKIP_KEYWORDS = ["不排程", "檢查"]
 
 
 def get_cathlab_date(admission_date_str):
-    """入院日+1 = 導管日"""
+    """入院日 → 導管日。一般 N→N+1；週五入院則當天（週六無排程）。"""
     dt = datetime.strptime(admission_date_str, "%Y%m%d")
-    cathlab_dt = dt + timedelta(days=1)
+    if dt.weekday() == 4:  # Friday
+        cathlab_dt = dt
+    else:
+        cathlab_dt = dt + timedelta(days=1)
     return cathlab_dt.strftime("%Y/%m/%d"), cathlab_dt.strftime("%m%d")
 
 
 def read_ordering(sheet_name):
-    """讀取 N-U 入院序，回傳病人列表"""
+    """讀取子表格（統整資料）病人清單，回傳病人列表。"""
     ws = get_worksheet(sheet_name)
     if not ws:
         raise ValueError(f"找不到工作表: {sheet_name}")
 
     data = read_all_values(ws)
     patients = []
+    current_doctor = ''
+    seq = 0
 
-    for row in data[1:]:  # skip header
-        if len(row) > 13 and row[13]:  # col N (index 13) = 序號
-            seq = row[13]
-            doctor = row[14] if len(row) > 14 else ''
-            name = row[15] if len(row) > 15 else ''
-            note = row[16] if len(row) > 16 else ''
-            chart = row[17] if len(row) > 17 else ''
-            diag = row[18] if len(row) > 18 else ''
-            cath = row[19] if len(row) > 19 else ''
+    for row in data:
+        r = row[:8] + [''] * (8 - len(row[:8]))
+        col_a = r[0].strip()
 
+        # Doctor title row: col A 含 "人）"
+        if '人）' in col_a:
+            current_doctor = col_a.split('（')[0].strip()
+            continue
+
+        # Sub-header row
+        if col_a == '姓名':
+            continue
+
+        # Patient row: A=name, B=chart, F=diag, G=cath, H=note
+        if col_a and r[1].strip() and current_doctor:
+            seq += 1
+            name = col_a
+            chart = r[1].strip()
+            diag = r[5].strip()
+            cath = r[6].strip()
+            note = r[7].strip()
             should_skip = any(kw in note for kw in SKIP_KEYWORDS)
 
             patients.append({
                 'seq': seq,
-                'doctor': doctor,
+                'doctor': current_doctor,
                 'name': name,
                 'note': note,
                 'chart': chart,
@@ -55,9 +75,6 @@ def read_ordering(sheet_name):
                 'cath': cath,
                 'skip': should_skip,
             })
-        else:
-            if not row[13] if len(row) > 13 else True:
-                break
 
     return patients
 
