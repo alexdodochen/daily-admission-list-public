@@ -6,7 +6,7 @@
 - [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）
 - [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師最後才加入，需問是否與每日續等清單合併
 - [入院序列清單欄位順序](feedback_ordering_columns.md) — N-V欄（9欄）：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單
-- [導管排程時間規則](feedback_cathlab_times.md) — PM用1730+、非時段H1 1800+、備註不排程直接跳過
+- [導管排程時間規則](feedback_cathlab_times.md) — PM用1800+、非時段H1 2100+、備註不排程直接跳過
 - [不在選單的項目填備註](feedback_cathlab_note_fallback.md) — 預計心導管不在WEBCVIS選單時，改填note欄位
 - [導管排程keyin成功流程](feedback_cathlab_keyin_flow.md) — 完整WEBCVIS自動化技術：ADD新增、UPT修改、dTree popup ID映射、常用PDI/PHC ID
 - [無資料病人仍排導管](feedback_nodata_still_keyin.md) — 無診斷/心導管的病人也要key入排程，照主治醫師時段排
@@ -24,3 +24,7 @@
 - [導管排程跳過檢查病人+第二醫師優先](feedback_cathlab_skip_exam.md) — 備註含「檢查」不排導管；第二醫師多人時葉立浩優先key，其餘放備註
 - [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄（已有則合併），純數字跳過
 - [星期五入院用星期五抽籤表](feedback_friday_admission_schedule.md) — 週五入院查週五時段表（週六無抽籤表）
+- [保留手動設定的入院序](feedback_preserve_manual_ordering.md) — 重新整理時若 N-V 欄已有資料視為手動敲定，不得重跑 round-robin 覆寫
+- [術前診斷下拉清單必須包含 CAD](feedback_dropdown_cad.md) — 即使 CAD 是母分類，user 仍要在 `下拉選單!A2:A66` 保留為可選項
+- [入院名單工作表格式統一規範](feedback_sheet_formatting.md) — 主表+所有子表區塊統一藍標題/白資料/邊框/全部靠左/G欄≥160；參考 4/13
+- [入院清單變動差異更新](feedback_admission_list_update.md) — 同日期新截圖要做 diff，保留 EMR/F/G/入院序，僅增刪變動病人

@@ -33,13 +33,8 @@ document.HCO1WForm.submit();
 
 ### 修改 (UPT)
 1. 點擊表格中的 row（JS 找 `#hes_patno` 匹配病歷號後 `row.click()`）→ 自動載入該 row 資料到表單
-2. 修改 pdijson、phcjson，**同時也填 prediagnosisitem 和 preheartcatheter**
+2. 修改需要的欄位（如 pdijson、phcjson、note）
 3. 提交 UPT：`buttonName.name = "UPT"; buttonName.value = "UPT"; submit()`
-4. **絕對不要用 SaveButton.click()**——SaveButton 的 jQuery handler 會從 ID 查出帶母清單前綴的名稱覆蓋 pdijson
-5. pdijson 的 name 只填子項目名稱（pAf, PSVT...），不填母清單前綴
-
-### 無時段主治醫師
-時間從 2100 起（2100, 2101, 2102...），備註（note 欄）填「本日無時段」
 
 ### pdijson / phcjson ID 映射
 術前診斷和預計心導管不是純文字，需要 JSON 格式 `[{"name":"CAD","id":"PDI20090908120009"}]`。
@@ -69,7 +64,7 @@ document.querySelectorAll("#row tr").forEach(row => {
 - 系統會跳 "資料內容是空的" 的 Message，但操作仍會成功
 - 不在 phcjson 選單的項目（如 Cardioversion）改填 `input[name="note"]` 備註欄
 - 李柏增不填入主刀/第二主刀醫師欄位
-- 有時段 AM 0600+，有時段 PM 1800+，無時段 H1 2100+（備註「本日無時段」）
+- AM 時間 0600+，PM 時間 1730+，非時段 H1 1800+
 
 **Why:** 第一次嘗試用 SaveButton 失敗（disabled），改用 AddButton+UPT 流程成功。popup ID 映射是關鍵步驟。
 **How to apply:** 每次導管排程 keyin 前先 scrape popup 頁面取最新 ID 映射，再逐筆 ADD+UPT。
