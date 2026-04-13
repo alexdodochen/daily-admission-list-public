@@ -8,7 +8,7 @@
 - [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）
 - [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師最後才加入，需問是否與每日續等清單合併
 - [入院序列清單欄位順序](feedback_ordering_columns.md) — N-W欄（10欄）：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單|改期
-- [導管排程時間規則](feedback_cathlab_times.md) — PM用1800+、非時段H1 2100+、備註不排程直接跳過
+- [導管排程時間規則](feedback_cathlab_times.md) — AM 0600+、PM 1800+、非時段H1 2100+（備註「本日無時段」）、備註含「檢查」跳過
 - [不在選單的項目填備註](feedback_cathlab_note_fallback.md) — 預計心導管不在WEBCVIS選單時，改填note欄位
 - [導管排程keyin成功流程](feedback_cathlab_keyin_flow.md) — 完整WEBCVIS自動化技術：ADD新增、UPT修改、dTree popup ID映射、常用PDI/PHC ID
 - [無資料病人仍排導管](feedback_nodata_still_keyin.md) — 無診斷/心導管的病人也要key入排程，照主治醫師時段排

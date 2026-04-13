@@ -28,6 +28,8 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
+**Ephemeral artifacts** (do not commit): `_*.txt` debug dumps, `emr_data.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, and `cathlab_keyin_04XX.py` per-date scripts once the date has passed.
+
 ## Key Files
 
 - `gsheet_utils.py` — Shared Google Sheets module. Provides `get_worksheet()`, `write_range()`, `format_header_row()`, `write_doctor_table()`, `set_dropdown_from_range()`, etc. All scripts import from here.

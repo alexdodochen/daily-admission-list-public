@@ -6,6 +6,13 @@ _*.txt
 _*.html
 *.png
 *.zip
+*.jpg
+*.xlsx
+emr_data.json
+
+# Claude local
+.claude/settings.local.json
+.claude/worktrees/
 
 # Python
 __pycache__/
