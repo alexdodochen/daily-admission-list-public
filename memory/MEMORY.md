@@ -1,6 +1,8 @@
 # MEMORY INDEX
 
-- [EMR HTML 擷取範圍規則](feedback_emr_html_parsing.md) — 只看含 SOAP note 的 div.small，略過 iportlet-content / plan / medicine
+- [EMR 擷取範圍（SOAP only，截斷於 [Medicine]）](feedback_emr_html_parsing.md) — C 完整 SOAP、D 四段摘要，都不含藥品/檢驗/掛號
+- [建立新日期表必須先 unmerge](feedback_new_date_sheet_creation.md) — duplicate 後先 unmerge 全部 cells 才寫入，不然合併列會吃掉 B-H 欄
+- [所有資料寫 Google Sheet 不寫本地 xlsx](feedback_all_data_to_google_sheet.md) — 入院清單/EMR/排程只寫 Google Sheet，admission-image-to-excel skill 名稱誤導
 - [EMR 資料驗證](feedback_emr_validation.md) — 病歷號↔姓名吻合才寫入，不符合要標記錯誤
 - [無資料病人工作表功能](feedback_no_data_patients.md) — H欄寫「無資料病人」→一聲令下整理到無資料病人工作表（取代模式）
 - [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）

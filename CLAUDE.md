@@ -77,21 +77,27 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 - **Popup pages**: HCO1N002.do (diagnosis tree), HCO1N004.do (procedure tree), HCO1N001.do (registration codes) — set values directly via JS to avoid popup handling
 - **SaveButton**: jQuery click handler must fire (sets `finishjson`/`refernojson`) — use `page.click('#SaveButton')`, not manual form submit
 
-## Sheet Layout (date sheets like `20260408`)
+## Sheet Layout (date sheets like `20260420`)
+
+Current layout (since ~2026-04 — note: older sheets like `20260330` used a different column order):
 
 ```
-Columns A–L (row 1 = header, row 2+ = patients):
-  Main patient data from OCR (12 columns). Col J=病歷號碼, Col L=入院提示
+Main data columns A–L (row 1 = header, row 2+ = patients):
+  A=實際住院日 | B=開刀日 | C=科別 | D=主治醫師 | E=主診斷(ICD) | F=姓名
+  G=性別 | H=年齡 | I=病歷號碼 | J=病床號 | K=入院提示 | L=住急
 
 Columns N–V (row 1 = header, row 2+ = ordered list):
-  序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單
+  N=序號 | O=主治醫師 | P=病人姓名 | Q=備註(住服) | R=備註
+  S=病歷號 | T=術前診斷 | U=預計心導管 | V=每日續等清單
 
 Below main data: Doctor sub-tables (8 cols A–H per doctor block):
   [Doctor title row, merged]  e.g. "柯呈諭（2人）"
-  [Sub-header row]            姓名|病歷號|EMR|EMR摘要|手動設定入院序|術前診斷|預計心導管|註記
+  [Sub-header row]            A=姓名 | B=病歷號 | C=EMR | D=EMR摘要 | E=手動設定入院序 | F=術前診斷 | G=預計心導管 | H=註記
   [Patient rows]
   [blank row gap]
 ```
+
+**Creating a new date sheet** — duplicate a recent sheet → `unmergeCells` on the entire range → `batch_clear` → write new main data → build doctor sub-tables with `write_doctor_table`. The unmerge step is critical: merged title rows from the source sheet (e.g. "李文煌（1人）" at A:H) will otherwise swallow writes to the patient data row at the same index.
 
 `generate_ordering.py` parses these sub-tables by detecting "X人）" title patterns.
 

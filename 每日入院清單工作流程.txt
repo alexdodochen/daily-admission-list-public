@@ -128,18 +128,22 @@
      三、客觀檢查
      四、本次住院計畫
   4. 寫入醫師病人表格 C/D 欄
-     C 欄=完整 EMR 原文（可收縮）
-     D 欄=四段式摘要
+     C 欄=完整 SOAP（門診 header + [Diagnosis][Subjective][Objective][Assessment & Plan]），
+          截斷於 [Medicine]，不含藥品/檢驗/掛號
+     D 欄=四段式摘要（內容也從截斷過的 SOAP 取得，同樣不含藥品之後的資料）
   5. 無紀錄 → C 欄寫「無本院一年內主治醫師門診紀錄」
+  6. 主治醫師無門診紀錄時 → fallback 到最近一筆「心臟血管科」門診
+     （如 20260420 黃蕭素/戴宗訓 的主治是陳則瑋但實際由劉秉彥看診）
 
   技術補充：
-  - 病人姓名位置：EMR frame.aspx 頁面的 <span id="divUserSpec">
-    格式：「姓名 : XXX , 生日 : ... , 性別 : ...」
-    用 CSS selector #divUserSpec 取得後解析姓名欄位
-  - 用本地 HTTP server (port 18234) 匯出 EMR 資料
+  - 本地 HTTP server (port 18234) 或 Playwright 帶 session URL 兩種抓取方式
+  - Playwright 方式：user 先手動登入後貼 session URL（含 (S(xxx))），
+    Claude 用該 URL 導航並在 topFrame/leftFrame/mainFrame 中互動
+  - leftFrame 載入較慢，需 `wait_for_function` 直到 `<a>` 出現（至少 3 秒）
   - 首次批次完成後會重試載入失敗的病人
-  - 會檢測並修正重複資料（兩人拿到同一份 EMR）
-  - EMR 只看含 SOAP note 的 div.small，略過 iportlet-content
+  - EMR 切斷規則（兩欄都要套用）：遇到 `[Medicine]`、`[Plan : 依類別]`、
+    `-------藥品-------`、`-------檢驗-------`、`-------其他-------` 就截斷
+  - 不要 print 含 \xa0 的字串到終端（cp950 會 crash），只寫 UTF-8 log 檔
 
 
 ============================================
