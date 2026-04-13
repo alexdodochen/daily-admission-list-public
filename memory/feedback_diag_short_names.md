@@ -21,6 +21,6 @@ type: feedback
 
 **How to apply:**
 1. 從 Google Sheet F 欄讀取術前診斷時，如含 ` > `，只取後半段
-2. 寫入 N-V 入院序列的術前診斷欄時用短名
+2. 寫入 N-W 入院序列的術前診斷欄時用短名
 3. 導管排程 key-in 時，用短名查 cathlab_id_maps.json（已有短名 alias）
 4. LINE 推播如有包含診斷也用短名

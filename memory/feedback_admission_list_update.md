@@ -21,10 +21,10 @@ type: feedback
 4. **取得 user 確認** → 確認新增/取消後才動手
 5. **執行更新**：
    - 新增的病人：append 到主表 A-L 末尾、append 到對應醫師子表格底下、跑 EMR 摘要、預填 F/G dropdown
-   - 取消的病人：從主表 A-L 刪除該 row、從醫師子表格刪除對應 row、從 N-V 入院序刪除
+   - 取消的病人：從主表 A-L 刪除該 row、從醫師子表格刪除對應 row、從 N-W 入院序刪除
    - 保留的病人：**完全不動**（EMR 摘要、F/G 值、入院序、註記都保留）
 6. **重新整理格式**：依照 `feedback_sheet_formatting.md` 規範套用統一格式（藍標題、白資料、邊框、靠左、F/G dropdown、空白行白底、欄寬）
-7. **重新計算 N-V 入院序**：
+7. **重新計算 N-W 入院序**：
    - 若 user 已手動設定過入院序（依 `feedback_preserve_manual_ordering.md`），詢問是否要重跑
    - 否則跑 round-robin：保留的病人沿用、新病人插入、取消的拿掉
 8. **報告差異** → 列出本次新增 X 人、取消 Y 人、保留 Z 人，並提示 user 是否重跑抽籤/EMR/排程
