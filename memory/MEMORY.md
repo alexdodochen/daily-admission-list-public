@@ -37,3 +37,4 @@
 - [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-W 入院序
 - [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
 - [改期 W 欄在 ordering 區塊](feedback_reschedule_w_in_ordering.md) — 手動寫 W 要比對 P 姓名/S 病歷號找 ordering row，不能用主資料 row 編號
+- [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
