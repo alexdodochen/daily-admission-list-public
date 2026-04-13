@@ -36,6 +36,17 @@ document.HCO1WForm.submit();
 2. 修改需要的欄位（如 pdijson、phcjson、note）
 3. 提交 UPT：`buttonName.name = "UPT"; buttonName.value = "UPT"; submit()`
 
+### 刪除 (DEL) — 改期同步用
+**關鍵**：server 靠 row 的 `<input name="chk" value="{index}">` 勾選狀態決定要刪哪筆。直接 `form.submit()` with `buttonName="DEL"` **不會刪任何東西**（因為 chk[] 空）。
+
+正確流程：
+1. `page.on("dialog", lambda d: d.accept())` — 先註冊 confirm() 自動按確定
+2. JS 找到目標 row：`row.querySelector('input[name="chk"]')` → `cb.checked = true; cb.onclick()`（onclick 會呼叫 `checkedShowButton()` 自動 enable `#deleteButton`）
+3. `page.click('#deleteButton')` → 觸發 `deleteMsg()` confirm() → 送出 form with `buttonName=DEL`
+4. 等 networkidle + sleep 1s，再 QRY 驗證該 chart 消失
+
+實作位置：`reschedule_webcvis.py` 的 `check_row_checkbox()` + `submit_del()`。
+
 ### pdijson / phcjson ID 映射
 術前診斷和預計心導管不是純文字，需要 JSON 格式 `[{"name":"CAD","id":"PDI20090908120009"}]`。
 

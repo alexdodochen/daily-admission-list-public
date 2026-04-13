@@ -34,3 +34,4 @@
 - [星期五入院導管排同日](feedback_friday_cathlab_same_day.md) — 週五入院 cathlab 也排同天週五（非 N+1 週六）
 - [李柏增 2026/08 前不 key-in](feedback_libenzeng_skip.md) — 202608 前 李柏增 不填入主刀/第二主刀欄位
 - [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-V 入院序
+- [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
