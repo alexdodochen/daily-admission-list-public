@@ -21,7 +21,6 @@
   步驟四 → admission-ordering
   步驟五 → admission-line-push
   步驟六 → admission-cathlab-keyin
-  改期   → admission-reschedule
 
 【進度追蹤】
   每次回覆 Claude 都會顯示工作流進度條：
@@ -184,7 +183,7 @@
      ─ 病歷號：以文字格式儲存（保留前導零）
      ─ 術前診斷：只用子項目名稱（如 pAf），不需母清單前綴
      ─ 每日續等清單：你填 1 = 標記要搬到續等清單
-     ─ 改期：你填 YYYYMMDD = 標記要改期至該日，由 reschedule 腳本搬運
+     ─ 改期：你填 YYYYMMDD = 純人工註記，表示此病人不做 N+1 cathlab（另行處理）
 
 --------------------------------------------
 步驟 4.2：抽籤每日續等主治醫師入院順位
@@ -284,77 +283,21 @@
   - 已存在的病人不重複新增
   - 主治醫師欄位（主刀/第二主刀）不填入李柏增（2026/08 前；2026/08 後需重新確認）
 
-  【張獻元週二病人同日下午規則】
-  - 張獻元的病人在週二入院時：
-    ─ 註記欄（H）無「王思翰」「張倉惟」字樣 → 週二下午同日做導管（張獻元自己的時段）
-    ─ 註記含「王思翰」→ 跟王思翰時段排（通常週三 AM）
-    ─ 註記含「張倉惟」→ 跟張倉惟時段排
-  - 這是張獻元 PAD/PTA 常規：同日 AM 入院，PM 直接做
-  - verify_cathlab.py 預期這些病人出現在「入院日當天」的 WEBCVIS，非 N+1
+  【張獻元週二病人規則】
+  張獻元的病人，週二入院時：
+  - 註記欄（H）無「王思翰」「張倉惟」字樣 → 週二下午同日做導管（張獻元自己的週二時段）
+  - 註記含「王思翰」或「張倉惟」→ 週三（N+1）用張獻元的週三導管時段做
+    （王思翰/張倉惟 沒有獨立時段，是借張獻元的時段）
+  - 兩種情境都 key 在「attendingdoctor=張獻元」，只差時段/日期
 
 --------------------------------------------
-改期流程：病人入院日變更 [skill: admission-reschedule]
+改期註記（W 欄）
 --------------------------------------------
-  使用時機：
-  - 某病人原訂日期要改到另一天
-  - 原日期 Sheet 已經跑完入院序、甚至已 key 進 WEBCVIS
-
-  你的操作：
-  1. 在來源日 sheet 的 W 欄（改期）填入目標日期 YYYYMMDD
-     （可一次填多位病人到不同日期）
-  2. 告訴 Claude：「幫我處理 20260413 的改期」
-
-  Claude 會（reschedule_patients.py <source_date>）：
-  1. 掃 W 欄，找所有「看起來是日期」且不是「已改期至...」的 row
-  2. 對每位病人：
-     ─ 由 S 欄（病歷號）對回主表 A-L
-     ─ 由 sub-table 用病歷號找到 C/D（EMR/摘要）+ F/G（診斷/導管）+ H（註記）
-     ─ 目標日 sheet 若不存在 → 自動建立（以最近一份 YYYYMMDD 為範本 duplicate + unmerge + clear，只留 header）
-     ─ A-L append 到目標日主表最後
-     ─ 找目標日的對應醫師子表格 → 用 insert_row 塞到該醫師病人區尾
-       同步把標題「X人）」+1
-       若目標日無此醫師 → 在最後一個子表後新增一個完整醫師模塊
-     ─ 目標日 W 欄 header 若缺 → 補寫「改期」
-     ─ 來源日該 row 的 W 欄改為「已改期至 YYYYMMDD」（標記保留）
-  3. 寫結果到 _reschedule_result.txt
-
-  *** 搬移完成後，Claude 不會自動重跑目標日入院序 ***
-  *** 你必須手動到目標日說「自動生成入院序」重跑 ***
-
-  Claude 會（reschedule_webcvis.py <source_date>）：源日 cathlab DEL
-  1. 同樣掃 W 欄找改期清單（只處理「已改期至...」標記的 row，
-     因為這代表 Sheet 已搬移完成）
-  2. 登入 WEBCVIS，掛上 confirm() 對話框自動處理
-  3. 查源日對應的 cathlab 日（平日 N+1，週五同日）
-  4. 對每位病人（每筆都 pause 等 Enter 確認後才執行）：
-     ─ 點該 row 秀出當前欄位（date/time/room/doctor/diag/proc/note）
-     ─ 勾選該 row 的 chk checkbox（checkedShowButton 會 enable #deleteButton）
-     ─ click #deleteButton → 系統跳 confirm() 被自動 accept → DEL 送出
-     ─ 重新 QRY 驗證該病人已消失
-  5. 第一次使用時加 --dry-run 只 print 動作不真的送出，
-     或只處理第一位病人驗證 DEL 確實生效
-  6. 已經 dry-run 驗過、3 筆以上一次要跑完 → 加 --yes 跳過逐筆確認
-
-  Claude 會（reschedule_add.py）：目標日 cathlab ADD
-  1. 腳本內 PATIENTS list 每位病人自帶 cathlab_date（因為 3 位病人可能改到不同天）
-  2. 資料來源：目標日 sheet 的主治醫師子表格（統整資料）F/G 欄，不是 N-V 入院序
-  3. 房間/時段決定：
-     ─ 查 schedule_readable.txt，看該醫師在目標 cathlab 日那格有無名字
-     ─ 有名字 → 走該房間正常時段（AM 0600+ / PM 1800+）
-     ─ 結構日（黃睦翔 Wed/Thu PM H2 結構）仍然是正式時段，照排不誤
-     ─ 格子沒名字 → H1 2100+ 非時段 + note="本日無時段"
-     ─ 第二醫師多人並列（如浩、晨）→ 葉立浩優先 key attendingdoctor2，其餘放備註
-  4. 登入一次 → Phase 1 逐筆 set_date_and_query(cathlab_date) → ADD
-                → Phase 2 逐筆 set_date_and_query(cathlab_date) → UPT 補 pdijson/phcjson
-                → Verification 逐筆 QRY 確認 chart 存在
-  5. 結果寫 _reschedule_add.log
-
-  【安全規則】
-  - reschedule_patients.py 純 Sheet 操作，來源 row 不刪只標記
-  - reschedule_webcvis.py 會真的 DEL WEBCVIS 資料，預設每筆需 Enter 確認
-  - 只有已先 --dry-run 驗過才用 --yes 一次跑完
-  - reschedule_add.py 執行前務必先確認每位病人的 cathlab_date、醫師時段、F/G 正確
-  - DEL 技術關鍵：一定要勾 row chk checkbox，不能直接 form.submit() with DEL
+  W 欄填 YYYYMMDD 純屬人工註記，表示該病人不做原訂 N+1 cathlab
+  （另行處理，Claude 不自動搬 sheet / 不自動 DEL/ADD WEBCVIS）。
+  - cathlab keyin 與 verify_cathlab.py 會把有 W 值的 ordering row 視為 skip
+  - 手動寫 W 必須透過 P 欄姓名 / S 欄病歷號比對 ordering row
+    （round-robin 打散後 row 順序與主資料不同，不能直接用主資料 row 編號）
 
 
 ============================================
@@ -375,8 +318,6 @@
   「整合定案」
   「導管排程」
   「推播入院名單」或「測試推播」
-  「幫我處理 YYYYMMDD 的改期」（搬 Sheet）
-  「改期的 WEBCVIS 也同步」（WEBCVIS DEL+ADD）
   「更新工作流程」
 
   多天一起處理：
@@ -412,8 +353,7 @@
           V=每日續等清單  W=改期
           S 欄=病歷號（文字格式，保留前導零）
           V 欄填 1 → 標記加入每天續等清單，等你指示後搬移
-          W 欄填 YYYYMMDD → 由 reschedule_patients.py 搬到該日
-              搬完後 W 欄會被改為「已改期至 YYYYMMDD」保留痕跡
+          W 欄填 YYYYMMDD → 人工改期註記（不做 N+1 cathlab，另行處理）
     資料下方 = 各醫師病人表格（8 欄 A-H）
       A=姓名  B=病歷號  C=EMR  D=EMR摘要
       E=手動設定入院序  F=術前診斷(下拉)  G=預計心導管(下拉)  H=註記

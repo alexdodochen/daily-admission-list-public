@@ -24,7 +24,8 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 3. **EMR extraction** (`admission-emr-extraction`): Playwright reads Web EMR (`http://hisweb.hosp.ncku/Emrquery/`) → writes C/D cols in sub-tables → auto-prefills F/G
 4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–W columns
 5. **Cathlab keyin** (`admission-cathlab-keyin`): Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
-6. **Reschedule** (`admission-reschedule`): Three-stage flow. (a) `reschedule_patients.py <source_date>` migrates patient to target date's sheet (main data + doctor sub-table, auto-creating missing doctor blocks / target sheet), marks source W as「已改期至 YYYYMMDD」. (b) `reschedule_webcvis.py <source_date> [--yes]` DELs the patient from source date's cathlab — critical: must tick the row's `chk` checkbox (which enables `#deleteButton` via `checkedShowButton`) and register a `page.on("dialog", accept)` handler for the confirm() popup; submitting the form directly with `buttonName="DEL"` does **nothing** because the server reads the chk[] array. (c) `reschedule_add.py` ADDs each patient to their own target cathlab date (per-patient `cathlab_date`), using sub-table F/G as source and `schedule_readable.txt` + structural-day rule for room/time.
+
+**Reschedule is a manual flag, not a feature.** W 欄填入 YYYYMMDD 的 row 表示「該病人不做當日的 N+1 cathlab」— 使用者自行決定如何另行處理（手動加排/手動通知）。沒有自動搬 sheet、沒有自動 DEL/ADD WEBCVIS、沒有子表格異動。cathlab keyin 和 verify 兩側都必須把 W 有值的 row 當作 skip。
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
@@ -42,8 +43,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 - `cathlab_page.html` — Saved HTML of WEBCVIS cathlab system for form field analysis.
 - `cathlab_id_maps.json` — pdijson/phcjson ID mappings (diagnosis→PDI ID, procedure→PHC ID).
 - `schedule_readable.txt` — Human-readable doctor schedule table (Mon–Fri, AM/PM rooms). A named cell = that doctor has a slot that day, even if tagged like "結構", "齡", "寬" — those are secondary-doctor / theme annotations, not "no slot".
-- `verify_cathlab.py` — Verify all admission patients appear in the corresponding WEBCVIS cathlab schedule. Reads from **sub-table (統整資料)**, not N-V (which is a住服 subset). Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`
-- `reschedule_patients.py` / `reschedule_webcvis.py` / `reschedule_add.py` — The three stages of the `admission-reschedule` flow (Sheet migration / source-cathlab DEL / target-cathlab ADD). See `memory/feedback_cathlab_keyin_flow.md` DEL section for the chk-checkbox trick.
+- `verify_cathlab.py` — Verify all admission patients appear in the corresponding WEBCVIS cathlab schedule. Reads from **sub-table (統整資料)**, cross-references N-W 的 W 欄（有值 → skip）。Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`
 
 ## Workflow (6 steps)
 
@@ -53,7 +53,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 
 Full details in `每日入院清單工作流程.txt`. Critical rules:
 
-1. **Ordering columns N–W (10 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. W 欄=改期：user 填 YYYYMMDD → 由 `reschedule_patients.py` 把該病人併到目標日 sheet，源日 W 標記為「已改期至 YYYYMMDD」(保留 row)。
+1. **Ordering columns N–W (10 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. **W 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 W 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
 2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
 3. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 4. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
@@ -69,6 +69,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 14. **Ordering timing**: Claude 必須等使用者手動確認 F/G 欄後才能寫入 N-U 欄
 15. **EMR prefill F/G**: EMR 摘要完成後自動預填術前診斷(F)和預計心導管(G)，列出讓使用者檢查
 16. **Second doctor priority**: 第二醫師多人時（如浩、晨），葉立浩優先 key attendingdoctor2，其餘放備註
+17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-W ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。
 
 ## WEBCVIS Cathlab System
 

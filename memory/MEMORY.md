@@ -36,5 +36,5 @@
 - [李柏增 2026/08 前不 key-in](feedback_libenzeng_skip.md) — 202608 前 李柏增 不填入主刀/第二主刀欄位
 - [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-W 入院序
 - [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
-- [改期 W 欄在 ordering 區塊](feedback_reschedule_w_in_ordering.md) — 手動寫 W 要比對 P 姓名/S 病歷號找 ordering row，不能用主資料 row 編號
 - [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
+- [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾

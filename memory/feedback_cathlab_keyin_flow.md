@@ -45,7 +45,7 @@ document.HCO1WForm.submit();
 3. `page.click('#deleteButton')` → 觸發 `deleteMsg()` confirm() → 送出 form with `buttonName=DEL`
 4. 等 networkidle + sleep 1s，再 QRY 驗證該 chart 消失
 
-實作位置：`reschedule_webcvis.py` 的 `check_row_checkbox()` + `submit_del()`。
+（舊 reschedule_webcvis.py 已移除；若未來需要 DEL 按此模式重寫即可）
 
 ### pdijson / phcjson ID 映射
 術前診斷和預計心導管不是純文字，需要 JSON 格式 `[{"name":"CAD","id":"PDI20090908120009"}]`。
