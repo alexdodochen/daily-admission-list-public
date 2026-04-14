@@ -19,16 +19,26 @@ ACCOUNT = "107614"
 PASSWORD = "107614"
 
 SKIP_KEYWORDS = ["不排程", "檢查"]
+ZHANG_BORROWED_BY = ["王思翰", "張倉惟"]
 
 
-def get_cathlab_date(admission_date_str):
-    """入院日 → 導管日。一般 N→N+1；週五入院則當天（週六無排程）。"""
+def get_cathlab_date_for_patient(admission_date_str, doctor, note):
+    """回傳該 patient 的 cathlab 日期（Y/M/D 字串）。
+    規則：
+    - 週五入院 → 同日
+    - 張獻元週二入院 + 註記無 王思翰/張倉惟 → 同日 PM（張獻元週二自己時段）
+    - 其他 → N+1
+    """
     dt = datetime.strptime(admission_date_str, "%Y%m%d")
-    if dt.weekday() == 4:  # Friday
-        cathlab_dt = dt
+    wd = dt.weekday()
+
+    if wd == 4:  # Friday
+        cath = dt
+    elif doctor == '張獻元' and wd == 1 and not any(k in note for k in ZHANG_BORROWED_BY):
+        cath = dt  # Tuesday same-day
     else:
-        cathlab_dt = dt + timedelta(days=1)
-    return cathlab_dt.strftime("%Y/%m/%d"), cathlab_dt.strftime("%m%d")
+        cath = dt + timedelta(days=1)
+    return cath.strftime("%Y/%m/%d")
 
 
 def read_rescheduled_charts(data):
@@ -98,13 +108,13 @@ def read_ordering(sheet_name):
     return patients
 
 
-def query_webcvis(cathlab_date):
-    """連線 WEBCVIS 查詢指定日期排程，回傳已排程病歷號 set"""
+def query_webcvis(cathlab_dates):
+    """連線 WEBCVIS 查詢多個日期排程，回傳 {date_str: set(charts)}。"""
+    results = {}
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, slow_mo=100)
         page = browser.new_context(viewport={"width": 1400, "height": 900}).new_page()
 
-        # Login
         page.goto(f"{BASE_URL}/")
         page.wait_for_load_state("networkidle", timeout=15000)
         page.fill('input[name="userid"]', ACCOUNT)
@@ -112,43 +122,42 @@ def query_webcvis(cathlab_date):
         page.click('input[type="submit"], button[type="submit"]')
         page.wait_for_load_state("networkidle", timeout=10000)
 
-        # Query
-        page.goto(SCHEDULE_URL)
-        page.wait_for_load_state("networkidle", timeout=10000)
-        time.sleep(1)
-        page.evaluate(f'''() => {{
-            let d1 = document.getElementById("daySelect1");
-            let d2 = document.getElementById("daySelect2");
-            d1.removeAttribute("readonly"); d2.removeAttribute("readonly");
-            d1.value = "{cathlab_date}"; d2.value = "{cathlab_date}";
-        }}''')
-        time.sleep(0.3)
-        page.evaluate('''() => {
-            document.HCO1WForm.buttonName.name = "QRY";
-            document.HCO1WForm.buttonName.value = "QRY";
-            document.HCO1WForm.submit();
-        }''')
-        page.wait_for_load_state("networkidle", timeout=10000)
-        time.sleep(1)
-
-        # Get existing charts
-        charts = page.evaluate('''() => {
-            let c = [];
-            document.querySelectorAll("#row tr").forEach(r => {
-                let el = r.querySelector("#hes_patno");
-                if (el && el.value) c.push(el.value.trim());
-            });
-            if (c.length === 0) {
-                document.querySelectorAll("#row td").forEach(td => {
-                    let t = td.textContent.trim();
-                    if (/^\\d{7,8}$/.test(t)) c.push(t);
+        for d in cathlab_dates:
+            page.goto(SCHEDULE_URL)
+            page.wait_for_load_state("networkidle", timeout=10000)
+            time.sleep(1)
+            page.evaluate(f'''() => {{
+                let d1 = document.getElementById("daySelect1");
+                let d2 = document.getElementById("daySelect2");
+                d1.removeAttribute("readonly"); d2.removeAttribute("readonly");
+                d1.value = "{d}"; d2.value = "{d}";
+            }}''')
+            time.sleep(0.3)
+            page.evaluate('''() => {
+                document.HCO1WForm.buttonName.name = "QRY";
+                document.HCO1WForm.buttonName.value = "QRY";
+                document.HCO1WForm.submit();
+            }''')
+            page.wait_for_load_state("networkidle", timeout=10000)
+            time.sleep(1)
+            charts = page.evaluate('''() => {
+                let c = [];
+                document.querySelectorAll("#row tr").forEach(r => {
+                    let el = r.querySelector("#hes_patno");
+                    if (el && el.value) c.push(el.value.trim());
                 });
-            }
-            return c;
-        }''')
+                if (c.length === 0) {
+                    document.querySelectorAll("#row td").forEach(td => {
+                        let t = td.textContent.trim();
+                        if (/^\\d{7,8}$/.test(t)) c.push(t);
+                    });
+                }
+                return c;
+            }''')
+            results[d] = set(charts)
 
         browser.close()
-        return set(charts)
+    return results
 
 
 def main():
@@ -158,12 +167,10 @@ def main():
         sys.exit(1)
 
     admission_date = sys.argv[1]
-    cathlab_date, cathlab_mmdd = get_cathlab_date(admission_date)
 
     output = []
     output.append(f"=== 導管排程驗證 ===")
     output.append(f"入院日: {admission_date}")
-    output.append(f"導管日: {cathlab_date}")
     output.append("")
 
     # Step 1: Read ordering
@@ -173,14 +180,21 @@ def main():
 
     to_check = [p for p in patients if not p['skip']]
     skipped = [p for p in patients if p['skip']]
-    output.append(f"應排導管: {len(to_check)} 人")
+
+    # 每位 patient 的 cathlab date
+    for p in to_check:
+        p['cath_date'] = get_cathlab_date_for_patient(admission_date, p['doctor'], p['note'])
+
+    unique_dates = sorted(set(p['cath_date'] for p in to_check))
+    output.append(f"應排導管: {len(to_check)} 人 (涉及日期: {', '.join(unique_dates)})")
     output.append(f"預期不排: {len(skipped)} 人")
     output.append("")
 
     # Step 2: Query WEBCVIS
     output.append("--- 查詢 WEBCVIS ---")
-    webcvis_charts = query_webcvis(cathlab_date)
-    output.append(f"WEBCVIS 排程共 {len(webcvis_charts)} 筆")
+    webcvis_map = query_webcvis(unique_dates)
+    for d in unique_dates:
+        output.append(f"  {d}: {len(webcvis_map[d])} 筆")
     output.append("")
 
     # Step 3: Compare
@@ -188,22 +202,26 @@ def main():
     found = []
     missing = []
     for p in to_check:
-        if p['chart'] in webcvis_charts:
+        charts_that_day = webcvis_map.get(p['cath_date'], set())
+        if p['chart'] in charts_that_day:
             found.append(p)
         else:
             missing.append(p)
 
     for p in found:
-        output.append(f"  OK  {p['seq']:>2}. {p['doctor']} {p['name']} ({p['chart']}) {p['diag']}/{p['cath']}")
+        output.append(f"  OK  {p['seq']:>2}. [{p['cath_date']}] {p['doctor']} {p['name']} ({p['chart']}) {p['diag']}/{p['cath']}")
 
     for p in missing:
-        output.append(f"  NG  {p['seq']:>2}. {p['doctor']} {p['name']} ({p['chart']}) {p['diag']}/{p['cath']} [{p['note']}]")
+        output.append(f"  NG  {p['seq']:>2}. [{p['cath_date']}] {p['doctor']} {p['name']} ({p['chart']}) {p['diag']}/{p['cath']} [{p['note']}]")
 
     if skipped:
         output.append("")
-        output.append("--- 預期不排（備註含不排程/檢查）---")
+        output.append("--- 預期不排（備註含不排程/檢查/改期）---")
+        all_charts = set()
+        for s in webcvis_map.values():
+            all_charts |= s
         for p in skipped:
-            in_webcvis = "竟然在排程中!" if p['chart'] in webcvis_charts else "確認不在"
+            in_webcvis = "竟然在排程中!" if p['chart'] in all_charts else "確認不在"
             output.append(f"  SKIP {p['seq']:>2}. {p['doctor']} {p['name']} ({p['chart']}) [{p['note']}] → {in_webcvis}")
 
     output.append("")
@@ -214,7 +232,7 @@ def main():
         output.append("WARNING - 有病人尚未排入導管排程!")
 
     # Write output
-    out_file = f"_verify_cathlab_{cathlab_mmdd}.txt"
+    out_file = f"_verify_cathlab_{admission_date}.txt"
     with open(out_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(output))
 
