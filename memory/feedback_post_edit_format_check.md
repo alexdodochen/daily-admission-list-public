@@ -17,7 +17,8 @@ type: feedback
    - 先有 title row `X（N人）` 合併 A:H
    - 緊接 sub-header row `姓名/病歷號/EMR/EMR摘要/手動設定入院序/術前診斷/預計心導管/註記`
    - 然後 N 筆 patient rows（數量要等於 title 聲明的 N）
-   - 區塊之間**有空白 row 隔開**
+   - **主資料最後一列與第一個子表格 title 之間至少 2 行空白**（見 `feedback_sheet_formatting.md`）
+   - 子表格區塊之間至少 1 行空白 row 隔開
    - title 聲明人數 ≠ 實際人數 → 失敗
 4. **無殘留合併**：寫入的 data row 不應被上一個合併區塊吃掉（寫入前有 unmerge 就不會發生，這是驗證用）
 5. **病歷號一致性**：同一病人的主資料 I 欄、子表格 B 欄、N-W S 欄應相同

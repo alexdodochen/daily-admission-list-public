@@ -38,3 +38,4 @@
 - [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
 - [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
 - [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾
+- [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
