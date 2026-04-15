@@ -36,6 +36,7 @@
 - [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-W 入院序
 - [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
 - [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
+- [張獻元週三入院疑誤key（含 4/22 實例）](feedback_zhang_xianyuan_wed_admission.md) — 補充：4/22 潘韋儒為首例，備註標「⚠ 疑誤key」
 - [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾
 - [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
 - [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-W、子表格、2 行 gap、病歷號 text 格式
