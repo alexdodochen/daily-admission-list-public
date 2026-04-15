@@ -63,6 +63,19 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 - No merged range from a previous layout should be overlapping with a data row
 - If a data row reads as empty when it should have a value, suspect a leftover merge above
 
+### 6.5 EMR / EMR摘要 必須跟著病人 row 一起搬（critical — 使用者多次回報）
+**格式修復時絕不能只搬 A-B 欄而把 C/D 欄留在原位。** C (EMR 標籤 + 原文 note) 與 D (EMR 摘要首行 + 完整摘要 note) 是 row-level 資料。
+
+- 移 row **一律用 `insertDimension` / `deleteDimension` / `moveDimension`** — 原生 row op 會連同 values + format + **cell notes** 一起平移。
+- **禁止** 讀值 → reshape in memory → 寫回的模式（絕對無法搬 notes）。
+- `repeatCell` 修 format 時 fields 限定 `userEnteredFormat(...)`，**不得包含 `note`**。
+- 寫入/修復**結束後必做對齊驗證**：用 chart number 當 key，確認每個 sub-table patient row：
+  1. A 姓名 ↔ 主資料 F 姓名相符
+  2. B 病歷號 ↔ 主資料 I 病歷號相符
+  3. C 的 visit label 中醫師姓名 ↔ 該 row 所屬 sub-table 醫師（跨醫師誤置會被抓出來）
+  4. D 首行摘要 ↔ 該病人的年齡性別看得合理
+  不符 → 當場報 + 重抽該病人 EMR，不沉默。
+
 ### 6. Chart number consistency
 - Same patient's 病歷號 in main I / sub B / N-W S must match (leading zeros preserved)
 

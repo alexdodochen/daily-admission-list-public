@@ -39,3 +39,4 @@
 - [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾
 - [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
 - [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-W、子表格、2 行 gap、病歷號 text 格式
+- [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — 移 row 必用 insertDimension；禁止只移 A-B 讓 C-H 留原位；寫完用 chart number 驗對齊
