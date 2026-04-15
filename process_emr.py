@@ -134,6 +134,31 @@ def parse_name_from_raw(raw):
     return ''
 
 
+def parse_birth_from_raw(raw):
+    m = re.search(r'生日\s*[：:]\s*(\d{4})/(\d{1,2})/(\d{1,2})', raw)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3))
+    return None
+
+
+def parse_gender_from_raw(raw):
+    m = re.search(r'性別\s*[：:]\s*([男女])', raw)
+    return m.group(1) if m else ''
+
+
+def compute_age(birth, admission_date):
+    # admission_date like '2026-04-24'
+    try:
+        ay, am, ad = (int(x) for x in admission_date.split('-'))
+    except Exception:
+        return None
+    by, bm, bd = birth
+    age = ay - by
+    if (am, ad) < (bm, bd):
+        age -= 1
+    return age
+
+
 def main(date8):
     with open(f'emr_data_{date8}.json', encoding='utf-8') as f:
         emr = json.load(f)
@@ -162,21 +187,27 @@ def main(date8):
             'age': row[7].strip() if len(row) > 7 else '',
             'gender': row[6].strip() if len(row) > 6 else '',
             'name': row[5].strip() if len(row) > 5 else '',
+            'admission_date': row[0].strip() if len(row) > 0 else '',
             'row': ri,
         }
 
     # Find sub-tables: rows like "X人）" merged headers
-    subtable_rows = []  # list of (doctor, start_row_of_sub_header, patient_rows_list)
+    # Record {row_of_title: doctor_name} so we know which doctor a patient row belongs to
+    import re as _re
+    subtable_rows = []  # list of (doctor_name, title_row)
     for ri, row in enumerate(all_vals, 1):
         if row and row[0] and '人）' in row[0]:
-            subtable_rows.append(ri)
+            m = _re.match(r'^([^（(]+)', row[0].strip())
+            doc_name = m.group(1).strip() if m else ''
+            subtable_rows.append((doc_name, ri))
 
     # For each sub-table, patient rows are start+2, start+3, ...
     updates = []  # (range, value) list
     name_corrections = {}  # chart -> corrected_name
     prefill = []  # list of dicts for preview
+    mismatches = []  # safety log
 
-    for sr in subtable_rows:
+    for doc_name, sr in subtable_rows:
         # Sub-header is sr+1, patients start at sr+2
         pr = sr + 2
         while pr <= len(all_vals):
@@ -188,29 +219,59 @@ def main(date8):
             chart = chart_raw.lstrip("'")
             if not chart or not chart.isdigit():
                 break
+
+            # SAFETY: verify sub-table A name == main data F name (by chart)
+            mi = main_info.get(chart)
+            if mi is None:
+                mismatches.append(f'row{pr} [{doc_name}] chart {chart} ({name}) — 不在主資料，skip')
+                pr += 1
+                continue
+            if name != mi['name']:
+                # Trust main data; log and fix A cell but proceed with write
+                mismatches.append(f'row{pr} [{doc_name}] chart {chart}: sub A="{name}" vs main F="{mi["name"]}" — 以主資料為準')
+                updates.append((f'A{pr}', mi['name']))
+                name = mi['name']
+
             info = emr.get(chart)
+
+            # Apply name/age/gender corrections from EMR #divUserSpec whenever available,
+            # regardless of whether EMR visit text was found.
+            if info and info.get('name'):
+                raw_name = info.get('name', '')
+                emr_name = parse_name_from_raw(raw_name)
+                if emr_name and emr_name != name:
+                    name_corrections[chart] = (name, emr_name)
+                    updates.append((f'A{pr}', emr_name))
+                    name = emr_name
+                birth = parse_birth_from_raw(raw_name)
+                if birth:
+                    new_age = compute_age(birth, mi.get('admission_date', ''))
+                    if new_age is not None:
+                        cur_age = str(mi.get('age', '')).strip()
+                        if cur_age != str(new_age):
+                            updates.append((f'H{mi["row"]}', new_age))
+                emr_gender = parse_gender_from_raw(raw_name)
+                if emr_gender and emr_gender != mi.get('gender', '').strip():
+                    updates.append((f'G{mi["row"]}', emr_gender))
+
             if info and info.get('status') == 'ok':
                 emr_text = info.get('emr', '')
-                raw_name = info.get('name', '')
-                corrected = parse_name_from_raw(raw_name)
-                if corrected and corrected != name:
-                    name_corrections[chart] = (name, corrected)
-                    # Update sub-table A col
-                    updates.append((f'A{pr}', corrected))
+                visit = info.get('visit', '')
+                matched = info.get('matched_doctor', True)
 
-                # Generate summary
-                mi = main_info.get(chart, {})
+                # Prepend visit source header so user sees origin at a glance
+                src_tag = '' if matched else '(非本醫師門診)'
+                visit_header = f'【EMR來源門診：{visit}】{src_tag}\n' if visit else ''
+                emr_full = visit_header + emr_text
+
                 summary = generate_summary(emr_text, mi.get('age', ''), mi.get('gender', ''))
-
-                # Auto-detect F/G
                 plan_section = ''
                 if '[Assessment & Plan]' in emr_text:
                     plan_section = emr_text.split('[Assessment & Plan]')[1][:1500]
                 f_diag = match_rules(emr_text, DIAG_RULES)
                 g_cath = match_rules(plan_section if plan_section else emr_text, CATH_RULES)
 
-                # Write C (EMR), D (summary), F (diag), G (cath) on sub-table row
-                updates.append((f'C{pr}', emr_text))
+                updates.append((f'C{pr}', emr_full))
                 updates.append((f'D{pr}', summary))
                 if f_diag:
                     updates.append((f'F{pr}', f_diag))
@@ -218,12 +279,20 @@ def main(date8):
                     updates.append((f'G{pr}', g_cath))
 
                 prefill.append({
-                    'chart': chart, 'name': corrected or name,
+                    'chart': chart, 'name': name, 'doctor': doc_name,
                     'f': f_diag, 'g': g_cath, 'row': pr,
+                    'matched': matched, 'visit': visit,
+                })
+            elif info and info.get('status') in ('no_visit', 'empty'):
+                updates.append((f'C{pr}', '無本院一年內主治醫師門診紀錄'))
+                updates.append((f'D{pr}', '(無門診紀錄)'))
+                prefill.append({
+                    'chart': chart, 'name': name, 'doctor': doc_name,
+                    'f': '', 'g': '', 'row': pr, 'matched': False, 'visit': '(無)',
                 })
             pr += 1
 
-    # Apply name corrections in main data too
+    # Also write EMR-corrected names back to main data F column
     for chart, (old, new) in name_corrections.items():
         mi = main_info.get(chart)
         if mi:
@@ -235,18 +304,42 @@ def main(date8):
         ws.batch_update(body, value_input_option='USER_ENTERED')
     print(f'Applied {len(updates)} cell updates')
 
+    # Post-write verification: re-read and check chart→row alignment
+    time.sleep(1)
+    verify_vals = ws.get('A1:D80')
+    align_errors = []
+    for p in prefill:
+        r = verify_vals[p['row'] - 1] if p['row'] - 1 < len(verify_vals) else []
+        va = (r[0] if len(r) > 0 else '').strip()
+        vb = (r[1] if len(r) > 1 else '').strip().lstrip("'")
+        if vb != p['chart']:
+            align_errors.append(f'  row{p["row"]}: expected chart {p["chart"]} got {vb}')
+        elif va != p['name']:
+            align_errors.append(f'  row{p["row"]}: chart {p["chart"]} name {va} != {p["name"]}')
+
     # Report
     out_lines = [f'=== {date8} EMR 處理結果 ===']
+    if mismatches:
+        out_lines.append('\n【A 姓名 vs 主資料不符】')
+        for m in mismatches:
+            out_lines.append(f'  {m}')
     if name_corrections:
-        out_lines.append('\n【姓名校正】')
+        out_lines.append('\n【EMR 姓名校正】')
         for chart, (old, new) in name_corrections.items():
             out_lines.append(f'  {chart}: {old} → {new}')
-    out_lines.append('\n【F/G 預填】')
+    out_lines.append('\n【F/G 預填 / EMR 來源】')
     for p in prefill:
-        out_lines.append(f'  [{p["chart"]}] {p["name"]}: F={p["f"] or "(空)"} G={p["g"] or "(空)"}')
+        tag = '' if p['matched'] else ' ⚠非本醫師門診'
+        out_lines.append(f'  [{p["chart"]}] {p["doctor"]}/{p["name"]}: F={p["f"] or "(空)"} G={p["g"] or "(空)"} | {p["visit"]}{tag}')
+    out_lines.append('\n【寫入後對齊驗證】')
+    if align_errors:
+        out_lines.append('  ⚠ 發現錯位：')
+        out_lines.extend(align_errors)
+    else:
+        out_lines.append(f'  OK — {len(prefill)} 筆全部對齊')
     with open(f'_emr_result_{date8}.txt', 'w', encoding='utf-8') as f:
         f.write('\n'.join(out_lines))
-    print('\n'.join(out_lines))
+    print(f'[{date8}] done, {len(updates)} updates, {len(align_errors)} align errors, {len(mismatches)} A-name mismatches')
 
 
 if __name__ == '__main__':

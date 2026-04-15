@@ -98,12 +98,13 @@ def write_range(ws, range_str, data, raw=True):
     ws.update(values=data, range_name=range_str,
               value_input_option='RAW' if raw else 'USER_ENTERED')
 
-def write_row(ws, row, values, start_col=1):
+def write_row(ws, row, values, start_col=1, raw=True):
     """Write a row of values starting from start_col"""
     col_letter = gspread.utils.rowcol_to_a1(row, start_col).split('$')[-1][0] if start_col > 26 else chr(64 + start_col)
     end_letter = chr(64 + start_col + len(values) - 1) if start_col + len(values) - 1 <= 26 else gspread.utils.rowcol_to_a1(row, start_col + len(values) - 1)
     range_str = f"{gspread.utils.rowcol_to_a1(row, start_col)}:{gspread.utils.rowcol_to_a1(row, start_col + len(values) - 1)}"
-    ws.update(values=[values], range_name=range_str, value_input_option='RAW')
+    ws.update(values=[values], range_name=range_str,
+              value_input_option='RAW' if raw else 'USER_ENTERED')
 
 def clear_range(ws, range_str):
     """Clear a range of cells"""
@@ -383,7 +384,7 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
             pt.get('cathlab', ''),
             pt.get('note', '')
         ][:num_cols]
-        write_row(ws, row, vals)
+        write_row(ws, row, vals, raw=False)
 
     # Borders for entire block
     end_row = start_row + 1 + len(patients)
