@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session start
+
+**Before any work**, run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback. The user actively maintains `每日入院清單工作流程.txt` as the source-of-truth workflow spec — **if it disagrees with this file, the txt wins**.
+
 ## Project Overview
 
 Hospital admission list management system for a cardiology department (成大醫院心臟科行政總醫師). Automates the daily workflow: patient list intake → lottery ordering → EMR extraction → admission sequencing → cathlab scheduling → LINE notifications.
@@ -13,7 +17,7 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
 - **Sheet ID**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless)
-- **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 無資料病人, 下拉選單, 麻醉, 每天續等清單, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
+- **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 每天續等清單, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
 
 ## Architecture
 
@@ -29,7 +33,10 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
-**Ephemeral artifacts** (do not commit): `_*.txt` debug dumps, `emr_data.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, and `cathlab_keyin_04XX.py` per-date scripts once the date has passed.
+**Ephemeral vs permanent files** — the repo mixes canonical modules with per-date scratch:
+
+- **Permanent (reference implementations, safe to import/copy)**: `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, and the active skills under `.claude/skills/`.
+- **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, and **all per-date driver scripts** — `cathlab_keyin_04XX.py`, `process_emr_04XX.py` / `write_emr_04XX.py` / `extract_emr_04XX.py`, plus one-off fix scripts like `cathlab_fix_*.py`, `cathlab_redo_04XX.py`, `cathlab_keyin_backfill_*.py`. Once the date has passed they become historical artifacts — keep the latest of each family as a template, prefix older ones with `_`.
 
 ## Key Files
 

@@ -5,7 +5,6 @@
 - [建立新日期表必須先 unmerge](feedback_new_date_sheet_creation.md) — duplicate 後先 unmerge 全部 cells 才寫入，不然合併列會吃掉 B-H 欄
 - [所有資料寫 Google Sheet 不寫本地 xlsx](feedback_all_data_to_google_sheet.md) — 入院清單/EMR/排程只寫 Google Sheet，admission-image-to-excel skill 名稱誤導
 - [EMR 資料驗證](feedback_emr_validation.md) — 病歷號↔姓名吻合才寫入，不符合要標記錯誤
-- [無資料病人工作表功能](feedback_no_data_patients.md) — H欄寫「無資料病人」→一聲令下整理到無資料病人工作表（取代模式）
 - [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）
 - [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師最後才加入，需問是否與每日續等清單合併
 - [入院序列清單欄位順序](feedback_ordering_columns.md) — N-W欄（10欄）：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單|改期
@@ -39,3 +38,4 @@
 - [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
 - [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾
 - [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
+- [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-W、子表格、2 行 gap、病歷號 text 格式
