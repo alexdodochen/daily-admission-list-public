@@ -41,3 +41,4 @@
 - [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
 - [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-W、子表格、2 行 gap、病歷號 text 格式
 - [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — 移 row 必用 insertDimension；禁止只移 A-B 讓 C-H 留原位；寫完用 chart number 驗對齊
+- [詹世鴻週五入院規則](feedback_zhan_friday_pm.md) — 週五詹世鴻=lottery有時段（進round-robin），但cathlab排非時段（H1 2100+）

@@ -16,7 +16,8 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly.
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
 - **Sheet ID**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`
-- **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless)
+- **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
+- **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
 - **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 每天續等清單, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
 
 ## Architecture
@@ -29,21 +30,25 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–W columns
 5. **Cathlab keyin** (`admission-cathlab-keyin`): Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
 
+**EMR data pipeline**: `fetch_emr.py` (Playwright → `emr_data_<date>.json`) → `process_emr.py` (JSON → summary generation + F/G auto-detect → Sheet writes). The JSON intermediary allows re-processing without re-fetching. Auto-detection uses keyword rules (`DIAG_RULES` for F col, `CATH_RULES` for G col in `process_emr.py`).
+
 **Reschedule is a manual flag, not a feature.** W 欄填入 YYYYMMDD 的 row 表示「該病人不做當日的 N+1 cathlab」— 使用者自行決定如何另行處理（手動加排/手動通知）。沒有自動搬 sheet、沒有自動 DEL/ADD WEBCVIS、沒有子表格異動。cathlab keyin 和 verify 兩側都必須把 W 有值的 row 當作 skip。
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
 **Ephemeral vs permanent files** — the repo mixes canonical modules with per-date scratch:
 
-- **Permanent (reference implementations, safe to import/copy)**: `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, and the active skills under `.claude/skills/`.
+- **Permanent (reference implementations, safe to import/copy)**: `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, and the active skills under `.claude/skills/`.
 - **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, and **all per-date driver scripts** — `cathlab_keyin_04XX.py`, `process_emr_04XX.py` / `write_emr_04XX.py` / `extract_emr_04XX.py`, plus one-off fix scripts like `cathlab_fix_*.py`, `cathlab_redo_04XX.py`, `cathlab_keyin_backfill_*.py`. Once the date has passed they become historical artifacts — keep the latest of each family as a template, prefix older ones with `_`.
 
 ## Key Files
 
 - `gsheet_utils.py` — Shared Google Sheets module. Provides `get_worksheet()`, `write_range()`, `format_header_row()`, `write_doctor_table()`, `set_dropdown_from_range()`, etc. All scripts import from here.
-- `generate_ordering.py` — Reads doctor sub-tables + round-robin order from a date sheet, generates N–T ordering. Pattern: `extract_doctor_tables()` → `generate_ordering()` → `write_ordering_to_sheet()`.
+- `generate_ordering.py` — Reads doctor sub-tables + round-robin order from a date sheet, generates ordering for N–W columns. Pattern: `extract_doctor_tables()` → `generate_ordering()` → `write_ordering_to_sheet()`. Note: the script's internal `ORDERING_HEADERS` is still the old 7-col N-T layout; the full 10-col N-W write (adding 備註(住服), 病歷號, 改期) is handled by the `admission-ordering` skill.
 - `cathlab_keyin_04XX.py` — One script per cathlab date. Contains PATIENTS list (hardcoded per day), login/date-query/add/fix_diag functions. Copy the latest one as template for new dates.
-- `process_emr_04XX.py` / `write_emr_04XX.py` — Per-date EMR extraction and write-back scripts. Same copy-latest-as-template pattern as cathlab scripts.
+- `fetch_emr.py` — Generic Playwright-based EMR fetcher. Takes session URL + chart/doctor pairs, writes results to `emr_data_<date>.json`. Uses sentinel-stamping anti-race-condition strategy (stamps leftFrame/mainFrame before query, polls until sentinel cleared + real content loaded). Handles fallback to whitelist doctors when attending doctor has no clinic visit.
+- `process_emr.py` — Generic EMR processor. Reads `emr_data_<date>.json`, generates 4-section summaries, auto-detects F/G values via `DIAG_RULES`/`CATH_RULES` keyword matching, corrects names/age/gender from `#divUserSpec`, writes C/D/F/G to sub-tables + updates main data. Usage: `python process_emr.py 20260419`
+- `process_emr_04XX.py` / `write_emr_04XX.py` / `extract_emr_04XX.py` — Per-date EMR scripts (ephemeral). Same copy-latest-as-template pattern as cathlab scripts.
 - `每日入院清單工作流程.txt` — Canonical workflow spec with all rules, doctor codes, room codes, column layouts, and dropdown mappings. **Read this first for any workflow question — if it disagrees with `CLAUDE.md`, the txt file wins** (user actively maintains it).
 - `memory/MEMORY.md` — Persistent memory index. **Run the `check-previous-progress` skill at session start before any work** to load prior feedback and corrections.
 - `_*.py` / `_*.txt` — Underscore-prefixed files are throwaway debugging/verification scratch (one-off checks, patches, logs). Not reference implementations; do not copy their patterns into permanent code.
@@ -56,6 +61,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 
 ```
 截圖 → OCR匯入Sheet → 抽籤排序 → EMR摘要 → 排住院序 → 導管排程 → /workflow-doc
+                    ↘ format-check runs after each write step ↗
 ```
 
 Full details in `每日入院清單工作流程.txt`. Critical rules:
@@ -76,6 +82,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 14. **Ordering timing**: Claude 必須等使用者手動確認 F/G 欄後才能寫入 N-U 欄
 15. **EMR prefill F/G**: EMR 摘要完成後自動預填術前診斷(F)和預計心導管(G)，列出讓使用者檢查
 16. **Second doctor priority**: 第二醫師多人時（如浩、晨），葉立浩優先 key attendingdoctor2，其餘放備註
+18. **詹世鴻 Friday exception**: 週五入院時 詹世鴻 在 lottery 算有時段醫師（進主 round-robin），但 cathlab 排非時段（H1 2100+, note="本日無時段"）。lottery 有時段 ≠ cathlab 有時段。
 17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-W ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。
 
 ## WEBCVIS Cathlab System
