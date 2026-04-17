@@ -44,3 +44,6 @@
 - [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — 移 row 必用 insertDimension；禁止只移 A-B 讓 C-H 留原位；寫完用 chart number 驗對齊
 - [詹世鴻週五入院規則](feedback_zhan_friday_pm.md) — 週五詹世鴻 lottery 與 cathlab 都當非時段（最後排 / H1 2100+）
 - [時段表括號獨立列 = 也有時段](feedback_schedule_paren_name_is_slot.md) — 「(陳則瑋)」單獨一列＝該日該時段並列醫師，照正常時段排（非 2100 無時段）
+- [EMR fallback 只限六位醫師](feedback_emr_fallback_doctors.md) — 目標醫師無門診時只能 fallback 到 劉秉彥/趙庭興/蔡惟全/許志新/陳柏升/李貽恒，都沒有就標記無資料
+- [EMR #divUserSpec 可推姓名/年齡/性別](feedback_emr_age_gender_from_header.md) — 只要病歷號對，就從 EMR header 自動校正主資料 F/G/H 欄（年齡由生日推算）
+- [Google Sheet 寫入配額 60/min](feedback_gsheet_quota_batching.md) — 重建日期 sheet 壓縮到 ≤6 API calls：clear/format/merge/border/dropdown 全塞一個 batch_update

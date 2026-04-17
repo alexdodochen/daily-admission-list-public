@@ -17,11 +17,13 @@
 【Skills 對照表】
   步驟一 → admission-image-to-excel
   步驟二 → admission-lottery
-  步驟三 → admission-emr-extraction
+  步驟三 → admission-emr-extraction（單日）/ admission-emr-refresh（多日批次重抓）
   步驟四 → admission-ordering
   步驟五 → admission-line-push
   步驟六 → admission-cathlab-keyin
   共用   → admission-format-check（寫完 sheet 後格式驗證/修復，也可使用者直接叫）
+          admission-sheet-rebuild（date sheet 誤刪/壞掉時從 template 重建）
+          workflow-docs（session 結束時盤點變更 + 寫 memory + 同步文件，/workflow-docs 觸發）
 
 【進度追蹤】
   每次回覆 Claude 都會顯示工作流進度條：

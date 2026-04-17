@@ -14,6 +14,15 @@ _*/
 *.xlsx
 emr_data*.json
 
+# Per-date ephemeral scripts
+cathlab_keyin_*.py
+cathlab_fix_*.py
+cathlab_redo_*.py
+cathlab_keyin_backfill_*.py
+process_emr_*.py
+write_emr_*.py
+extract_emr_*.py
+
 # Claude local
 .claude/settings.local.json
 .claude/worktrees/
