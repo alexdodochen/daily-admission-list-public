@@ -1,18 +1,23 @@
 # Credentials
 sigma-sector-492215-d2-0612bef3b39b.json
 
-# Temp files
+# Temp files (underscore-prefixed = ephemeral scratch)
+_*.py
 _*.txt
 _*.html
+_*.log
+_*.json
+_*/
 *.png
 *.zip
 *.jpg
 *.xlsx
-emr_data.json
+emr_data*.json
 
 # Claude local
 .claude/settings.local.json
 .claude/worktrees/
+.claude/scheduled_tasks.lock
 
 # Python
 __pycache__/
