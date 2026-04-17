@@ -15,46 +15,170 @@ import sys, json, re, time
 sys.path.insert(0, '.')
 import gsheet_utils as gu
 
+# Order matters: 急/specific > arrhythmias > vascular > CHF > CAD-family (broadest, last).
+# Diag matching is constrained to the (Dx) section by extract_dx_section() so
+# comorbidity entries like `* (ICD-10:I495)` (sick sinus) don't bleed into primary Dx.
 DIAG_RULES = [
+    # Acute / time-critical
     (['STEMI', 'ST elevation myocardial'], 'STEMI'),
-    (['NSTEMI', 'non-ST elevation'], 'Others:NSTEMI'),
-    (['pAf', 'paroxysmal Af', 'paroxysmal atrial fibrillation', 'Long persistent atrial fibrillation', 'persistent Af'], 'pAf'),
-    (['PSVT', 'supraventricular tachycardia'], 'PSVT'),
-    (['WPW'], 'WPW syndrome'),
-    (['atrial flutter'], 'Atrial flutter'),
-    (['VPC', 'ventricular premature'], 'VPC'),
-    (['sinus nodal dysfunction', 'sick sinus', 'SSS', 'sinus pause', 'tachy-brady'], 'Sinus nodal dysfunction'),
-    (['AV nodal dysfunction', 'AV block'], 'AV nodal dysfunction'),
-    (['syncope'], 'Syncope'),
-    (['generator replacement'], 'Generator replacement'),
-    (['aortic stenosis', 'severe AS'], 'AS'),
-    (['mitral regurgitation', 'severe MR', 'MVRepair', 'MVR'], 'MR'),
-    (['severe TR'], 'Others:Severe TR'),
-    (['PAOD', 'peripheral arterial occlusive'], 'PAOD'),
-    (['carotid stenting', 'carotid stenosis'], 'Carotid stenting'),
-    (['CHF', 'heart failure', 'HFrEF', 'HFpEF'], 'CHF'),
-    (['DCM', 'dilated cardiomyopathy'], 'DCM'),
-    (['HCM', 'hypertrophic cardiomyopathy'], 'HCM'),
-    (['pulmonary HTN', 'pulmonary hypertension'], 'Pulmonary HTN'),
-    (['s/p PCI', 'ISR', 'in-stent restenosis', 'post PCI'], 's/p PCI'),
+    (['NSTEMI', 'non-ST elevation', 'non ST elevation'], 'Others:NSTEMI'),
     (['unstable angina'], 'Unstable'),
-    (['angina'], 'Angina pectoris'),
-    (['CAD', 'coronary artery disease'], 'CAD'),
+    # Specific structural valves
+    (['severe AS', 'aortic stenosis'], 'AS'),
+    (['severe AR', 'aortic regurgitation'], 'AR'),
+    (['severe MR', 'mitral regurgitation', 'MVRepair', 'MVR'], 'MR'),
+    (['severe TR', 'tricuspid regurgitation'], 'Others:Severe TR'),
+    # Devices
+    (['generator replacement', 'PPM generator', 'ICD generator'], 'Generator replacement'),
+    # Arrhythmias
+    (['paroxysmal Af', 'paroxysmal atrial fibrillation',
+      'Long persistent atrial fibrillation', 'persistent Af',
+      'persistent atrial fibrillation', 'pAf'], 'pAf'),
+    (['supraventricular tachycardia', 'PSVT'], 'PSVT'),
+    (['WPW'], 'WPW syndrome'),
+    (['atrial flutter', 'Aflutter'], 'Atrial flutter'),
+    (['ventricular premature', 'VPC'], 'VPC'),
+    (['sick sinus', 'sinus nodal dysfunction', 'sinus pause', 'tachy-brady', 'SSS'], 'Sinus nodal dysfunction'),
+    (['complete AV block', 'AV nodal dysfunction', 'CAVB', 'AV block'], 'AV nodal dysfunction'),
+    # Vascular
+    (['PAOD', 'peripheral arterial occlusive', 'peripheral arterial disease'], 'PAOD'),
+    (['carotid stenting', 'carotid stenosis'], 'Carotid stenting'),
+    # CHF / cardiomyopathy
+    (['HFrEF', 'HFpEF', 'heart failure', 'CHF', 'congestive heart failure'], 'CHF'),
+    (['dilated cardiomyopathy', 'DCM'], 'DCM'),
+    (['hypertrophic cardiomyopathy', 'HCM'], 'HCM'),
+    (['pulmonary hypertension', 'pulmonary HTN'], 'Pulmonary HTN'),
+    # Symptom-driven
+    (['syncope'], 'Syncope'),
+    # (Removed ISR / in-stent restenosis — too aggressive; CAD rule below catches these correctly.)
+    # CAD family — broadest, last. Trigger words expanded per learning analysis.
+    (['angina pectoris', 'angina'], 'Angina pectoris'),
+    (['CAD', 'coronary artery disease',
+      'chest pain', 'chest tightness', 'chest tigthness',
+      'ACS', 'acute coronary syndrome',
+      'I259', 'I250', 'I251',
+      'TET (+)', 'TMT (+)', 'THL (+)', 'TET+', 'TMT+', 'THL+'], 'CAD'),
 ]
 
+# CATH matching runs against [Assessment & Plan] section after past-tense PCI is stripped.
+# CRT is more specific than PPM so it goes first. PCI keywords avoid bare 's/p PCI'.
 CATH_RULES = [
-    (['PCI on', 'PCI ', 'intervention'], 'PCI'),
-    (['ablation', 'RF ablation', 'RFA'], 'RF ablation'),
-    (['PPM', 'pacemaker implant'], 'PPM'),
+    (['CRT-D', 'CRT-P', 'CRT upgrade', 'cardiac resynchronization'], 'CRT'),
     (['TAVI', 'transcatheter aortic valve'], 'TAVI'),
+    (['plan PCI', 'plan for PCI', 'arrange PCI', 'PCI for', 'primary PCI', '→PCI', '→ PCI', 'PCI ', 'intervention'], 'PCI'),
+    (['RF ablation', 'RFA', 'ablation'], 'RF ablation'),
+    (['PPM', 'pacemaker implant'], 'PPM'),
     (['EP study'], 'EP study'),
     (['PTA'], 'PTA'),
     (['carotid angiography', 'carotid stenting'], 'Carotid angiography + stenting'),
-    (['both-sided cath'], 'Both-sided cath.'),
-    (['right heart cath'], 'Right heart cath.'),
-    (['myocardial biopsy'], 'Myocardial biopsy'),
-    (['cath study', 'catheterization', 'Cath on', 'cath on', 'CAG'], 'Left heart cath.'),
+    (['both-sided cath', 'BHC'], 'Both-sided cath.'),
+    (['right heart cath', 'RHC'], 'Right heart cath.'),
+    (['myocardial biopsy', 'EMB'], 'Myocardial biopsy'),
+    (['cath study', 'catheterization', 'Cath on', 'cath on', 'CAG', 'LHC'], 'Left heart cath.'),
 ]
+
+# When CATH_RULES finds nothing in plan, fall back to the F → G typical mapping.
+# Valve diseases (AS/AR/MR/TR) intentionally omitted — user usually leaves G blank
+# for these so surgical-vs-percutaneous route can be discussed at the meeting.
+F_TO_G_DEFAULT = {
+    'CAD': 'Left heart cath.',
+    'Angina pectoris': 'Left heart cath.',
+    'Unstable': 'Left heart cath.',
+    'CHF': 'Left heart cath.',
+    'STEMI': 'PCI',
+    'Others:NSTEMI': 'PCI',
+    's/p PCI': 'Left heart cath.',
+    'PAOD': 'PTA',
+    'pAf': 'RF ablation',
+    'PSVT': 'RF ablation',
+    'WPW syndrome': 'RF ablation',
+    'Atrial flutter': 'RF ablation',
+    'VPC': 'RF ablation',
+    'Sinus nodal dysfunction': 'PPM',
+    'AV nodal dysfunction': 'PPM',
+    'Generator replacement': 'PPM',
+    # Valves default to Both-sided cath. (the typical eval procedure). User may
+    # blank for surgical-vs-percutaneous discussion.
+    'AS': 'Both-sided cath.', 'AR': 'Both-sided cath.', 'MR': 'Both-sided cath.',
+    'Others:Severe TR': 'Both-sided cath.',
+    'DCM': 'Right heart cath.',
+    'HCM': 'Left heart cath.',
+    'Pulmonary HTN': 'Right heart cath.',
+    'Carotid stenting': 'Carotid angiography + stenting',
+    'Syncope': 'EP study',
+}
+
+
+def extract_dx_section(emr_text):
+    """Return primary diagnosis lines + ICD-10 codes from [Diagnosis] section.
+    - Strips `* (Dx)` and `* (Dx)N.` prefixes so numbered items become parseable
+    - Keeps ICD-10 codes on their own lines (cardiac codes I250/I259 are useful
+      fallback when free-text Dx doesn't mention CAD)
+    - Drops `Description :` header rows."""
+    parts = re.split(r'\[(Diagnosis|Subjective|Objective|Assessment & Plan)\]', emr_text)
+    diag_text = ''
+    for i, part in enumerate(parts):
+        if part == 'Diagnosis' and i + 1 < len(parts):
+            diag_text = parts[i + 1]
+            break
+    if not diag_text:
+        return ''
+    out = []
+    for line in diag_text.split('\n'):
+        s = line.strip()
+        if not s or s.startswith('Description'):
+            continue
+        # Normalise the "* (Dx)" / "* (Dx)1." prefix off
+        s = re.sub(r'^\*?\s*\(Dx\)\s*', '', s)
+        out.append(s)
+    return '\n'.join(out)
+
+
+# ICD-10 codes worth matching as a fallback when free-text Dx is silent on cardiac issues
+ICD10_FALLBACK = [
+    ((r'I25[019]',), 'CAD'),         # I250 / I251 / I259 chronic ischemic heart disease
+    ((r'I21[0-9]',), 'STEMI'),       # I21x acute MI
+    ((r'I50[0-9]',), 'CHF'),         # I50x heart failure
+    ((r'I48[0-9]',), 'pAf'),         # I48x atrial fibrillation
+    ((r'I47[0-9]',), 'PSVT'),        # I47x supraventricular tachycardia
+    ((r'I49[5]',), 'Sinus nodal dysfunction'),  # I495 sick sinus
+    ((r'I44[12]',), 'AV nodal dysfunction'),    # I441/I442 AV block
+    ((r'I35[0]',), 'AS'),
+    ((r'I35[1]',), 'AR'),
+    ((r'I34[0]',), 'MR'),
+    ((r'I70[2]',), 'PAOD'),
+]
+
+
+def detect_via_icd(dx_text):
+    """Fallback: scan ICD-10 codes in Dx section."""
+    icd_codes = re.findall(r'ICD[\-\u2010-\u2015]?10[^A-Z]{0,3}([A-Z]\d{2,4})', dx_text)
+    if not icd_codes:
+        return ''
+    joined = ' '.join(icd_codes)
+    for patterns, value in ICD10_FALLBACK:
+        for p in patterns:
+            if re.search(p, joined):
+                return value
+    return ''
+
+
+def clean_past_tense_pci(text):
+    """Strip historical PCI mentions so CATH PCI doesn't fire on `s/p PCI on 2020`."""
+    patterns = [
+        r's/p\s+PCI[^\n]*',
+        r'post[\-\s]+PCI[^\n]*',
+        r'status\s+post[^\n]*PCI[^\n]*',
+        r'PCI\s+on\s+\d{4}[/\-]?\d{0,2}[/\-]?\d{0,2}',
+        r'PCI\s+done[^\n]*',
+        r'previous\s+PCI[^\n]*',
+        r'history\s+of\s+PCI[^\n]*',
+        r'old\s+PCI[^\n]*',
+    ]
+    for p in patterns:
+        text = re.sub(p, ' ', text, flags=re.IGNORECASE)
+    return text
+
 
 def match_rules(text, rules):
     t = text.lower()
@@ -68,6 +192,52 @@ def match_rules(text, rules):
                 if kl in t:
                     return value
     return ''
+
+
+def detect_diag(dx_text):
+    """Apply DIAG_RULES with numbered-item priority.
+    Numbered Dx (`2.CAD ... 4.pAf`) means item 2 is more important than item 4,
+    so iterate items in order and take the first that matches a rule.
+    Strip ICD-10 lines BEFORE keyword matching so comorbidity codes don't pollute,
+    but keep them available for the ICD fallback at the end."""
+    if not dx_text:
+        return ''
+    text_no_icd = '\n'.join([l for l in dx_text.split('\n') if not l.strip().startswith('* (ICD')])
+    items = re.findall(r'(?:^|\n)\s*\d+\s*[\.\)]\s*([^\n]+)', text_no_icd)
+    if items:
+        for item in items:
+            m = match_rules(item, DIAG_RULES)
+            if m:
+                return m
+    m = match_rules(text_no_icd, DIAG_RULES)
+    if m:
+        return m
+    # Last resort: cardiac ICD-10 codes
+    return detect_via_icd(dx_text)
+
+
+def detect_fg(emr_text):
+    """Detect (F, G) using Dx-only matching for F and plan-cleaned matching for G,
+    with F→G default fallback."""
+    dx = extract_dx_section(emr_text)
+    f_diag = detect_diag(dx) if dx else match_rules(emr_text, DIAG_RULES)
+
+    if '[Assessment & Plan]' in emr_text:
+        plan_sec = emr_text.split('[Assessment & Plan]')[1][:1500]
+    else:
+        plan_sec = emr_text
+
+    # Plan-driven F overrides for procedure-defined diagnoses
+    pl = plan_sec.lower()
+    if 'generator replacement' in pl or 'ppm replacement' in pl \
+            or 'icd replacement' in pl or 'crt replacement' in pl \
+            or 'change generator' in pl:
+        f_diag = 'Generator replacement'
+
+    g_cath = match_rules(clean_past_tense_pci(plan_sec), CATH_RULES)
+    if not g_cath and f_diag:
+        g_cath = F_TO_G_DEFAULT.get(f_diag, '')
+    return f_diag, g_cath
 
 def generate_summary(emr_text, age='', gender=''):
     sections = {'diag': '', 'subj': '', 'obj': '', 'plan': ''}
@@ -105,7 +275,15 @@ def generate_summary(emr_text, age='', gender=''):
     plan_lines = []
     for l in sections['plan'].split('\n'):
         l = l.strip()
-        if '[Medicine]' in l or '[Medication]' in l or '------' in l:
+        cut = len(l)
+        for tag in ('[Medicine]', '[Medication]', '------'):
+            idx = l.find(tag)
+            if idx != -1 and idx < cut:
+                cut = idx
+        if cut < len(l):
+            prefix = l[:cut].strip()
+            if prefix:
+                plan_lines.append(prefix)
             break
         if l:
             plan_lines.append(l)
@@ -265,11 +443,7 @@ def main(date8):
                 emr_full = visit_header + emr_text
 
                 summary = generate_summary(emr_text, mi.get('age', ''), mi.get('gender', ''))
-                plan_section = ''
-                if '[Assessment & Plan]' in emr_text:
-                    plan_section = emr_text.split('[Assessment & Plan]')[1][:1500]
-                f_diag = match_rules(emr_text, DIAG_RULES)
-                g_cath = match_rules(plan_section if plan_section else emr_text, CATH_RULES)
+                f_diag, g_cath = detect_fg(emr_text)
 
                 updates.append((f'C{pr}', emr_full))
                 updates.append((f'D{pr}', summary))
