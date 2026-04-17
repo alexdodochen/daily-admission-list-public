@@ -1,6 +1,6 @@
 ---
 name: cron-job.org + Render free tier 運作與陷阱
-description: 免費版 timeout 30s 上限、連續失敗自動停用、Render 15 分鐘閒置 spin-down — keep-alive 設定與恢復流程
+description: 免費版 timeout 30s 上限、連續失敗自動停用、Render 15 分鐘閒置 spin-down、cron-job.org 單一 keep-alive 不可靠需 UptimeRobot 雙保險
 type: reference
 ---
 
@@ -19,12 +19,26 @@ type: reference
 - **Cold start 可能 > 30 秒** → cron-job.org 30s timeout 不夠 → 503 → 連鎖失敗 → keep-alive 被自動停用 → 服務永睡（2026-04-16 實例：18:06 PM spin-down，22:10 PM keep-alive 被停，服務睡到隔天 08:07 AM 才被 Claude 手動 /health ping 叫醒）
 - **手動恢復**：任何 HTTP 請求都能冷啟（只要 client 肯等）。`curl` 或瀏覽器打 `/health` 都行
 
-## line-reminder-bot 目前配置（2026-04-17 修正後）
+## cron-job.org 單一 keep-alive 不可靠（2026-04-17 實戰教訓）
 
-- Dashboard: <https://console.cron-job.org/jobs>
+即使 Keep Alive 每 5 分鐘打一次，仍可能發生長時間停機：
+- **2026-04-17 16:00~17:01 PM** 服務睡了 1 小時。cron-job.org 4:45/4:50/4:55 三次 /health 都回 503（< 1s fast fail，Render edge 直接擋，沒觸發 cold boot）。Render logs 在這整段空白，意思是 request 根本沒到 app。
+- 可能原因：Render 對同 IP (cron-job.org) 頻繁 request 的 rate limit / edge drop，或 spin-down 後的 cooldown window 拒絕 boot
+- 相同 5-min 間隔打進去，有時過有時不過，不可預期
+
+**Fix: 加第二個 keep-alive 從不同 IP 打**（Cost: 0）
+- **UptimeRobot** 免費版 5 分鐘間隔，不同 IP source
+- 兩邊同時每 5 分鐘打 /health → 就算一邊 edge 被擋，另一邊會過
+- UptimeRobot 設定：Monitor Type=HTTP(s), URL=/health, Interval=5 min
+
+## line-reminder-bot 目前配置（2026-04-17 雙保險後）
+
+- Dashboard (cron-job.org): <https://console.cron-job.org/jobs>
+- Dashboard (UptimeRobot): <https://dashboard.uptimerobot.com/monitors>
 - 服務 URL: `https://line-reminder-bot-wvwo.onrender.com`
-- Keep Alive: `/health` 每 **5 分鐘**（原本 10 分鐘緩衝太薄）
-- 全部 15 個 job 都已開啟 `fails` + `auto-disabled` 通知
+- Keep Alive #1: cron-job.org `/health` 每 **5 分鐘**
+- Keep Alive #2: UptimeRobot `/health` 每 **5 分鐘**（不同 IP，雙保險）
+- 全部 15 個 cron-job.org job 都已開啟 `fails` + `auto-disabled` 通知
 
 ## 收到 disabled email 的恢復 SOP
 

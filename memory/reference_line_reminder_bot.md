@@ -10,7 +10,7 @@ type: reference
 
 **服務 URL**: `https://line-reminder-bot-wvwo.onrender.com`
 
-**運維相關陷阱**: see `reference_cronjob_render_gotchas.md`（cron-job.org timeout/自動停用、Render spin-down、keep-alive SOP）
+**運維相關陷阱**: see `reference_cronjob_render_gotchas.md`（cron-job.org timeout/自動停用、Render spin-down、cron-job.org + UptimeRobot 雙 keep-alive）
 
 ## 目前部署的 endpoints（從 Render logs 觀察到、非本地副本）
 
