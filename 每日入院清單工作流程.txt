@@ -21,9 +21,10 @@
   步驟四 → admission-ordering
   步驟五 → admission-line-push
   步驟六 → admission-cathlab-keyin
+  步驟七 → workflow-docs 階段 4.5（清除暫存檔）
   共用   → admission-format-check（寫完 sheet 後格式驗證/修復，也可使用者直接叫）
           admission-sheet-rebuild（date sheet 誤刪/壞掉時從 template 重建）
-          workflow-docs（session 結束時盤點變更 + 寫 memory + 同步文件，/workflow-docs 觸發）
+          workflow-docs（session 結束時盤點變更 + 寫 memory + 清暫存 + 同步文件，/workflow-docs 觸發）
 
 【進度追蹤】
   每次回覆 Claude 都會顯示工作流進度條：
@@ -325,6 +326,32 @@
   - cathlab keyin 與 verify_cathlab.py 會把有 W 值的 ordering row 視為 skip
   - 手動寫 W 必須透過 P 欄姓名 / S 欄病歷號比對 ordering row
     （round-robin 打散後 row 順序與主資料不同，不能直接用主資料 row 編號）
+
+
+============================================
+  第四階段：收尾
+============================================
+
+--------------------------------------------
+步驟七：清除暫存檔 [skill: workflow-docs 階段 4.5]
+--------------------------------------------
+  你的操作：
+  - 「/workflow-docs」或「清理檔案」
+
+  Claude 會：
+  1. 列出所有暫存檔 + 總數
+  2. 刪除以下 pattern：
+     - _*.py / _*.txt / _*.json / _*.png / _*.log（底線前綴 scratch）
+     - emr_data_*.json（EMR 快取）
+     - cathlab_keyin_*.py（每日排程腳本）
+     - cathlab_*_final.png / cathlab_error_*.png（驗證截圖）
+  3. 回報刪了幾個檔案
+
+  不會刪的：
+  - 永久模組（gsheet_utils.py, fetch_emr.py, process_emr.py 等）
+  - 設定檔（cathlab_id_maps.json, schedule_readable.txt 等）
+  - 文件（CLAUDE.md, 工作流程.txt）
+  - memory/ 目錄
 
 
 ============================================

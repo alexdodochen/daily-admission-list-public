@@ -47,3 +47,4 @@
 - [EMR fallback 只限六位醫師](feedback_emr_fallback_doctors.md) — 目標醫師無門診時只能 fallback 到 劉秉彥/趙庭興/蔡惟全/許志新/陳柏升/李貽恒，都沒有就標記無資料
 - [EMR #divUserSpec 可推姓名/年齡/性別](feedback_emr_age_gender_from_header.md) — 只要病歷號對，就從 EMR header 自動校正主資料 F/G/H 欄（年齡由生日推算）
 - [Google Sheet 寫入配額 60/min](feedback_gsheet_quota_batching.md) — 重建日期 sheet 壓縮到 ≤6 API calls：clear/format/merge/border/dropdown 全塞一個 batch_update
+- [Session結束清除暫存檔](feedback_cleanup_ephemeral_files.md) — workflow-docs 盤點最後刪 _* scratch/emr_data_*/cathlab_keyin_* 等暫存，不留到下個 session
