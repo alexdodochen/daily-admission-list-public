@@ -41,7 +41,7 @@
 - [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-V/子表格/合併），跑掉當場修不留尾
 - [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-V S 欄先設 `@` text format 再寫，不然前導 0 會被吃
 - [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-V、子表格、2 行 gap、病歷號 text 格式
-- [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — 移 row 必用 insertDimension；禁止只移 A-B 讓 C-H 留原位；寫完用 chart number 驗對齊
+- [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — insertDimension 作用整 row，會擠空 N-V 要 compact；移 row 用 insertDimension 保 notes；寫完用 chart number 驗對齊
 - [詹世鴻週五入院規則](feedback_zhan_friday_pm.md) — 週五詹世鴻 lottery 與 cathlab 都當非時段（最後排 / H1 2100+）
 - [時段表括號獨立列 = 也有時段](feedback_schedule_paren_name_is_slot.md) — 「(陳則瑋)」單獨一列＝該日該時段並列醫師，照正常時段排（非 2100 無時段）
 - [EMR fallback 只限六位醫師](feedback_emr_fallback_doctors.md) — 目標醫師無門診時只能 fallback 到 劉秉彥/趙庭興/蔡惟全/許志新/陳柏升/李貽恒，都沒有就標記無資料

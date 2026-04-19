@@ -20,3 +20,4 @@ type: feedback
    - D 的首行摘要 ↔ 確實看得出是該病人的年齡性別
    若有不符 → 當場回報 + 重抽該病人的 EMR，不要沉默。
 5. 若必須 bulk 修 sub-table 結構（例如補 title row、重排 block 順序），**先把該 block 所有病人的 (chart, A-H values, C/D notes) 讀到記憶體** → 刪掉舊 rows → 重建 rows → 把 values + notes 寫回到對應 chart 的新 row。**絕不允許**只搬 A-B 而讓 C-H 留在原地。
+6. **`insertDimension` / `deleteDimension` 作用於整 row 寬度（A-Z 全欄）**——主資料插一列時，**N-V ordering 區塊會同步被擠出空 row**，不是只動 A-L。插完要立刻檢查 N-V 有無空洞，有的話用 `read_range` 讀下方連續段 → `update` 寫回上移一格 → clear 最後那個重複 row。範例：插 A-L row 6 → N6:V6 變空 → 讀 N7:V12 → 寫回 N6:V11 → 清 N12:V12。（2026-04-20 修 20260420 主資料時踩到）
