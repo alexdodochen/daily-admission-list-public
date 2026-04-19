@@ -31,14 +31,18 @@ type: project
 - WEBCVIS 帳密（院內帳號）
 - LINE 覆寫（通常留空）
 
-## 實作 TODO（執行順序）
+## 實作進度（2026-04-20 更新）
 
-1. **退休私有 source** — 到 OPD 關掉 `每日入院清單_本地化/` 的 sync 腳本（不然會覆蓋 public mirror 上的 Phase 8 commits）
-2. **`config.py` 改支援 bundled defaults** — 偵測 exe 內建的 config 模板 → 複製到 `app/data/config.json`，首次啟動預填
-3. **設定頁 UI** — 隱藏已預填欄位，只露 LLM key / WEBCVIS / LINE 覆寫
-4. **Chromium 首次下載邏輯** — 啟動時檢查 `playwright install chromium` 是否跑過，沒跑過先跑
-5. **PyInstaller spec** — `--onedir --windowed --add-data "app/data/static;..." --add-data "sigma-...json;app/data/"`
-6. **交接手冊** — 一頁 PDF：申請 Gemini API key + 啟動 app
+- [x] `config.py` bundled defaults + user_data 分層（`app/bundled/` 預埋 vs `user_data/config.json` 個人設定）
+- [x] 設定頁 UI — bundled 欄位隱藏 + 「系統預設 ✓」badge
+- [x] `packaging.spec` — `--onedir --console`，include `app/bundled/`（含 SA JSON）
+- [x] `BUILD.md` — 每次打包前/後步驟 + 年度 SA 輪替程序
+- [x] `HANDOFF.md` — 4 個雲端資源（GCP/Sheet/GitHub/LINE）轉讓 checklist
+- [x] `app/services/updater.py` — exe 內按「檢查更新」自動從 `public_daily_admission_app` main 拉最新
+- [ ] **實際跑一次 `pyinstaller packaging.spec` 並在乾淨 Windows 測試**
+- [ ] **Chromium 首次下載邏輯** — 啟動時檢查 `playwright install chromium`，沒跑過先跑
+- [ ] **LINE channel 交接時轉讓步驟** — 目前 HANDOFF.md 已寫，但沒實測
+- [ ] 退休私有 OPD `每日入院清單_本地化/` sync 腳本（不然會覆蓋 public mirror）
 
 ## 年度交接流程（admin 做的事）
 

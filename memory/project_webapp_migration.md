@@ -34,7 +34,8 @@ type: project
 ## 待實作
 - **Phase 5**: Step 3 — EMR 擷取（Playwright + LLM 摘要）
 - **Phase 6**: Steps 5+6 — LINE 推播觸發 + 導管排程自動化（Playwright WEBCVIS）
-- **Phase 7**: 雙向 Sheet 同步（2026-04-19 移除原本的續等清單整合 + 定案生成子項）
+- **Phase 7**: ✅ 2026-04-20 完成 — `format_check_service` + `finalize_service`（定案檢查清單），含前端 UI + 32 tests
+- **Phase 8**: 進行中 — bundled defaults / packaging.spec / BUILD.md / HANDOFF.md 已就位；**pending: 實跑 pyinstaller + Chromium 首次下載邏輯**（詳見 `project_webapp_phase8_exe.md`）
 
 ## 技術筆記
 - Starlette 1.0: 用 `_render()` helper 包裝 TemplateResponse keyword args

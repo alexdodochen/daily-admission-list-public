@@ -1,5 +1,6 @@
 # MEMORY INDEX
 
+- **[下次 session 要提醒的進度](project_next_session_resume.md)** — Phase 8 還差「實跑 pyinstaller」+「Chromium 首次下載」就能發 exe；使用者 4/20 夜休前明確要求主動提醒
 - [張獻元病人預設週二同日下午做](feedback_zhang_xianyuan_same_day.md) — 週二入院+註記無王思翰/張倉惟 → 週二PM張獻元自己時段（同日非N+1）
 - [EMR 擷取範圍（SOAP only，截斷於 [Medicine]）](feedback_emr_html_parsing.md) — C 完整 SOAP、D 四段摘要，都不含藥品/檢驗/掛號
 - [建立新日期表必須先 unmerge](feedback_new_date_sheet_creation.md) — duplicate 後先 unmerge 全部 cells 才寫入，不然合併列會吃掉 B-H 欄
