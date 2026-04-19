@@ -1,8 +1,8 @@
 """
-生成 20260408 / 20260409 住院序列 (N-T columns)
+生成住院序列 (N-S columns)
 讀取 Google Sheet 醫師病人表格的 F/G/H 欄，
 依據已有的 round-robin 醫師順序 + E 欄手動排序，
-寫入正確的 N-T 欄位：序號|主治醫師|病人姓名|備註|術前診斷|預計心導管|每日續等清單
+寫入正確的 N-S 欄位：序號|主治醫師|病人姓名|備註|術前診斷|預計心導管
 """
 import sys, time, json
 sys.path.insert(0, '.')
@@ -10,8 +10,8 @@ from gsheet_utils import (get_spreadsheet, get_worksheet, read_all_values,
                            write_range, clear_range, format_header_row,
                            format_data_rows, add_borders, batch_update_requests)
 
-# 正確的 N-T 欄位標題 (col N=14 to T=20)
-ORDERING_HEADERS = ['序號', '主治醫師', '病人姓名', '備註', '術前診斷', '預計心導管', '每日續等清單']
+# 正確的 N-S 欄位標題 (col N=14 to S=19)
+ORDERING_HEADERS = ['序號', '主治醫師', '病人姓名', '備註', '術前診斷', '預計心導管']
 
 def extract_doctor_tables(all_data):
     """從工作表資料中提取各醫師病人表格，回傳 {醫師: [患者dict]}"""
@@ -186,7 +186,6 @@ def generate_ordering(doctor_order, doctor_tables, patient_notes):
                     note,               # Q: 備註
                     strip_parent_category(patient['diagnosis']),  # R: 術前診斷（去母清單）
                     strip_parent_category(patient['cathlab']),    # S: 預計心導管（去母清單）
-                    '',                 # T: 每日續等清單
                 ])
                 seq += 1
 
@@ -197,28 +196,28 @@ def generate_ordering(doctor_order, doctor_tables, patient_notes):
 
 
 def write_ordering_to_sheet(ws, ordering, all_data):
-    """寫入 N-T 欄位 (columns 14-20)"""
-    # 1. 先修正標題列 (row 1, N-T)
-    header_range = 'N1:T1'
+    """寫入 N-S 欄位 (columns 14-19)"""
+    # 1. 先修正標題列 (row 1, N-S)
+    header_range = 'N1:S1'
     write_range(ws, header_range, [ORDERING_HEADERS])
     time.sleep(0.5)
 
-    # 2. 清除舊的 N-T 資料 (row 2 onwards, enough rows)
-    clear_range(ws, 'N2:T50')
+    # 2. 清除舊的 N-S 資料 (row 2 onwards, enough rows)
+    clear_range(ws, 'N2:S50')
     time.sleep(0.5)
 
     # 3. 寫入新的排序資料
     if ordering:
         end_row = len(ordering) + 1
-        data_range = f'N2:T{end_row}'
+        data_range = f'N2:S{end_row}'
         write_range(ws, data_range, ordering)
         time.sleep(0.5)
 
     # 4. 格式化
-    format_header_row(ws, 1, 7, start_col=14)  # N-T header
+    format_header_row(ws, 1, 6, start_col=14)  # N-S header
     time.sleep(0.3)
     if ordering:
-        add_borders(ws, 1, 14, len(ordering) + 1, 20)
+        add_borders(ws, 1, 14, len(ordering) + 1, 19)
     time.sleep(0.3)
 
     return len(ordering)
@@ -281,7 +280,7 @@ def main():
             for row in result['ordering']:
                 output.append(f'  {row[0]:<4} {row[1]:<8} {row[2]:<12} {row[3]:<20} {row[4]:<30} {row[5]}')
 
-            output.append(f'\nDone! Wrote {result["count"]} entries to {sheet_name} N-T columns.')
+            output.append(f'\nDone! Wrote {result["count"]} entries to {sheet_name} N-S columns.')
 
         except Exception as e:
             output.append(f'ERROR: {e}')

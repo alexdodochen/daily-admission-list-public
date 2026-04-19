@@ -1,6 +1,6 @@
 ---
 name: 病歷號儲存格一律文字格式
-description: 主資料 I 欄、子表格 B 欄、N-W S 欄的病歷號都要強制為文字格式，避免前導 0 被吃掉
+description: 主資料 I 欄、子表格 B 欄、N-V S 欄的病歷號都要強制為文字格式，避免前導 0 被吃掉
 type: feedback
 ---
 
@@ -9,7 +9,7 @@ type: feedback
 **涉及的欄位：**
 - 主資料 I 欄（病歷號碼）
 - 子表格 B 欄（病歷號）
-- N-W 區 S 欄（病歷號）
+- N-V 區 S 欄（病歷號）
 
 **How to apply:**
 1. 建立/重寫日期 sheet 時，**先** 用 `batch_update_requests` 把上述欄位的整欄（或 ws 全欄）`numberFormat.type = 'TEXT'`：

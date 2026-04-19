@@ -5,7 +5,7 @@ type: feedback
 ---
 
 TAVI 在 `下拉選單!D9`（預計心導管），是正式選項：
-- **子表 G 欄 / N-W U 欄** → 直接填 `TAVI`，**不要**塞到 H 註記或 R 備註
+- **子表 G 欄 / N-V U 欄** → 直接填 `TAVI`，**不要**塞到 H 註記或 R 備註
 - **WEBCVIS cathlab keyin**：
   - `phcjson` ID = `PHC20170406095551`（已在 `cathlab_id_maps.json`）
   - `examroom` 選 `xa-外科開刀房25房`（不是 H1/H2/C1/C2）

@@ -18,7 +18,7 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Sheet ID**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
 - **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
-- **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 每天續等清單, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
+- **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
 
 ## Architecture
 
@@ -27,12 +27,12 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 1. **Image → Sheet** (`admission-image-to-excel`): OCR screenshot → write patient data to columns A–L of a date sheet (e.g., `20260408`). If the date sheet already exists, performs **diff-update** (match by 病歷號 → add new / remove cancelled / preserve existing EMR/F/G/ordering).
 2. **Lottery** (`admission-lottery`): Random draw → doctor sub-tables (A–H below main data) + round-robin ordering (N–P)
 3. **EMR extraction** (`admission-emr-extraction`): Playwright reads Web EMR (`http://hisweb.hosp.ncku/Emrquery/`) → writes C/D cols in sub-tables → auto-prefills F/G
-4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–W columns
+4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–V columns
 5. **Cathlab keyin** (`admission-cathlab-keyin`): Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
 
 **EMR data pipeline**: `fetch_emr.py` (Playwright → `emr_data_<date>.json`) → `process_emr.py` (JSON → summary generation + F/G auto-detect → Sheet writes). The JSON intermediary allows re-processing without re-fetching. Auto-detection uses keyword rules (`DIAG_RULES` for F col, `CATH_RULES` for G col in `process_emr.py`).
 
-**Reschedule is a manual flag, not a feature.** W 欄填入 YYYYMMDD 的 row 表示「該病人不做當日的 N+1 cathlab」— 使用者自行決定如何另行處理（手動加排/手動通知）。沒有自動搬 sheet、沒有自動 DEL/ADD WEBCVIS、沒有子表格異動。cathlab keyin 和 verify 兩側都必須把 W 有值的 row 當作 skip。
+**Reschedule is a manual flag, not a feature.** V 欄填入 YYYYMMDD 的 row 表示「該病人不做當日的 N+1 cathlab」— 使用者自行決定如何另行處理（手動加排/手動通知）。沒有自動搬 sheet、沒有自動 DEL/ADD WEBCVIS、沒有子表格異動。cathlab keyin 和 verify 兩側都必須把 V 有值的 row 當作 skip。
 
 Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because cp950 terminal can't print Chinese+emoji. Read these with the Read tool.
 
@@ -44,7 +44,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 ## Key Files
 
 - `gsheet_utils.py` — Shared Google Sheets module. Provides `get_worksheet()`, `write_range()`, `format_header_row()`, `write_doctor_table()`, `set_dropdown_from_range()`, etc. All scripts import from here.
-- `generate_ordering.py` — Reads doctor sub-tables + round-robin order from a date sheet, generates ordering for N–W columns. Pattern: `extract_doctor_tables()` → `generate_ordering()` → `write_ordering_to_sheet()`. Note: the script's internal `ORDERING_HEADERS` is still the old 7-col N-T layout; the full 10-col N-W write (adding 備註(住服), 病歷號, 改期) is handled by the `admission-ordering` skill.
+- `generate_ordering.py` — Reads doctor sub-tables + round-robin order from a date sheet, generates ordering for N–V columns. Pattern: `extract_doctor_tables()` → `generate_ordering()` → `write_ordering_to_sheet()`. Note: the script's internal `ORDERING_HEADERS` is still the old 6-col N-S layout; the full 9-col N-V write (adding 備註(住服), 病歷號, 改期) is handled by the `admission-ordering` skill.
 - `rebuild_date_sheet.py` — Rebuilds a date sheet from scratch (main data + sub-tables + formatting) in ≈6 API calls to respect the 60/min Google Sheets quota. Driven by the `admission-sheet-rebuild` skill.
 - `refresh_emr.py` — Orchestrates `fetch_emr` + `process_emr` across multiple dates in one browser session, de-duping patients. Driven by the `admission-emr-refresh` skill.
 - `cathlab_keyin_04XX.py` — One script per cathlab date. Contains PATIENTS list (hardcoded per day), login/date-query/add/fix_diag functions. Copy the latest one as template for new dates.
@@ -57,7 +57,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 - `cathlab_page.html` — Saved HTML of WEBCVIS cathlab system for form field analysis.
 - `cathlab_id_maps.json` — pdijson/phcjson ID mappings (diagnosis→PDI ID, procedure→PHC ID).
 - `schedule_readable.txt` — Human-readable doctor schedule table (Mon–Fri, AM/PM rooms). A named cell = that doctor has a slot that day, even if tagged like "結構", "齡", "寬" — those are secondary-doctor / theme annotations, not "no slot".
-- `verify_cathlab.py` — Verify all admission patients appear in the corresponding WEBCVIS cathlab schedule. Reads from **sub-table (統整資料)**, cross-references N-W 的 W 欄（有值 → skip）。Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`
+- `verify_cathlab.py` — Verify all admission patients appear in the corresponding WEBCVIS cathlab schedule. Reads from **sub-table (統整資料)**, cross-references N-V 的 V 欄（有值 → skip）。Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`
 
 ## Workflow (6 steps)
 
@@ -68,10 +68,10 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 
 Full details in `每日入院清單工作流程.txt`. Critical rules:
 
-1. **Ordering columns N–W (10 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. **W 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 W 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
+1. **Ordering columns N–V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. **V 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 V 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
 2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
 3. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
-4. **Non-schedule doctors**: Never include in main round-robin. Ask user before merging with daily waitlist.
+4. **Non-schedule doctors**: Never include in main round-robin.
 5. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1. **Exception**: Friday admissions → Friday cathlab (same day, since Saturday has no schedule).
 6. **Cathlab safety**: Only add new entries, never modify or delete existing ones
 7. **Cathlab times**: scheduled AM=0600+, scheduled PM=1800+, non-schedule=H1 2100+ (note="本日無時段")
@@ -80,12 +80,11 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 10. **Sheet no-overwrite**: 寫入 Sheet 前必須先讀取目標區域，確認為空才寫入，絕不覆蓋現有資料
 11. **EMR auto-write**: EMR 摘要完成後自動寫入 Sheet，不需再問使用者確認
 12. **EMR manual login**: 不要自己開瀏覽器登入 EMR，等使用者手動登入後貼 session URL，再用 Playwright 帶 session 查詢
-13. **Waitlist merge**: 續等清單整合 → 有時段醫師接 round-robin、無時段最後，U欄標1
-14. **Ordering timing**: Claude 必須等使用者手動確認 F/G 欄後才能寫入 N-U 欄
-15. **EMR prefill F/G**: EMR 摘要完成後自動預填術前診斷(F)和預計心導管(G)，列出讓使用者檢查
-16. **Second doctor priority**: 第二醫師多人時（如浩、晨），葉立浩優先 key attendingdoctor2，其餘放備註
-18. **詹世鴻 Friday exception**: 週五入院時 詹世鴻 視為**非時段醫師**——lottery/入院序不進主 round-robin（排在無時段醫師後），cathlab 也排非時段（H1 2100+, note="本日無時段"）。兩邊一致。
-17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-W ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。
+13. **Ordering timing**: Claude 必須等使用者手動確認 F/G 欄後才能寫入 N-U 欄
+14. **EMR prefill F/G**: EMR 摘要完成後自動預填術前診斷(F)和預計心導管(G)，列出讓使用者檢查
+15. **Second doctor priority**: 第二醫師多人時（如浩、晨），葉立浩優先 key attendingdoctor2，其餘放備註
+16. **詹世鴻 Friday exception**: 週五入院時 詹世鴻 視為**非時段醫師**——lottery/入院序不進主 round-robin（排在無時段醫師後），cathlab 也排非時段（H1 2100+, note="本日無時段"）。兩邊一致。
+17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-V ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。
 
 ## WEBCVIS Cathlab System
 
@@ -107,9 +106,9 @@ Main data columns A–L (row 1 = header, row 2+ = patients):
   A=實際住院日 | B=開刀日 | C=科別 | D=主治醫師 | E=主診斷(ICD) | F=姓名
   G=性別 | H=年齡 | I=病歷號碼 | J=病床號 | K=入院提示 | L=住急
 
-Columns N–W (row 1 = header, row 2+ = ordered list):
+Columns N–V (row 1 = header, row 2+ = ordered list):
   N=序號 | O=主治醫師 | P=病人姓名 | Q=備註(住服) | R=備註
-  S=病歷號 | T=術前診斷 | U=預計心導管 | V=每日續等清單 | W=改期
+  S=病歷號 | T=術前診斷 | U=預計心導管 | V=改期
 
 Below main data: Doctor sub-tables (8 cols A–H per doctor block):
   [Doctor title row, merged]  e.g. "柯呈諭（2人）"

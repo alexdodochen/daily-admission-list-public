@@ -9,7 +9,7 @@ Reads emr_data_<date>.json, reads sub-tables from Sheet <date>, writes:
 - G col: auto-detected 預計心導管
 - A col (name): auto-corrected from EMR name
 
-Also updates main data G col and N-W P col if patient exists there.
+Also updates main data G col and N-V P col if patient exists there.
 """
 import sys, json, re, time
 sys.path.insert(0, '.')

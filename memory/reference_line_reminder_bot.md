@@ -21,12 +21,11 @@ type: reference
 - `/trigger-admission` — 入院序推播（07:50 每日）
 - `/trigger-admission-weekend` — 週六入院序推播
 - `/trigger-schedule` — 傳排程給 EP/PPM
-- `/trigger-waitlist` — 手動更新續等清單
 - `/trigger-reschedule` — 聯絡病人改期
 - `/trigger-combined` — Combined Meeting 倉惟思翰
 - `/trigger-cath-reminder` — W05 Combined Meeting VS 出席
 
-## 目前 cron-job.org 排程的 jobs（15 個，2026-04-17 快照）
+## 目前 cron-job.org 排程的 jobs（2026-04-19 快照）
 
 | 時間 | 名稱 | endpoint |
 |------|------|----------|
@@ -40,8 +39,9 @@ type: reference
 | 16:00 二 | W06 倉惟思翰明天有導管 | /trigger-combined |
 | 16:00 一 | W08 聯絡病人改期 | /trigger-reschedule |
 | 17:30 一二三四 | W04 傳排程給 EP/PPM | /trigger-schedule |
-| 17:30 一二三四 | W07 手動更新續等清單 | /trigger-waitlist |
 | */5 min | Keep Alive | /health |
+
+**2026-04-19 變更**：W07「手動更新續等清單」cron job 已刪除（續等清單功能全面下線），對應的 `/trigger-waitlist` endpoint 也應從 bot 移除（待下次 OPD 推上）。
 
 ## 新增 reminder 的流程
 

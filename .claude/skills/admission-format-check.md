@@ -1,6 +1,6 @@
 ---
 name: admission-format-check
-description: Use when user asks to check/fix/整理 formatting on date sheets (格式檢查, 格式修復, 整理格式, 檢查格式). Also invoke automatically after any write to date sheet to verify format. Validates main data A-L, N-W ordering, sub-tables, 2-row gaps, and chart number text format.
+description: Use when user asks to check/fix/整理 formatting on date sheets (格式檢查, 格式修復, 整理格式, 檢查格式). Also invoke automatically after any write to date sheet to verify format. Validates main data A-L, N-V ordering, sub-tables, 2-row gaps, and chart number text format.
 triggers:
   - "格式檢查"
   - "檢查格式"
@@ -29,8 +29,8 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 - Each patient row has A = `YYYY-MM-DD`, D (醫師), F (姓名), I (病歷號) non-empty
 - Col I (病歷號碼) must be **text format** (`@`) so leading zeros are preserved
 
-### 2. N-W ordering (if populated)
-- Row 1 header = 10 cols: `序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 每日續等清單 | 改期`
+### 2. N-V ordering (if populated)
+- Row 1 header = 9 cols: `序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期`
 - 序號 connected 1..N, O (醫師) and P (姓名) non-empty for filled rows
 - S (病歷號) **text format**
 
@@ -77,7 +77,7 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
   不符 → 當場報 + 重抽該病人 EMR，不沉默。
 
 ### 6. Chart number consistency
-- Same patient's 病歷號 in main I / sub B / N-W S must match (leading zeros preserved)
+- Same patient's 病歷號 in main I / sub B / N-V S must match (leading zeros preserved)
 
 ## Workflow
 
@@ -91,7 +91,7 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
    - **Gap < 2**: insert `2 - current_gap` blank rows BEFORE the title row (bottom-up so indexes stay valid). Use `insertDimension` with `inheritFromBefore: False`.
    - **Missing title row** (sub-header `姓名` appears without a `X（N人）` above): look up the doctor from main data D col using patient names, insert 3 blank rows before the sub-header, write the title at the topmost new row, merge A:H, apply blue header format.
    - **Title-declared N ≠ actual patient count**: rewrite the title text with corrected count.
-   - **Wrong N-W header** (9-col old layout instead of 10-col): rewrite row 1 of N:W.
+   - **Wrong N-V header** (old layout instead of current 9-col): rewrite row 1 of N:V.
    - **病歷號 not text format**: `repeatCell` with `numberFormat.type = TEXT` on col I / B / S.
 5. **Verify** — re-read and re-check. If still failing, report to user.
 

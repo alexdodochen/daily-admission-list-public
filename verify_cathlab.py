@@ -42,22 +42,22 @@ def get_cathlab_date_for_patient(admission_date_str, doctor, note):
 
 
 def read_rescheduled_charts(data):
-    """從 N-W ordering 區塊讀取有 W 欄值的 row，回傳 {病歷號: W值}。
-    row[15]=P 姓名、row[18]=S 病歷號、row[22]=W 改期。"""
+    """從 N-V ordering 區塊讀取有 V 欄值的 row，回傳 {病歷號: V值}。
+    row[15]=P 姓名、row[18]=S 病歷號、row[21]=V 改期。"""
     out = {}
     for row in data:
-        if len(row) < 23:
+        if len(row) < 22:
             continue
         chart = (row[18] or '').strip()
-        w = (row[22] or '').strip()
-        if chart and w and w != '改期':
-            out[chart] = w
+        v = (row[21] or '').strip()
+        if chart and v and v != '改期':
+            out[chart] = v
     return out
 
 
 def read_ordering(sheet_name):
     """讀取子表格（統整資料）病人清單，回傳病人列表。
-    有 W 欄改期標記的病人會被標成 skip。"""
+    有 V 欄改期標記的病人會被標成 skip。"""
     ws = get_worksheet(sheet_name)
     if not ws:
         raise ValueError(f"找不到工作表: {sheet_name}")
@@ -89,10 +89,10 @@ def read_ordering(sheet_name):
             diag = r[5].strip()
             cath = r[6].strip()
             note = r[7].strip()
-            w_mark = rescheduled.get(chart, '')
-            should_skip = any(kw in note for kw in SKIP_KEYWORDS) or bool(w_mark)
-            if w_mark:
-                note = (note + f' [改期→{w_mark}]').strip()
+            v_mark = rescheduled.get(chart, '')
+            should_skip = any(kw in note for kw in SKIP_KEYWORDS) or bool(v_mark)
+            if v_mark:
+                note = (note + f' [改期→{v_mark}]').strip()
 
             patients.append({
                 'seq': seq,

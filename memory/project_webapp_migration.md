@@ -34,7 +34,7 @@ type: project
 ## 待實作
 - **Phase 5**: Step 3 — EMR 擷取（Playwright + LLM 摘要）
 - **Phase 6**: Steps 5+6 — LINE 推播觸發 + 導管排程自動化（Playwright WEBCVIS）
-- **Phase 7**: 續等清單整合 + 定案生成 + 雙向 Sheet 同步
+- **Phase 7**: 雙向 Sheet 同步（2026-04-19 移除原本的續等清單整合 + 定案生成子項）
 
 ## 技術筆記
 - Starlette 1.0: 用 `_render()` helper 包裝 TemplateResponse keyword args

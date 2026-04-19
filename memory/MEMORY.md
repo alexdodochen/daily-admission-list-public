@@ -6,8 +6,8 @@
 - [所有資料寫 Google Sheet 不寫本地 xlsx](feedback_all_data_to_google_sheet.md) — 入院清單/EMR/排程只寫 Google Sheet，admission-image-to-excel skill 名稱誤導
 - [EMR 資料驗證](feedback_emr_validation.md) — 病歷號↔姓名吻合才寫入，不符合要標記錯誤
 - [傳給主治醫師確認表功能](feedback_doctor_sharing_table.md) — 指令「整理[日期]要傳給主治醫師的表格」，在J欄右側生成各醫師確認表（全部病人，依E欄排序）
-- [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師最後才加入，需問是否與每日續等清單合併
-- [入院序列清單欄位順序](feedback_ordering_columns.md) — N-W欄（10欄）：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單|改期
+- [抽籤與Round-Robin正確邏輯](feedback_lottery_roundrobin.md) — 真正的round-robin（A1→B1→C1→A2...），非時段醫師接在時段醫師之後
+- [入院序列清單欄位順序](feedback_ordering_columns.md) — N-V欄（9欄）：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|改期
 - [導管排程時間規則](feedback_cathlab_times.md) — AM 0600+、PM 1800+、非時段H1 2100+（備註「本日無時段」）、備註含「檢查」跳過
 - [不在選單的項目填備註](feedback_cathlab_note_fallback.md) — 預計心導管不在WEBCVIS選單時，改填note欄位
 - [導管排程keyin成功流程](feedback_cathlab_keyin_flow.md) — 完整WEBCVIS自動化技術：ADD新增、UPT修改、dTree popup ID映射、常用PDI/PHC ID
@@ -15,11 +15,11 @@
 - [CathDuration工作表](reference_cathduration.md) — Google Sheet中各類導管手術預估時間參考表（5大分類）
 - [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，Playwright帶URL查詢；摘要完自動寫入Sheet
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空，避免覆蓋手動填入的資料
-- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師續等加入佇列重跑round-robin、無時段醫師最後，V欄標1
 - [術前診斷只用子項目名稱](feedback_diag_short_names.md) — 不需母清單前綴，EP study/RFA > pAf 只寫 pAf
 - [EMR姓名自動校正不需提醒](feedback_emr_auto_name_fix.md) — 讀到EMR姓名就自動更新Sheet所有位置，不問使用者
 - [匯入後自動EMR摘要](feedback_auto_emr_after_import.md) — 病人確認後自動開始整理醫師病人清單+EMR，不需額外指令
 - [Web App 改造計畫](project_webapp_migration.md) — Phase 1-4 完成，專案在 每日入院清單_本地化/，下次做 Phase 5
+- [Phase 8 exe 打包計畫](project_webapp_phase8_exe.md) — 年度交接用雙擊 exe，預埋 service account + 首次下載 chromium，public mirror 為唯一 repo
 - [Session Limit 管控](feedback_session_limit.md) — 每次最多用 70% context，到達時停下通知
 - [LINE Reminder Bot repo](reference_line_reminder_bot.md) — repo/服務位置、部署 endpoint 清單、cron-job.org 15 個 job 快照、新增 reminder 流程
 - [cron-job.org + Render free tier 陷阱](reference_cronjob_render_gotchas.md) — 30s timeout 上限、自動停用、spin-down、cron-job.org 單 keep-alive 不可靠需 UptimeRobot 雙保險
@@ -27,20 +27,20 @@
 - [導管排程跳過檢查病人+第二醫師優先](feedback_cathlab_skip_exam.md) — 備註含「檢查」不排導管；第二醫師多人時葉立浩優先key，其餘放備註
 - [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄（已有則合併），純數字跳過
 - [星期五入院用星期五抽籤表](feedback_friday_admission_schedule.md) — 週五入院查週五時段表（週六無抽籤表）
-- [保留手動設定的入院序](feedback_preserve_manual_ordering.md) — 重新整理時若 N-W 欄已有資料視為手動敲定，除非使用者明確要求否則不得 round-robin 覆寫
+- [保留手動設定的入院序](feedback_preserve_manual_ordering.md) — 重新整理時若 N-V 欄已有資料視為手動敲定，除非使用者明確要求否則不得 round-robin 覆寫
 - [術前診斷下拉清單必須包含 CAD](feedback_dropdown_cad.md) — 即使 CAD 是母分類，user 仍要在 `下拉選單!A2:A66` 保留為可選項
 - [入院名單工作表格式統一規範](feedback_sheet_formatting.md) — 主表+所有子表區塊統一藍標題/白資料/邊框/全部靠左/G欄≥160；參考 4/13
 - [入院清單變動差異更新](feedback_admission_list_update.md) — 同日期新截圖要做 diff，保留 EMR/F/G/入院序，僅增刪變動病人
 - [子表格識別標頭](feedback_subtable_marker.md) — 整理主治醫師清單時在子表格第一列加識別字串方便定位
 - [星期五入院導管排同日](feedback_friday_cathlab_same_day.md) — 週五入院 cathlab 也排同天週五（非 N+1 週六）
 - [李柏增 2026/08 前不 key-in](feedback_libenzeng_skip.md) — 202608 前 李柏增 不填入主刀/第二主刀欄位
-- [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-W 入院序
+- [Keyin 資料來源以子表格為準](feedback_subtable_is_source.md) — 所有 cathlab keyin/verify 從統整資料讀取，不從 N-V 入院序
 - [結構日屬於正常時段](feedback_structural_day_is_slot.md) — 黃睦翔 Wed/Thu PM H2「結構」是正式時段，不是無時段
 - [張獻元週三入院多半是 keyin 錯誤](feedback_xianyuan_wed_mistake.md) — 王思翰/張倉惟借張獻元時段時應為週二入院，週三才 cath
 - [張獻元週三入院疑誤key（含 4/22 實例）](feedback_zhang_xianyuan_wed_admission.md) — 補充：4/22 潘韋儒為首例，備註標「⚠ 疑誤key」
-- [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-W/子表格/合併），跑掉當場修不留尾
-- [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-W S 欄先設 `@` text format 再寫，不然前導 0 會被吃
-- [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-W、子表格、2 行 gap、病歷號 text 格式
+- [動過病人清單必做格式防呆檢查](feedback_post_edit_format_check.md) — 寫入日期 sheet 後讀回驗證（主資料/N-V/子表格/合併），跑掉當場修不留尾
+- [病歷號儲存格一律文字格式](feedback_chart_number_text_format.md) — 主資料 I/子表 B/N-V S 欄先設 `@` text format 再寫，不然前導 0 會被吃
+- [admission-format-check skill](../.claude/skills/admission-format-check.md) — 統一格式驗證/修復入口：主資料、N-V、子表格、2 行 gap、病歷號 text 格式
 - [格式修復必須連動 EMR/EMR摘要](feedback_format_fix_must_preserve_emr.md) — 移 row 必用 insertDimension；禁止只移 A-B 讓 C-H 留原位；寫完用 chart number 驗對齊
 - [詹世鴻週五入院規則](feedback_zhan_friday_pm.md) — 週五詹世鴻 lottery 與 cathlab 都當非時段（最後排 / H1 2100+）
 - [時段表括號獨立列 = 也有時段](feedback_schedule_paren_name_is_slot.md) — 「(陳則瑋)」單獨一列＝該日該時段並列醫師，照正常時段排（非 2100 無時段）
@@ -49,3 +49,5 @@
 - [Google Sheet 寫入配額 60/min](feedback_gsheet_quota_batching.md) — 重建日期 sheet 壓縮到 ≤6 API calls：clear/format/merge/border/dropdown 全塞一個 batch_update
 - [Session結束清除暫存檔](feedback_cleanup_ephemeral_files.md) — workflow-docs 盤點最後刪 _* scratch/emr_data_*/cathlab_keyin_* 等暫存，不留到下個 session
 - [TAVI 在預計心導管下拉清單](feedback_tavi_dropdown_room.md) — TAVI 直接填 G/U，cathlab examroom 選「外科開刀房25房」，PHC ID 已存
+- [WEBCVIS 帳密由各使用者自填](feedback_webcvis_user_own_credentials.md) — 本地 app 設定頁不提供 WEBCVIS 預設帳密，避免盜用身份留稽核紀錄
+- [續等清單功能已永久移除](feedback_no_waitlist_feature.md) — 2026-04-19 下線：sheet 刪、欄位 N-W→N-V、skill/LINE cron/memory 全清，非時段醫師直接接 round-robin
