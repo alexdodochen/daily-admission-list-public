@@ -48,3 +48,4 @@
 - [EMR #divUserSpec 可推姓名/年齡/性別](feedback_emr_age_gender_from_header.md) — 只要病歷號對，就從 EMR header 自動校正主資料 F/G/H 欄（年齡由生日推算）
 - [Google Sheet 寫入配額 60/min](feedback_gsheet_quota_batching.md) — 重建日期 sheet 壓縮到 ≤6 API calls：clear/format/merge/border/dropdown 全塞一個 batch_update
 - [Session結束清除暫存檔](feedback_cleanup_ephemeral_files.md) — workflow-docs 盤點最後刪 _* scratch/emr_data_*/cathlab_keyin_* 等暫存，不留到下個 session
+- [TAVI 在預計心導管下拉清單](feedback_tavi_dropdown_room.md) — TAVI 直接填 G/U，cathlab examroom 選「外科開刀房25房」，PHC ID 已存

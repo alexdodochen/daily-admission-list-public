@@ -291,6 +291,8 @@
      - 預計心導管（依 Sheet G 欄）
        若不在 WEBCVIS 下拉選單 → 改填入 note 備註欄，
        預計心導管欄位維持空白
+       * 例外：TAVI 在 WEBCVIS 下拉選單中，直接填入（不走 note fallback）
+         → 檢查室選「開刀房」（xa-外科開刀房25房），不是 H1/H2/C1/C2
   5. 完成後重新查詢，比對舊資料確認沒被洗掉
 
   【安全規則】
@@ -454,6 +456,7 @@
   C1 → xa-CATH1      C2 → xa-CATH2
   BIKE → xa-BIKE      DOBU → xa-DOBU
   TEE → xa-TEE        TTT → xa-TTT
+  開刀房 → xa-外科開刀房25房（TAVI 專用）
 
   時間編碼：
   有時段 上午：0600 起，每人 +1（0600, 0601, 0602...）
