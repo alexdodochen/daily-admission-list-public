@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude:*)"
+      "Bash(claude:*)",
+      "Bash(cp \"C:/Users/dr/Downloads/Y/行政總醫師 claude/每日入院名單 Claude/.claude/skills/workflow-docs/SKILL.md\" ~/.claude/skills/workflow-docs/SKILL.md)",
+      "Bash(rm ~/.claude/commands/workflow-doc.md)",
+      "Bash(mkdir -p \".claude/skills/admission-image-to-excel\")",
+      "Bash(cp \"C:/Users/dr/.claude/skills/admission-image-to-excel/SKILL.md\" \".claude/skills/admission-image-to-excel/SKILL.md\")",
+      "Bash(git rm:*)",
+      "Bash(rm \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-doc.md\")",
+      "Bash(rm -rf \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-docs/\")"
     ]
   }
 }

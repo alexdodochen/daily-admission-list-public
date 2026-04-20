@@ -24,6 +24,7 @@
 - [Session Limit 管控](feedback_session_limit.md) — 每次最多用 70% context，到達時停下通知
 - [LINE Reminder Bot repo](reference_line_reminder_bot.md) — repo/服務位置、部署 endpoint 清單、cron-job.org 15 個 job 快照、新增 reminder 流程
 - [cron-job.org + Render free tier 陷阱](reference_cronjob_render_gotchas.md) — 30s timeout 上限、自動停用、spin-down、cron-job.org 單 keep-alive 不可靠需 UptimeRobot 雙保險
+- [LINE Messaging API 月配額](reference_line_monthly_quota.md) — 免費 200 則/月，月底爆後所有 trigger 500（429 monthly limit），月初 1 號 reset
 - [EMR完成後自動預填F/G欄](feedback_emr_prefill_fg.md) — EMR摘要完成後自動預填術前診斷/預計心導管，列出讓使用者檢查
 - [導管排程跳過檢查病人+第二醫師優先](feedback_cathlab_skip_exam.md) — 備註含「檢查」不排導管；第二醫師多人時葉立浩優先key，其餘放備註
 - [入院提示自動寫入子表格註記](feedback_hint_to_note.md) — L欄括號內文字自動帶入子表格H欄（已有則合併），純數字跳過
