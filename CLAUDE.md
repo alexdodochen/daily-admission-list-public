@@ -19,6 +19,9 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
 - **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
 - **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
+- **兩張主治醫師排程表分工**（不要混用）：
+  - `主治醫師抽籤表`（col A-E = 週一-五，`*2` 後綴 = 2 支籤）→ **入院抽籤唯一依據**
+  - `主治醫師導管時段表`（上午/下午 × H1/H2/C1/C2 × 週一-五）→ **Cathlab key-in 房間/時段依據**
 
 ## Architecture
 
