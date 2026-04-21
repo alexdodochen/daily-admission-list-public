@@ -355,7 +355,7 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
     """
     Write a doctor patient table block.
     patients = [{'name': ..., 'chart_no': ..., 'emr': '', 'emr_summary': '', ...}]
-    Returns next available row.
+    Returns next available row (≥ 2 blank rows after block).
     """
     sh = get_spreadsheet()
     sub_headers = ['姓名', '病歷號', 'EMR', 'EMR摘要', '手動設定入院序',
@@ -386,15 +386,68 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
         ][:num_cols]
         write_row(ws, row, vals, raw=False)
 
-    # Borders for entire block
     end_row = start_row + 1 + len(patients)
+
+    # Explicit WHITE background + normal text on patient rows
+    # (critical — duplicated sheets may retain blue/formatted residue;
+    #  user has flagged 白底跑掉 multiple times. See
+    #  memory/feedback_post_edit_format_check.md)
+    if len(patients) > 0:
+        sh.batch_update({"requests": [{
+            "repeatCell": {
+                "range": {"sheetId": ws.id,
+                          "startRowIndex": start_row + 1,  # first patient row (0-indexed)
+                          "endRowIndex": end_row,
+                          "startColumnIndex": 0,
+                          "endColumnIndex": num_cols},
+                "cell": {"userEnteredFormat": {
+                    "backgroundColor": WHITE,
+                    "textFormat": {"bold": False, "fontSize": 11},
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP",
+                }},
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment,wrapStrategy)"
+            }
+        }]})
+        time.sleep(0.3)
+
+    # Borders for entire block (title + subheader + patients)
     add_borders(ws, start_row, 1, end_row, num_cols)
+
+    # Clean blank-gap rows: WHITE bg, no border, not bold
+    # (must explicitly reset — otherwise duplicated formatting bleeds through)
+    gap_start = end_row  # 0-indexed = end_row+1..end_row+2 (2 blank rows)
+    sh.batch_update({"requests": [
+        {"repeatCell": {
+            "range": {"sheetId": ws.id,
+                      "startRowIndex": gap_start,
+                      "endRowIndex": gap_start + 2,
+                      "startColumnIndex": 0,
+                      "endColumnIndex": num_cols},
+            "cell": {"userEnteredFormat": {
+                "backgroundColor": WHITE,
+                "textFormat": {"bold": False, "fontSize": 11},
+            }},
+            "fields": "userEnteredFormat(backgroundColor,textFormat)"
+        }},
+        {"updateBorders": {
+            "range": {"sheetId": ws.id,
+                      "startRowIndex": gap_start,
+                      "endRowIndex": gap_start + 2,
+                      "startColumnIndex": 0,
+                      "endColumnIndex": num_cols},
+            "top": {"style": "NONE"}, "bottom": {"style": "NONE"},
+            "left": {"style": "NONE"}, "right": {"style": "NONE"},
+            "innerHorizontal": {"style": "NONE"}, "innerVertical": {"style": "NONE"},
+        }},
+    ]})
+    time.sleep(0.3)
 
     # Set dropdowns for F (col 6, 術前診斷) and G (col 7, 預計心導管) patient rows
     if num_cols >= 7 and len(patients) > 0:
         data_start = start_row + 2
         data_end = start_row + 1 + len(patients)
-        # F col (6) = 術前診斷, G col (7) = 預計心導管
         set_dropdown_from_range(ws, data_start, 6, data_end, 6,
                                 None, "='下拉選單'!$A$2:$A$66")
         set_dropdown_from_range(ws, data_start, 7, data_end, 7,
@@ -402,4 +455,4 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
         time.sleep(0.3)
 
     time.sleep(0.5)
-    return end_row + 2  # next available row (with 1 blank row gap)
+    return end_row + 3  # next available row (2 blank rows gap)
