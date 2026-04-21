@@ -25,3 +25,6 @@
 - [入院名單推播只傳N-Q四欄](feedback_admission_push_nq_only.md) — 只傳序號、主治醫師、病人姓名、備註(住服)
 - [Session結束清除暫存檔](feedback_cleanup_ephemeral_files.md) — workflow-docs 盤點最後刪 _* scratch/emr_data_*/cathlab_keyin_* 等暫存，不留到下個 session
 - [入院清單本地 App v2](project_local_app_v2.md) — 2026-04-18 在 friendly-solomon-026502 worktree 建好 FastAPI+三家LLM 本地版，Steps 1-4 完成，5-6 待做
+- [張獻元週三入院排同日PM導管](feedback_zhang_wed_sameday.md) — wd==2 張獻元 → 同日 PM C2（無 borrow 例外），類比週二 + 週五規則
+- [cp950亂碼時不可猜名字](feedback_cp950_no_guess_names.md) — Windows 終端中文亂碼時改走 PYTHONIOENCODING=utf-8 + 寫檔再 Read，絕不憑猜測回報
+- [write_doctor_table 格式繼承 bug](project_write_doctor_table_format_bug.md) — 子表格第一個病人 row 會殘留前 sheet 藍底，永久修正待套用

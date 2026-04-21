@@ -27,6 +27,7 @@ def get_cathlab_date_for_patient(admission_date_str, doctor, note):
     規則：
     - 週五入院 → 同日
     - 張獻元週二入院 + 註記無 王思翰/張倉惟 → 同日 PM（張獻元週二自己時段）
+    - 張獻元週三入院 → 同日 PM（張獻元週三自己時段，無 borrow 例外）
     - 其他 → N+1
     """
     dt = datetime.strptime(admission_date_str, "%Y%m%d")
@@ -34,6 +35,8 @@ def get_cathlab_date_for_patient(admission_date_str, doctor, note):
 
     if wd == 4:  # Friday
         cath = dt
+    elif doctor == '張獻元' and wd == 2:
+        cath = dt  # Wednesday same-day PM (all)
     elif doctor == '張獻元' and wd == 1 and not any(k in note for k in ZHANG_BORROWED_BY):
         cath = dt  # Tuesday same-day
     else:

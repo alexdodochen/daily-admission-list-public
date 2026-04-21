@@ -13,7 +13,7 @@ Hospital admission list management system for a cardiology department (成大醫
 ## Environment
 
 - **Platform**: Windows 11, Python 3.14, `python` (not `python3`)
-- **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly.
+- **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly. **Stdout redirect is also cp950 by default** — `python x.py > f.txt 2>&1` will still produce cp950 mojibake. Prefix with `PYTHONIOENCODING=utf-8 python x.py > f.txt 2>&1` (bash) or add `sys.stdout.reconfigure(encoding='utf-8')` at the top of the script. If you see garbled Chinese output like `��@�E`, stop and re-run with UTF-8 — never guess names from mojibake.
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
 - **Sheet ID**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
