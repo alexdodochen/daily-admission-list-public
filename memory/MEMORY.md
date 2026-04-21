@@ -54,3 +54,4 @@
 - [TAVI 在預計心導管下拉清單](feedback_tavi_dropdown_room.md) — TAVI 直接填 G/U，cathlab examroom 選「外科開刀房25房」，PHC ID 已存
 - [WEBCVIS 帳密由各使用者自填](feedback_webcvis_user_own_credentials.md) — 本地 app 設定頁不提供 WEBCVIS 預設帳密，避免盜用身份留稽核紀錄
 - [續等清單功能已永久移除](feedback_no_waitlist_feature.md) — 2026-04-19 下線：sheet 刪、欄位 N-W→N-V、skill/LINE cron/memory 全清，非時段醫師直接接 round-robin
+- [cp950亂碼時不可猜名字](feedback_cp950_no_guess_names.md) — Windows 終端中文亂碼時改走 PYTHONIOENCODING=utf-8 + 寫檔再 Read，絕不憑猜測回報
