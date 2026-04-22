@@ -56,3 +56,4 @@
 - [續等清單功能已永久移除](feedback_no_waitlist_feature.md) — 2026-04-19 下線：sheet 刪、欄位 N-W→N-V、skill/LINE cron/memory 全清，非時段醫師直接接 round-robin
 - [cp950亂碼時不可猜名字](feedback_cp950_no_guess_names.md) — Windows 終端中文亂碼時改走 PYTHONIOENCODING=utf-8 + 寫檔再 Read，絕不憑猜測回報
 - [DIAG_RULES 'angina' 對 TET 報告誤判](feedback_diag_angina_false_positive.md) — TET 報告的「Angina Index」會讓 r/o CAD 病人 F 欄誤預填 Angina pectoris，需手動改 CAD
+- [WEBCVIS 既有排程時間/室/主刀不動](feedback_webcvis_preserve_existing_slot.md) — ADD SKIP 後不要另寫 UPT 改 examroom/time/doctor，F/G 的 UPT 照舊可做
