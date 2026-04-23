@@ -1,37 +1,36 @@
 ============================================
-  交班文件 — Last Updated: 2026-04-21 (session end)
+  交班文件 — Last Updated: 2026-04-23 evening
 ============================================
 
 【本次 session 做了什麼】
-  1. 4/23 新清單匯入 + EMR 萃取（14 人，diff-update：1 刪 / 4 新 / 10 留）
-  2. 4/22 重抽：廖瑀 當 黃鼎鈞*2 籤進主 round-robin（N-V 已重寫 9 列，S 欄 TEXT）
-  3. 發現並修 write_doctor_table 白底跑掉根因（5 根因 postmortem）
-  4. 4/22 驗證：張獻元 週三入院兩人原已在 4/22 PM CATH2 同日時段
-  5. verify_cathlab.py 加「張獻元 週三入院 → 同日」規則；工作流程 txt 同步更新
+  1. 20260424（週五）入院序列 3 人（李文煌/林裕興、詹世鴻/劉清和、詹世鴻/郭慶彰）
+     - 子表格 E 欄填好、N-V ordering 寫好、header V 改「改期」、S 欄 TEXT 格式
+  2. verify_cathlab.py 20260424 跑 → 3/3 ALL CLEAR（cathlab keyin 由使用者手動完成）
+  3. 釐清詹世鴻週五入院 = 非時段醫師 → 標準 H1 2100+（不是他 AM C2）
+  4. 更新 feedback_no_reconfirm_workflow.md：已有成文規則時不要多問
 
 【當前狀態】
-  - Branch: main（3 檔 modified + 1 檔 untracked，尚未 commit）
-  - 部署/執行狀態: 4/22 N-V 已定案、4/23 入院清單已匯入＋EMR 完成（F/G 待使用者審）
-  - 最新 commit: ca8e368 docs: 4/21 入院序 + LINE monthly quota memory
+  - Branch: main（剛 pull 過 origin/main，clean）
+  - 部署/執行狀態: 20260424 入院序 N-V 已寫、cathlab 已 key（使用者手動）、verify 通過
+  - 最新 commit (pre-sync): acfccc3 docs: 4/22 — 4/23 入院序排定 + 4/24 cathlab 驗證
 
 【下一步該做什麼】
-  - 使用者審 4/23 F/G → Claude 做 4/23 抽籤 + N-V 定案 + cathlab keyin（4/24 排程）
-  - 若要繼續本 session 未完的 4/23 主 round-robin：星期五 pool = 劉嚴文/陳柏偉/陳儒逸/詹世鴻/李文煌/柯呈諭/鄭朝允/陳則瑋（各 1 籤）
+  - 若 user 授權，修 2 個過時 SKILL.md（HANDOFF 4/20 也提過）：
+    1. admission-lottery — xlsx/openpyxl 整份改 gspread、續等清單已下線（2026-04-19）、定案 workflow 廢棄、加 *2 直讀 sheet、加詹週五非時段、加 五→五 規則
+    2. admission-ordering — N-S 6 col → N-V 9 col、續等段落刪、補詹週五非時段 + 五→五
+  - 4/27（一）或之後若有新入院清單 → 走標準流程
 
 【已知問題 / 卡關】
-  - 4/22 邱鵬勳（備註檢查 CCTA）雖依規則 SKIP，但實際 WEBCVIS 有排 — 使用者自行決定是否手動刪
+  - 20260424 sheet 的 N-V header 舊版「每日續等清單」本次改為「改期」；其他未來 sheet 若由 rebuild_date_sheet.py 建好應已正確，遇到再改
 
 【不要重蹈覆轍】
-  - S 欄（病歷號）寫入要用 updateCells + userEnteredValue.stringValue + numberFormat TEXT，不要用 ws.update() 配 USER_ENTERED（前導 0 會被吃）
-  - 子表格 patient row 要顯式刷 WHITE bg + 2 列 gap + 空列清框（duplicateSheet 殘留會透）
-  - 張獻元 週三入院病人 cathlab = 同日 PM，不要走 N+1（週四無時段）
-  - 工作流跑完整條龍，不用每 phase 問使用者要不要繼續
+  - 不要把 "排 X 週五 PM 導管時間" 讀成「用他 AM C2 時段」→ 週五詹是非時段 = H1 2100+ note="本日無時段"
+  - 非時段醫師 cathlab 一律 routine H1 2100+，不要反覆問「要排哪間」（CLAUDE.md rule #7）
+  - 規則衝突（CLAUDE.md vs Sheet）才要請 user 裁決，其他照既定規則直接做
 
 【相關檔案】
-  - gsheet_utils.py (write_doctor_table 白底+2列gap 修)
-  - verify_cathlab.py (張獻元週三規則)
-  - 每日入院清單工作流程.txt (張獻元週三病人規則)
-  - memory/feedback_zhang_xianyuan_wed_same_day.md (新增)
+  - 20260424 sheet（Google Sheets 遠端）
+  - memory/feedback_no_reconfirm_workflow.md（更新）
 
 【重要 memory 檔】
-  - memory/feedback_zhang_xianyuan_wed_same_day.md
+  - memory/feedback_no_reconfirm_workflow.md（補充「已成文規則不要多問」）
