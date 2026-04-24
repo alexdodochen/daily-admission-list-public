@@ -57,3 +57,4 @@
 - [cp950亂碼時不可猜名字](feedback_cp950_no_guess_names.md) — Windows 終端中文亂碼時改走 PYTHONIOENCODING=utf-8 + 寫檔再 Read，絕不憑猜測回報
 - [DIAG_RULES 'angina' 對 TET 報告誤判](feedback_diag_angina_false_positive.md) — TET 報告的「Angina Index」會讓 r/o CAD 病人 F 欄誤預填 Angina pectoris，需手動改 CAD
 - [WEBCVIS 既有排程時間/室/主刀不動](feedback_webcvis_preserve_existing_slot.md) — ADD SKIP 後不要另寫 UPT 改 examroom/time/doctor，F/G 的 UPT 照舊可做
+- [各日時段醫師清單（lottery 用）](reference_lottery_by_weekday.md) — 抽籤時比對當日欄，非時段 H1 2100+；抽籤表權威，勿從 schedule_readable.txt 猜測
