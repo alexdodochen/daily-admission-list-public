@@ -1,51 +1,65 @@
 ============================================
-  交班文件 — Last Updated: 2026-04-24 evening
+  交班文件 — Last Updated: 2026-04-26 evening
 ============================================
 
 【本次 session 做了什麼】
-  1. 20260426 入院清單 diff 更新（5 人，+3 新增 -1 取消 -2 保留）
-     - 取消: 梁百煜（詹世鴻）
-     - 保留（含 EMR/F/G）: 鄭沈盈（劉）、黃彭玉娥（廖）
-     - 新增: 陳云英（詹）、王陳玉英（張獻元）、黃秋煌（黃睦翔）
-  2. 3 位新病人跑 EMR + process_emr auto-detect F/G
-     - 陳云英 AS / Left heart cath.（詹 04/02 門診）
-     - 王陳玉英 **無門診 + fallback 空 = 無資料**（F/G 使用者手動 PAOD / PTA for FG）
-     - 黃秋煌 CHF / Left heart cath. → 使用者改 G=空、H=TTEER
-  3. N-V 入院序：使用者指定 1=鄭沈盈 2=黃秋煌（手動），3-5 round-robin（陳云英/黃彭玉娥 時段前、王陳玉英 非時段後）
-  4. V 欄延後標記：
-     - 黃秋煌 V=20260428（改 Tue，使用者手動排 4/28）
-     - 王陳玉英 V=20260429（改 Wed 張獻元時段，使用者手動排 4/29 PM）
-  5. 4/27 Mon cathlab keyin（cathlab_keyin_0427.py）
-     - 3 人 WEBCVIS 早已 pre-keyed → ADD SKIP 全部、UPT 只補 F/G pdijson/phcjson（照 `feedback_webcvis_preserve_existing_slot.md`）
-     - verify_cathlab.py 20260426 → 3 OK / 0 MISSING / 2 SKIP（V 標記的兩位）
-  6. **新增 memory `reference_lottery_by_weekday.md`** — 各日（Mon/Tue/Wed/Thu/Fri）時段醫師清單，lottery 時對照用，以後不要靠 schedule_readable.txt 猜
-     - 觸發原因：本 session 我把張獻元/劉嚴文誤當 Mon 時段醫師，使用者糾正並明確要求「記在 memory 對著抽」
-     - 權威來源：Google Sheet 工作表 `主治醫師抽籤表`
+  1. 修兩個 skill (admission-lottery / admission-ordering)：補 reference_lottery_by_weekday.md
+     引用 + 警告不要查 schedule_readable.txt（commit bcb9ca0）
+  2. 補建 4/24 HANDOFF 漏建的 memory：reference_lottery_by_weekday.md（各日時段醫師 snapshot）
+  3. 4/27 入院清單 diff-update：
+     - 主資料 4 人：鄭/徐/李 補床號+年齡+1；row 5 黃秋煌(01433685) 整列換成 陳爽(04668242)
+     - 黃睦翔 sub-table row 9: 黃秋煌 → 陳爽 CAD/Left heart cath.
+     - 陳爽 EMR 院內無門診（fallback 也空）→ 使用者手動給 CAD/LHC
+  4. 4/27 入院序 N-V 7 人 round-robin（陳儒逸 1, 黃睦翔 2, 張獻元 3 — 使用者語音指定順序，
+     張獻元 sub-table 8人標題中目前實 3 人也加入）
+  5. 4/28 cathlab keyin 陳爽 — WEBCVIS 已 pre-keyed → SKIP ADD + UPT 補 F/G
+  6. **3 件 token/速度優化**（commit b2ccee2）：
+     - cathlab_keyin.py 通用 driver（吃 cathlab_patients_*.json）取代每天 200 行手刻 keyin
+     - gsheet_utils.batch_write_cells(updates) 一次 batch 多 cell write
+     - .claude/skills/admission-diff-update.md 新 skill 封裝今天的 diff 流程
+     預估同類 session token -75% / wall-time -60%
+  7. 修 admission-cathlab-keyin skill：原本 body 是「404: Not Found」(stub 壞掉至少 2 週)，
+     重寫接到新 cathlab_keyin.py 通用版
+  8. CLAUDE.md / 每日入院清單工作流程.txt 同步更新
 
 【當前狀態】
-  - Branch: main
-  - 20260426 sheet 完整（主資料 5 人 + N-V 入院序 + 5 子表格 + V 延後 2 筆）
-  - 20260427 WEBCVIS: 3 人 F/G 補完
-  - 20260428 / 20260429: 使用者自行手動 WEBCVIS keyin（V 已標記 skip 自動化）
-  - Memory index 已更新
+  - Branch: main, clean (即將 commit workflow-docs 變更)
+  - 20260427 sheet 完整：主資料 4 人 + 5 子表格 + N-V 7 人 + V 改期 2 筆
+  - 20260428 WEBCVIS: 9 charts (4 = 4/27 admit + 黃秋煌 V轉 + 3 張獻元 batch + 1 unknown)
+  - 最新 commit: b2ccee2 feat: generic cathlab_keyin + batch_write_cells helper +
+    admission-diff-update skill
 
 【下一步該做什麼】
-  - 使用者手動 4/28 黃秋煌（黃睦翔 PM C2）、4/29 王陳玉英（張獻元 Wed PM C2 or H2）
-  - 若 user 授權，修 2 個過時 SKILL.md（HANDOFF 4/23 也提過，未動）：
-    1. admission-lottery — xlsx/openpyxl 整份改 gspread、續等清單已下線、加 *2 直讀 sheet、加詹週五非時段、加 五→五 規則、**加 reference_lottery_by_weekday.md 引用**
-    2. admission-ordering — N-S 6 col → N-V 9 col、續等段落刪、補詹週五非時段 + 五→五
+  - 4/28 黃秋煌 TTEER (使用者已手動 keyed)、4/29 王陳玉英 (張獻元 Wed PM C2 or H2，使用者手動)
+  - 下次有截圖更新已存在 sheet → /admission-diff-update + 貼 image + EMR session URL，
+    一條龍跑完
+  - 下次 cathlab keyin → 寫 cathlab_patients_YYYYMMDD.json + python cathlab_keyin.py <json>，
+    不要再複製舊 per-date keyin 腳本
 
 【已知問題 / 卡關】
-  - 無；verify_cathlab 通過
+  - 張獻元 sub-table title 寫「8人」實 3 人，差 5 個 placeholder。本 session 入院序按實 3 人排，
+    若使用者後續補進 5 人需重排 N-V
 
 【不要重蹈覆轍】
-  - **Lottery 時段醫師一定要查 `主治醫師抽籤表` 或 `reference_lottery_by_weekday.md` memory，不要看 `schedule_readable.txt` 自己猜**。兩表用途不同：抽籤表權威 lottery、時段表查 cathlab 房間。
-  - Diff-update 前先讀既有 sheet → 用病歷號 diff → 保留 EMR/F/G
-  - WEBCVIS ADD SKIP 後只做 F/G UPT，不要改 examroom/time/doctor
+  - **Lottery 時段醫師查 主治醫師抽籤表 / reference_lottery_by_weekday.md，不要看
+    schedule_readable.txt（房間表，不同用途）**
+  - **cathlab keyin 的 PDI/PHC ID 一律從 cathlab_id_maps.json 載**，硬編會猜錯
+    （我踩過：SSS 寫成 PDI20090908120038 應為 PDI20090908120026；
+    PTA 寫成 PHC20090907120010 應為 PHC20090907120007）
+  - HANDOFF.md 寫「已建某 memory」務必驗證該檔真的存在（4/24 HANDOFF 寫了沒建）
+  - 圖片病人姓名可能截斷顯示（徐黃素 vs 徐黃素燕）→ **病歷號才是 PK**
+  - 圖片中的病人和 sheet row 5 醫師相同（都黃睦翔）但病歷號不同 = 不同病人，不要當成更新
 
-【相關檔案（本 session 產出）】
-  - `cathlab_keyin_0427.py`（latest template）
-  - `_update_0426.py` / `_ordering_0426.py`（ephemeral）
-  - `_cathlab_keyin_0427.log` / `_verify_cathlab_20260426.txt`
-  - `emr_data_20260426.json`
-  - `memory/reference_lottery_by_weekday.md`（新）
+【相關檔案（本 session 產出 / 修改）】
+  - cathlab_keyin.py（新，通用 driver）
+  - gsheet_utils.py（加 batch_write_cells）
+  - .claude/skills/admission-diff-update.md（新）
+  - .claude/skills/admission-cathlab-keyin.md（重寫，原本壞掉）
+  - .claude/skills/admission-lottery.md / admission-ordering.md（加 reference 引用）
+  - CLAUDE.md / 每日入院清單工作流程.txt（同步）
+
+【重要 memory 檔（本 session 新增/更新）】
+  - reference_lottery_by_weekday.md（4/24 漏建，補上）
+  - feedback_cathlab_id_maps_only.md（新；ID 一律從 JSON 載）
+  - project_session_optimizations_0426.md（新；3 件優化記錄）
+  - MEMORY.md（更新索引）

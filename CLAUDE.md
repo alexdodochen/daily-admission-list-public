@@ -31,7 +31,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 2. **Lottery** (`admission-lottery`): Random draw → doctor sub-tables (A–H below main data) + round-robin ordering (N–P)
 3. **EMR extraction** (`admission-emr-extraction`): Playwright reads Web EMR (`http://hisweb.hosp.ncku/Emrquery/`) → writes C/D cols in sub-tables → auto-prefills F/G
 4. **Ordering** (`admission-ordering`): Reads sub-tables F/G after user confirms → writes N–V columns
-5. **Cathlab keyin** (`admission-cathlab-keyin`): Per-date scripts (`cathlab_keyin_04XX.py`) drive Playwright against WEBCVIS — Phase 1 ADDs patients, Phase 2 UPTs to fix pdijson/phcjson
+5. **Cathlab keyin** (`admission-cathlab-keyin`): `python cathlab_keyin.py cathlab_patients_YYYYMMDD.json` (generic driver) — Phase 1 ADDs patients (dedupe by chart), Phase 2 UPTs to fix pdijson/phcjson. ID maps loaded from `cathlab_id_maps.json`. **Old per-date `cathlab_keyin_MMDD.py` pattern is deprecated** as of 2026-04-26.
 
 **EMR data pipeline**: `fetch_emr.py` (Playwright → `emr_data_<date>.json`) → `process_emr.py` (JSON → summary generation + F/G auto-detect → Sheet writes). The JSON intermediary allows re-processing without re-fetching. Auto-detection uses keyword rules (`DIAG_RULES` for F col, `CATH_RULES` for G col in `process_emr.py`).
 
@@ -42,15 +42,15 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 **Ephemeral vs permanent files** — the repo mixes canonical modules with per-date scratch:
 
 - **Permanent (reference implementations, safe to import/copy)**: `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, and the active skills under `.claude/skills/`.
-- **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, and **all per-date driver scripts** — `cathlab_keyin_04XX.py`, `process_emr_04XX.py` / `write_emr_04XX.py` / `extract_emr_04XX.py`, plus one-off fix scripts like `cathlab_fix_*.py`, `cathlab_redo_04XX.py`, `cathlab_keyin_backfill_*.py`. Once the date has passed they become historical artifacts — keep the latest of each family as a template, prefix older ones with `_`.
+- **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `cathlab_patients_*.json` per-date input, `每日入院名單*.xlsx` local backups, `20260*.jpg` source screenshots, plus old per-date driver scripts (`cathlab_keyin_04XX.py`, `process_emr_04XX.py`, `cathlab_fix_*.py`, `cathlab_redo_04XX.py`, `cathlab_keyin_backfill_*.py`) — these are all **deprecated** as of 2026-04-26 in favor of generic `cathlab_keyin.py` + JSON input. Old date scripts are historical artifacts; never copy them as templates.
 
 ## Key Files
 
-- `gsheet_utils.py` — Shared Google Sheets module. Provides `get_worksheet()`, `write_range()`, `format_header_row()`, `write_doctor_table()`, `set_dropdown_from_range()`, etc. All scripts import from here.
+- `gsheet_utils.py` — Shared Google Sheets module. Provides `get_worksheet()`, `write_range()`, `batch_write_cells(updates)` (一次 API 推多 cell/range，省 quota + 加速), `format_header_row()`, `write_doctor_table()`, `set_dropdown_from_range()`, etc. All scripts import from here.
 - `generate_ordering.py` — Reads doctor sub-tables + round-robin order from a date sheet, generates ordering for N–V columns. Pattern: `extract_doctor_tables()` → `generate_ordering()` → `write_ordering_to_sheet()`. Note: the script's internal `ORDERING_HEADERS` is still the old 6-col N-S layout; the full 9-col N-V write (adding 備註(住服), 病歷號, 改期) is handled by the `admission-ordering` skill.
 - `rebuild_date_sheet.py` — Rebuilds a date sheet from scratch (main data + sub-tables + formatting) in ≈6 API calls to respect the 60/min Google Sheets quota. Driven by the `admission-sheet-rebuild` skill.
 - `refresh_emr.py` — Orchestrates `fetch_emr` + `process_emr` across multiple dates in one browser session, de-duping patients. Driven by the `admission-emr-refresh` skill.
-- `cathlab_keyin_04XX.py` — One script per cathlab date. Contains PATIENTS list (hardcoded per day), login/date-query/add/fix_diag functions. Copy the latest one as template for new dates.
+- `cathlab_keyin.py` — **Generic cathlab keyin driver**（取代每天 per-date `cathlab_keyin_MMDD.py` pattern）。Usage: `python cathlab_keyin.py cathlab_patients_YYYYMMDD.json`。JSON schema 在 driver docstring。ID maps 必從 `cathlab_id_maps.json` 載（見 `feedback_cathlab_id_maps_only.md` — 硬編 ID 會猜錯）。兩階段 ADD→UPT，dedupe by chart no。
 - `fetch_emr.py` — Generic Playwright-based EMR fetcher. Takes session URL + chart/doctor pairs, writes results to `emr_data_<date>.json`. Uses sentinel-stamping anti-race-condition strategy (stamps leftFrame/mainFrame before query, polls until sentinel cleared + real content loaded). Handles fallback to whitelist doctors when attending doctor has no clinic visit.
 - `process_emr.py` — Generic EMR processor. Reads `emr_data_<date>.json`, generates 4-section summaries, auto-detects F/G values via `DIAG_RULES`/`CATH_RULES` keyword matching, corrects names/age/gender from `#divUserSpec`, writes C/D/F/G to sub-tables + updates main data. Usage: `python process_emr.py 20260419`
 - `process_emr_04XX.py` / `write_emr_04XX.py` / `extract_emr_04XX.py` — Per-date EMR scripts (ephemeral). Same copy-latest-as-template pattern as cathlab scripts.

@@ -241,17 +241,26 @@
   系統：http://cardiopacs01.hosp.ncku:8080/WEBCVIS/HCO/HCO1W001.do
   帳號/密碼：107614 / 107614
 
+  Driver：python cathlab_keyin.py cathlab_patients_YYYYMMDD.json
+        （2026-04-26 起改用通用 driver，舊的 cathlab_keyin_MMDD.py 廢止）
+
   你的操作：
   - 「導管排程」或「key-in 導管」
-  - 備註欄寫「不排程」的病人 → 直接跳過不 key
+  - 備註欄寫「不排程」「檢查」的病人 → 從 JSON 排除
   - 沒有填術前診斷/預計心導管的病人 → 仍然要 key，照主治醫師時段排
+  - V 欄有值（改期）的 ordering row → 從 JSON 排除
 
   Claude 會：
   0. **病人清單來源：子表格（統整資料，主治醫師病人清單）**，不是 N-V 入院序
      （N-V 是給住服的子集；子表格才有所有需要做 cathlab 的病人）
-  1. 設定日期為導管日（入院隔天；但週五入院 → cathlab 排同一天週五，週六無排程）
-  2. 先擷取並保存現有排程資料
-  3. 比對病歷號，跳過已存在的病人
+  1. 整理成 cathlab_patients_YYYYMMDD.json（每病人 cathlab_date / name / chart /
+     doctor / second / room / time / diagnosis / procedure / note）
+  2. 跑 python cathlab_keyin.py <json>，driver 自動：
+     - 設定日期為導管日（入院隔天；週五入院 → 同日；張獻元週三入院 → 同日 PM）
+     - WEBCVIS 登入 + 兩階段（Phase 1 ADD / Phase 2 UPT 補 pdijson/phcjson）
+     - 病歷號 dedupe → 已存在自動 SKIP ADD（仍跑 UPT 補 F/G）
+     - PDI/PHC ID 從 cathlab_id_maps.json 載入（66 diag + 22 proc 已驗證；
+       新術式/診斷 ID 缺 → 報錯，使用者去 WEBCVIS 查值補進 json，不要自編）
   4. 依主治醫師時段表填入：
      - 檢查室（H1/H2/C1/C2）
      - 時間（有時段 AM 0600+/有時段 PM 1800+/無時段 H1 2100+）
@@ -322,7 +331,8 @@
   2. 刪除以下 pattern：
      - _*.py / _*.txt / _*.json / _*.png / _*.log（底線前綴 scratch）
      - emr_data_*.json（EMR 快取）
-     - cathlab_keyin_*.py（每日排程腳本）
+     - cathlab_patients_*.json（每日排程 JSON 輸入，跑完即可丟）
+     - cathlab_keyin_*.py / cathlab_redo_*.py / cathlab_fix_*.py（已廢止的舊 per-date 腳本）
      - cathlab_*_final.png / cathlab_error_*.png（驗證截圖）
   3. 回報刪了幾個檔案
 
