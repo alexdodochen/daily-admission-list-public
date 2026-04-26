@@ -72,7 +72,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 Full details in `每日入院清單工作流程.txt`. Critical rules:
 
 1. **Ordering columns N–V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. **V 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 V 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
-2. **Round-robin lottery**: True round-robin (A1→B1→C1→A2→B2→C2→A3...), not block-by-doctor
+2. **Round-robin lottery (兩段獨立 RR)**: 時段組（在當日 cathlab 抽籤池）彼此 RR 排完 → 非時段組（不在池）再彼此 RR 接後面。**絕對不要時段+非時段混在一起 RR**（per `feedback_lottery_roundrobin.md` — 使用者多次糾正的關鍵規則）。組內：A1→B1→C1→A2→C2... 真 RR，醫師用完就 skip。組內醫師順序 = 真隨機抽籤 (`random.shuffle()`)，**不可**借用 sub-table 的醫師出現順序（兩者是獨立事件）。
 3. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 4. **Non-schedule doctors**: Never include in main round-robin.
 5. **Cathlab direction**: Patients admitted on day N → cathlab scheduled on day N+1. **Exception**: Friday admissions → Friday cathlab (same day, since Saturday has no schedule).

@@ -103,10 +103,76 @@ Header (row 1)：
 
 若 header 仍是舊版「每日續等清單」→ 寫 V1 = `改期`。
 
-Round-robin 規則：
-- A1 → B1 → C1 → A2 → B2 → C2 → A3 ...（真 round-robin，不是 block-by-doctor）
-- 有時段醫師先走完 → 非時段醫師（詹週五、無時段醫師）接後面
-- 醫師用完就 skip
+Round-robin 規則（**兩段獨立 round-robin，絕對不要把時段+非時段醫師混在一起 RR**）：
+
+1. **時段組** (在當日 cathlab 抽籤池內的醫師) 彼此抽籤決定組內順序 → round-robin **排完所有時段組病人**
+   - A1 → B1 → C1 → A2 → C2 → C3 ...（時段醫師之間真 RR，醫師用完就 skip）
+2. **非時段組** (不在抽籤池) 彼此抽籤決定組內順序 → 接在時段組**之後**，自己再 round-robin
+   - D1 → E1 → D2 ...（非時段醫師之間真 RR）
+
+**範例（5/3 sheet, cathlab 5/4 Mon col A pool）：時段=黃鼎鈞(2)/廖瑀(1)/詹世鴻(3) 共 6 人，非時段=黃睦翔(1)/鄭朝允(1) 共 2 人**
+
+✅ 正確（兩段 RR）：
+```
+1. 黃鼎鈞 - 徐豐淇   ┐
+2. 廖瑀  - 陳薏安    │ 時段組 RR
+3. 詹世鴻 - 周明仁   │ (6 人)
+4. 黃鼎鈞 - 吳宇豪   │
+5. 詹世鴻 - 謝添福   │
+6. 詹世鴻 - 吳峰欽   ┘
+7. 黃睦翔 - 劉廖寶蓮 ┐ 非時段組 RR
+8. 鄭朝允 - 陳吉忠   ┘ (2 人)
+```
+
+❌ 錯誤（5 醫師全部一起 RR，把非時段插在時段中間）：
+```
+1. 黃鼎鈞 - 徐豐淇
+2. 廖瑀  - 陳薏安
+3. 詹世鴻 - 周明仁
+4. 黃睦翔 - 劉廖寶蓮  ← 錯
+5. 鄭朝允 - 陳吉忠     ← 錯
+...
+```
+
+**組內醫師順序的 lottery（權威算法）**：
+
+```python
+import random
+from gsheet_utils import get_spreadsheet
+sh = get_spreadsheet()
+lottery_ws = sh.worksheet('主治醫師抽籤表')
+COL_IDX = weekday + 1  # 1=Mon, 2=Tue, ...
+
+# Step 1: 建 weighted pool — *2 = 兩支籤 (出現 2 次)
+pool = []
+for v in lottery_ws.col_values(COL_IDX)[1:]:
+    v = str(v or '').strip()
+    if not v: continue
+    name = v.replace('*2', '').strip()
+    weight = 2 if '*2' in v else 1
+    pool.extend([name] * weight)
+
+# Step 2: 詹週五特例 — 週五入院時詹世鴻強制非時段
+if weekday == 4:  # Friday
+    pool = [d for d in pool if d != '詹世鴻']
+
+# Step 3: random.shuffle + first-appear dedupe → lottery 順序
+random.shuffle(pool)
+seen, order = set(), []
+for d in pool:
+    if d not in seen: seen.add(d); order.append(d)
+
+# Step 4: 分時段/非時段 (admit_doctors 從主資料 D 欄取)
+slot_docs = [d for d in order if d in admit_doctors]
+non_slot  = [d for d in admit_doctors if d not in pool]
+random.shuffle(non_slot)  # 非時段組組內也要 random shuffle
+final_doctor_order = slot_docs + non_slot
+```
+
+**重點規則：**
+- `*2` 後綴 = 兩支籤（pool 中出現 2 次，shuffle 後早被抽中機率高）
+- Sub-table 順序和 N-V lottery 是**獨立事件** — sub-table 只反映 rebuild 當下的 shuffle，N-V 排序時必須跑新的 `random.shuffle()`
+- 不可拿 sub-table 內醫師出現順序當 N-V lottery 結果（**萬萬不可**，使用者明確糾正）
 
 #### 5c. 欄位資料來源
 

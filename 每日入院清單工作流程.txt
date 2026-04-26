@@ -108,10 +108,34 @@
   - 不在抽籤表的醫師絕對不能放入主抽籤的 round-robin
   - 非時段醫師的序號接在有時段醫師最後一位病人之後
 
-  【Round-Robin 排法】
-  真正的 round-robin：A1→B1→C1→...→A2→B2→C2→...
-  也就是每位醫師的第一個病人先排，再排每位醫師的第二個病人。
-  非時段醫師的病人在所有時段醫師排完後才加入。
+  【Round-Robin 排法（兩段獨立 RR — 重要！）】
+  時段組（在當日抽籤表內的醫師）和非時段組（不在）
+  分別跑 round-robin，**絕對不要把兩組混在一起 RR**：
+
+  Step 1: 時段組彼此抽籤決定組內順序 → round-robin **排完所有時段組病人**
+          A1→B1→C1→A2→C2→...（時段醫師之間真 RR，醫師用完就 skip）
+  Step 2: 非時段組彼此抽籤決定組內順序 → 接在時段組**之後**，自己再 round-robin
+          D1→E1→D2→...
+
+  ❌ 錯誤示範（5 醫師全部一起 RR）：
+     1. 黃鼎鈞-X (時)
+     2. 廖瑀-Y  (時)
+     3. 黃睦翔-Z (非) ← 錯！非時段不該插在時段中間
+     4. 詹世鴻-W (時)
+     ...
+  ✅ 正確：時段醫師全部排完 → 非時段醫師接後面
+
+  【組內醫師 lottery 算法】
+  必須跑真正的 random.shuffle()（不可借用 sub-table 的醫師出現順序）：
+    1. 從 主治醫師抽籤表 對應星期欄讀 col_values
+    2. 建 weighted pool：純名 = 1 次, *2 = 2 次（兩支籤）
+    3. random.shuffle(pool) + first-appear dedupe → 抽籤順序
+    4. Filter to admit_doctors → 時段組
+    5. admit_doctors - pool = 非時段組（也要 random.shuffle）
+
+  【組內病人 lottery】
+  多病人醫師（如 詹世鴻 3 人）內部順序也要 random.shuffle()
+  使用者若手動指定（在子表格 E 欄填 1/2/3）就照使用者順序。
 
 --------------------------------------------
 步驟三：自動提取 EMR 病歷摘要 [skill: admission-emr-extraction]
