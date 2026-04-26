@@ -98,6 +98,23 @@ def write_range(ws, range_str, data, raw=True):
     ws.update(values=data, range_name=range_str,
               value_input_option='RAW' if raw else 'USER_ENTERED')
 
+def batch_write_cells(ws, updates, raw=True):
+    """One API call for many cell/range writes.
+
+    updates = [(range_str, value_or_2d_list), ...]
+      e.g. [('H2', '55'), ('J2', '09B37C'), ('N2:V8', [[...], [...]])]
+    Single string/number values are wrapped to [[v]] automatically.
+    Pairs that share no dependency on prior writes can all go in one call.
+    """
+    body = []
+    for rng, val in updates:
+        if not isinstance(val, list):
+            val = [[val]]
+        elif val and not isinstance(val[0], list):
+            val = [val]
+        body.append({'range': rng, 'values': val})
+    ws.batch_update(body, value_input_option='RAW' if raw else 'USER_ENTERED')
+
 def write_row(ws, row, values, start_col=1, raw=True):
     """Write a row of values starting from start_col"""
     col_letter = gspread.utils.rowcol_to_a1(row, start_col).split('$')[-1][0] if start_col > 26 else chr(64 + start_col)
