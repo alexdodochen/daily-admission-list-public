@@ -8,7 +8,9 @@
       "Bash(cp \"C:/Users/dr/.claude/skills/admission-image-to-excel/SKILL.md\" \".claude/skills/admission-image-to-excel/SKILL.md\")",
       "Bash(git rm:*)",
       "Bash(rm \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-doc.md\")",
-      "Bash(rm -rf \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-docs/\")"
+      "Bash(rm -rf \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-docs/\")",
+      "Bash(cp \"C:/Users/user/.claude/skills/admission-lottery/SKILL.md\" \"D:/心臟內科 總醫師/行政總醫師/每日入院名單/.claude/skills/admission-lottery.md\")",
+      "Bash(cp \"C:/Users/user/.claude/skills/admission-ordering/SKILL.md\" \"D:/心臟內科 總醫師/行政總醫師/每日入院名單/.claude/skills/admission-ordering.md\")"
     ]
   }
 }

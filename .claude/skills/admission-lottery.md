@@ -52,7 +52,7 @@ for v in col_values[1:]:
     pool.extend([name] * count)
 ```
 
-**重要**：絕不靠口述/記憶重建抽籤表，永遠直接讀 sheet（見 `feedback_lottery_read_full_column.md`）。
+**重要**：絕不靠口述/記憶重建抽籤表，永遠直接讀 sheet（見 `feedback_lottery_read_full_column.md`）。離線交叉驗證可參考 `reference_lottery_by_weekday.md`（各日時段醫師清單 snapshot），但 lottery 本身仍以 sheet 直讀為準。**絕對不要查 `schedule_readable.txt` — 那是 cathlab 房間/時段表，不是抽籤表**（見 `feedback_two_doctor_sheets.md`）。
 
 ### 2. 比對當日醫師 + 篩有時段
 

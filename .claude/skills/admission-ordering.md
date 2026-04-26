@@ -52,6 +52,8 @@ data = ws.get_all_values()
 - 同名重複列 = 累加
 - 純名字 = 1 支
 
+離線交叉驗證可參考 `reference_lottery_by_weekday.md`（各日時段醫師清單 snapshot）。**不要查 `schedule_readable.txt`**（那是 cathlab 房間表，不是抽籤表）。
+
 若 round-robin 醫師不在抽籤表 → 該醫師應該在 lottery 階段就被排除，不該到 ordering。若出現 → 停下警示使用者，不要自動搬動。
 
 **（續等清單已於 2026-04-19 下線，不要再寫入該 sheet。）**
