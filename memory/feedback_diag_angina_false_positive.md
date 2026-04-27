@@ -18,7 +18,8 @@ EMR auto-prefill 出現下列任一字串時，F 欄一律改 `CAD`，**不要**
 **How to apply:**
 1. EMR auto-prefill 結果給使用者前，自動把 `Angina pectoris` / `Unstable` → `CAD`（不要再問）
 2. 若整串 F 只剩 "CAD"，寫入 (a) 子表格 F 欄、(b) N-V 入院序 T 欄、(c) WEBCVIS 已 keyin 的 entry 用 UPT 修術前診斷
-3. 長期解法：把 `process_emr.py` DIAG_RULES 規則改成直接 map 上述字串 → `CAD`，或移除那條規則讓 CAD fallback 規則生效。**未動 code**，目前只靠 Claude 在 prefill 時 normalize。
+3. **`cathlab_keyin.py` 已加 `_normalize_diag()` (2026-04-27)**：傳給 add/UPT 的 diag 字串若含 angina/unstable，code 自動轉 CAD（pdijson 名稱 + prediagnosisitem 顯示欄一致）→ 即使 sheet F 漏改、Claude 漏 normalize，cathlab WEBCVIS 不會再吃到 Angina pectoris
+4. 長期解法（已部分落實）：cathlab_keyin 強制 normalize，process_emr.py DIAG_RULES 仍未動，下次 prefill 仍可能跑出 Angina pectoris 給 sheet — 至少 cathlab 那邊不會錯
 
 **已知實例：**
 - 2026-04-23 沈益川 (15015060) — TET 報告 Angina Index false positive，使用者手動改 CAD

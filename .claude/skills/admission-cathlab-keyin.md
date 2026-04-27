@@ -61,6 +61,8 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
    **例外：F 寫 `Others:XXX` 自動 fallback 通用 Others PDI**（`OTHERS_PDI = PDI20090908120008`），name 帶完整字串。不要為每個 `Others:XXX` 在 cathlab_id_maps.json 加新條目（見 `feedback_others_diag_freetext.md`）
 
+   **強制 normalize：F 含 angina / Unstable / Angina pectoris → 一律送 `CAD` 進 WEBCVIS**（`_normalize_diag()` 已實作；同步覆蓋 pdijson name 與 prediagnosisitem 顯示欄。見 `feedback_diag_angina_false_positive.md`）
+
 2. **病人已 pre-keyed → SKIP ADD + 仍跑 UPT**（per `feedback_webcvis_preserve_existing_slot.md`）。Phase 1 自動依病歷號 dedupe，Phase 2 只補 F/G
 
 3. **跳過規則**：子表格 H 欄含「不排程」「檢查」→ 從 JSON 中排除。「無床改期」「非導管床」「HF AE」**不**跳過（見 CLAUDE.md rule #9）

@@ -58,6 +58,16 @@ def _load_id_maps():
 _load_id_maps()
 
 
+def _normalize_diag(diag):
+    """Angina/Unstable/Angina pectoris → CAD (memory feedback_diag_angina_false_positive.md).
+    Applied to both pdijson name and ID lookup so WEBCVIS shows CAD consistently."""
+    if not diag: return diag
+    dl = diag.lower()
+    if 'angina' in dl or 'unstable' in dl:
+        return 'CAD'
+    return diag
+
+
 def _resolve_diag_id(diag):
     """Return PDI ID for diag string, with 'Others:XXX' fallback to generic Others."""
     if not diag: return ''
@@ -122,6 +132,7 @@ def add_patient(page, p, existing):
     scode = DOCTOR_CODES.get(p.get('second')) if p.get('second') else ''
     rcode = ROOM_CODES.get(p['room'], '')
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
+    diag = _normalize_diag(diag)
     diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
     note = p.get('note', '')
@@ -162,6 +173,7 @@ def add_patient(page, p, existing):
 def fix_diag(page, p):
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
     if not diag and not proc: return
+    diag = _normalize_diag(diag)
     diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
     if not diag_json and not proc_json: return
