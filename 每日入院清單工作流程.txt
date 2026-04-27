@@ -317,6 +317,18 @@
   - 週四張獻元無時段 → 不走 N+1 規則
   - key 在「attendingdoctor=張獻元」，cathlab 日=入院日同日
 
+  【張獻元週二/週三 cathlab 改手動】（2026-04-27 規則）
+  上述週二/週三規則組合 + 床位限制（12C / 1B 等）+ AM/PM 限制太複雜，
+  自動 keyin 容易誤判。**Claude 不要自動 key 張獻元週二/週三的病人到 cathlab，
+  改成列清單提醒使用者，由使用者手動進 WEBCVIS 處理。**
+  其他醫師、其他星期照常自動 keyin。
+
+  【術前診斷 Others:XXX 寫法】（2026-04-27 規則）
+  使用者在子表格 F 欄寫「Others:DVT」「Others:Aortic dissection」之類自定子項時，
+  cathlab keyin 自動 fallback 到 Others 母項 PDI（PDI20090908120008），
+  name 欄填使用者寫的完整字串。不需為每個 Others 子項在 cathlab_id_maps.json
+  加新 ID。`cathlab_keyin.py` 的 `_resolve_diag_id()` 已實作。
+
   【詹世鴻週五病人規則】（2026-04-17 修正）
   詹世鴻的病人，週五入院時：
   - 抽籤/入院序：詹世鴻視為「非時段醫師」，不進主 round-robin，排在無時段醫師後

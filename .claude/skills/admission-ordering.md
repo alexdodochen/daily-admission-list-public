@@ -179,11 +179,29 @@ final_doctor_order = slot_docs + non_slot
 | 欄 | 來源 |
 |---|---|
 | Q 備註(住服) | 主資料 K 欄（入院提示）中 住服相關 free text（如「住南投提早通知」「非導管床」） |
-| R 備註 | 主資料 K 欄 parenthetical（如「(4/13無床延床)」）|
+| R 備註 | **優先：子表格 H 欄『註記』**（如「12C可」「張倉惟 12C可」「王思翰 4/21無床延期」「Afib」「CTA for TAVI 可能住到5/1」「改周一住」）；H 為空才 fallback 到主資料 K 欄 parenthetical（如「(4/13無床延床)」） |
 | S 病歷號 | 主資料 I 欄（**TEXT 格式寫入**，前導 0 不可丟） |
 | T 術前診斷 | 子表格 F 欄 |
 | U 預計心導管 | 子表格 G 欄 |
 | V 改期 | 空白（使用者事後手動填 YYYYMMDD 表示延後） |
+
+**重點：子表格 H 欄是使用者實際寫備註的地方** — 排住院序時 R 欄一定要從 H 欄移植，K 欄 paren 只是沒 H 時的退路。漏了這步會被使用者糾正。
+
+```python
+# Build chart -> H from sub-tables
+chart_to_H = {}
+for i, row in enumerate(data, 1):
+    m = re.search(r'^(.+?)（(\d+)人）', (row+['']*8)[0])
+    if m:
+        n = int(m.group(2))
+        for j in range(i+2, i+2+n):
+            r = (data[j-1]+['']*8)[:8]
+            if not any(r): break
+            if r[1]: chart_to_H[r[1]] = r[7]  # B=chart, H=note
+
+# When building each N-V row:
+R = chart_to_H.get(chart, '').strip() or K_paren
+```
 
 ### 6. S 欄 TEXT 格式（病歷號）
 

@@ -59,9 +59,13 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
 1. **PDI/PHC ID 一律從 `cathlab_id_maps.json` 載**（66 diag + 22 proc 已驗證）。`cathlab_keyin.py` 啟動時自動載；若 ID 缺失（新術式/診斷），WEBCVIS 查到後**永久寫進 cathlab_id_maps.json**，不要在 .py 內硬編（見 `feedback_cathlab_id_maps_only.md` — 我曾把 SSS/PTA ID 自編寫錯）
 
+   **例外：F 寫 `Others:XXX` 自動 fallback 通用 Others PDI**（`OTHERS_PDI = PDI20090908120008`），name 帶完整字串。不要為每個 `Others:XXX` 在 cathlab_id_maps.json 加新條目（見 `feedback_others_diag_freetext.md`）
+
 2. **病人已 pre-keyed → SKIP ADD + 仍跑 UPT**（per `feedback_webcvis_preserve_existing_slot.md`）。Phase 1 自動依病歷號 dedupe，Phase 2 只補 F/G
 
 3. **跳過規則**：子表格 H 欄含「不排程」「檢查」→ 從 JSON 中排除。「無床改期」「非導管床」「HF AE」**不**跳過（見 CLAUDE.md rule #9）
+
+   **張獻元週二/週三 admission 全部 filter 掉 + 列清單提醒使用者**（不要 auto keyin；同日 vs N+1 規則太複雜易錯，使用者改手動處理。見 `feedback_zhang_xianyuan_tuewed_manual.md`）
 
 4. **N-V V 欄有值 = 改期**：該病人不進該日 cathlab keyin，從 JSON 排除（見 CLAUDE.md rule #5 reschedule 部分）
 

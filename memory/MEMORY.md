@@ -55,6 +55,9 @@
 - [WEBCVIS 帳密由各使用者自填](feedback_webcvis_user_own_credentials.md) — 本地 app 設定頁不提供 WEBCVIS 預設帳密，避免盜用身份留稽核紀錄
 - [續等清單功能已永久移除](feedback_no_waitlist_feature.md) — 2026-04-19 下線：sheet 刪、欄位 N-W→N-V、skill/LINE cron/memory 全清，非時段醫師直接接 round-robin
 - [cp950亂碼時不可猜名字](feedback_cp950_no_guess_names.md) — Windows 終端中文亂碼時改走 PYTHONIOENCODING=utf-8 + 寫檔再 Read，絕不憑猜測回報
-- [DIAG_RULES 'angina' 對 TET 報告誤判](feedback_diag_angina_false_positive.md) — TET 報告的「Angina Index」會讓 r/o CAD 病人 F 欄誤預填 Angina pectoris，需手動改 CAD
+- [Angina 族群 F 欄一律 key CAD](feedback_diag_angina_false_positive.md) — angina/unstable/Angina pectoris 通通 normalize 成 CAD（包含 TET Angina Index false positive）
 - [WEBCVIS 既有排程時間/室/主刀不動](feedback_webcvis_preserve_existing_slot.md) — ADD SKIP 後不要另寫 UPT 改 examroom/time/doctor，F/G 的 UPT 照舊可做
 - [各日時段醫師清單（lottery 用）](reference_lottery_by_weekday.md) — 抽籤時比對當日欄，非時段 H1 2100+；抽籤表權威，勿從 schedule_readable.txt 猜測
+- [排住院序 R 備註欄要從子表格 H 欄移植](feedback_subtable_H_to_R_ordering.md) — N-V R 備註優先讀子表格 H 欄『註記』，K paren 只是 H 為空時退路；漏這步 = 使用者 ordering-time 備註全丟
+- [Others:XXX 走 Others 母項 + 全字串 freetext](feedback_others_diag_freetext.md) — F 寫 `Others:DVT` 之類自定子項時 cathlab keyin 用 PDI20090908120008 + name 帶完整字串，不另建 mapping
+- [張獻元 周二/周三 cathlab 改手動](feedback_zhang_xianyuan_tuewed_manual.md) — 週二/週三入院的張獻元病人不要自動 keyin，列清單提醒使用者手動 key（同日 vs N+1 規則太複雜易錯）

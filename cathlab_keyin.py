@@ -42,6 +42,11 @@ ROOM_CODES = {"H1": "xa-Hybrid1", "H2": "xa-Hybrid2", "C1": "xa-CATH1", "C2": "x
 # IDs are loaded from cathlab_id_maps.json (66 diag + 22 proc verified entries).
 # Don't hardcode — wrong IDs would push wrong records into WEBCVIS.
 DIAG_IDS, PROC_IDS = {}, {}
+# Generic "Others" PDI: when user writes "Others:XXX" not in DIAG_IDS, fall back
+# to this parent ID + keep full string as the freetext name (per user instruction
+# 2026-04-27, memory feedback_others_diag_freetext.md).
+# Verified: 'Others:opd' and 'Others:s/p HTx' both map to this PDI in cathlab_id_maps.
+OTHERS_PDI = 'PDI20090908120008'
 def _load_id_maps():
     p = os.path.join(os.path.dirname(__file__), 'cathlab_id_maps.json')
     if not os.path.exists(p):
@@ -51,6 +56,15 @@ def _load_id_maps():
     DIAG_IDS.update(m.get('diag', {}))
     PROC_IDS.update(m.get('proc', {}))
 _load_id_maps()
+
+
+def _resolve_diag_id(diag):
+    """Return PDI ID for diag string, with 'Others:XXX' fallback to generic Others."""
+    if not diag: return ''
+    direct = DIAG_IDS.get(diag, '')
+    if direct: return direct
+    if diag.startswith('Others:'): return OTHERS_PDI
+    return ''
 
 LOG = []
 def log(m):
@@ -108,7 +122,7 @@ def add_patient(page, p, existing):
     scode = DOCTOR_CODES.get(p.get('second')) if p.get('second') else ''
     rcode = ROOM_CODES.get(p['room'], '')
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
-    diag_json = _build_json(diag, DIAG_IDS.get(diag, ''))
+    diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
     note = p.get('note', '')
     if not dcode:
@@ -148,7 +162,7 @@ def add_patient(page, p, existing):
 def fix_diag(page, p):
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
     if not diag and not proc: return
-    diag_json = _build_json(diag, DIAG_IDS.get(diag, ''))
+    diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
     if not diag_json and not proc_json: return
     found = page.evaluate('''(c) => {
