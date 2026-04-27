@@ -135,7 +135,8 @@ def clear_area(ws, start_row, start_col, end_row, end_col):
 # --- Formatting ---
 
 def format_header_row(ws, row, num_cols, start_col=1):
-    """Apply blue header formatting to a row"""
+    """Apply blue header formatting to a row.
+    LEFT align per feedback_sheet_formatting.md: 全部儲存格一律靠左對齊，包含 header 列、合併標題列。"""
     sh = get_spreadsheet()
     requests = [{
         "repeatCell": {
@@ -150,7 +151,7 @@ def format_header_row(ws, row, num_cols, start_col=1):
                 "userEnteredFormat": {
                     "backgroundColor": BLUE_HEADER,
                     "textFormat": {"bold": True, "fontSize": 11},
-                    "horizontalAlignment": "CENTER",
+                    "horizontalAlignment": "LEFT",
                     "verticalAlignment": "MIDDLE"
                 }
             },
@@ -473,3 +474,149 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
 
     time.sleep(0.5)
     return end_row + 3  # next available row (2 blank rows gap)
+
+
+def enforce_sheet_format(sheet_name):
+    """Re-apply standard format to an existing date sheet (for 4/27-style residual fixes).
+
+    Fixes:
+    - Main data row 1: BLUE bg, bold, LEFT align
+    - Main data rows 2..main_end: WHITE bg, normal, LEFT align
+    - Sub-table title rows (X（N人）): BLUE bg, bold, LEFT align
+    - Sub-table sub-header rows (姓名/...): BLUE bg, bold, LEFT align
+    - Sub-table patient rows: WHITE bg, normal, LEFT align, WRAP
+    - Blank gap rows: WHITE bg, no bold
+
+    Per memory feedback_sheet_formatting.md (全部 LEFT) +
+    feedback_post_edit_format_check.md (白底+左靠齊 必跑).
+    """
+    import re
+    ws = get_worksheet(sheet_name)
+    if not ws:
+        raise ValueError(f"找不到工作表: {sheet_name}")
+    sh = get_spreadsheet()
+    sid = ws.id
+    col_a = ws.col_values(1)
+    n_rows = len(col_a)
+
+    # Find main_end (rows starting YYYY-MM-DD in col A)
+    main_end = 1
+    for i, v in enumerate(col_a[1:], 2):
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', v or ''):
+            main_end = i
+        elif v.strip() == '':
+            continue
+        else:
+            break
+
+    # Find sub-table title + subheader + patient rows
+    title_rows = []
+    subheader_rows = []
+    patient_rows = []
+    i = main_end + 1
+    while i <= n_rows:
+        v = col_a[i-1] if i-1 < len(col_a) else ''
+        m = re.match(r'^(.+)（(\d+)人）$', v.strip())
+        if m:
+            n = int(m.group(2))
+            title_rows.append(i)
+            if i + 1 <= n_rows and (col_a[i] if i < len(col_a) else '').strip() == '姓名':
+                subheader_rows.append(i + 1)
+                for k in range(i + 2, i + 2 + n):
+                    if k - 1 < len(col_a) and col_a[k-1].strip():
+                        patient_rows.append(k)
+                i = i + 2 + n
+            else:
+                i += 1
+        else:
+            i += 1
+
+    blue_rows = sorted(set([1] + title_rows + subheader_rows))
+    white_data_rows = sorted(set(list(range(2, main_end + 1)) + patient_rows))
+
+    # Compute used range (last row of last sub-table or main_end)
+    last_used = max([main_end] + patient_rows + title_rows + [1])
+    # Gap rows: any row in [main_end+1, last_used] NOT in blue/patient
+    used_set = set(blue_rows) | set(patient_rows)
+    gap_rows = [r for r in range(main_end + 1, last_used + 1) if r not in used_set]
+
+    requests = []
+
+    # BLUE bg + bold + LEFT on header rows (cols A:H = 1..8 sufficient)
+    for r in blue_rows:
+        requests.append({
+            "repeatCell": {
+                "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
+                          "startColumnIndex": 0, "endColumnIndex": 12 if r == 1 else 8},
+                "cell": {"userEnteredFormat": {
+                    "backgroundColor": BLUE_HEADER,
+                    "textFormat": {"bold": True, "fontSize": 11},
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "MIDDLE",
+                }},
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+            }
+        })
+
+    # WHITE bg + LEFT on main data rows (A:L = 12 cols)
+    if main_end >= 2:
+        requests.append({
+            "repeatCell": {
+                "range": {"sheetId": sid, "startRowIndex": 1, "endRowIndex": main_end,
+                          "startColumnIndex": 0, "endColumnIndex": 12},
+                "cell": {"userEnteredFormat": {
+                    "backgroundColor": WHITE,
+                    "textFormat": {"bold": False, "fontSize": 11},
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP",
+                }},
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment,wrapStrategy)",
+            }
+        })
+
+    # WHITE bg + LEFT on gap rows (A:H = 8 cols)
+    for r in gap_rows:
+        requests.append({
+            "repeatCell": {
+                "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
+                          "startColumnIndex": 0, "endColumnIndex": 8},
+                "cell": {"userEnteredFormat": {
+                    "backgroundColor": WHITE,
+                    "textFormat": {"bold": False, "fontSize": 11},
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "MIDDLE",
+                }},
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)",
+            }
+        })
+
+    # WHITE bg + LEFT on sub-table patient rows (A:H = 8 cols)
+    for r in patient_rows:
+        requests.append({
+            "repeatCell": {
+                "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
+                          "startColumnIndex": 0, "endColumnIndex": 8},
+                "cell": {"userEnteredFormat": {
+                    "backgroundColor": WHITE,
+                    "textFormat": {"bold": False, "fontSize": 11},
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP",
+                }},
+                "fields": "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment,wrapStrategy)",
+            }
+        })
+
+    # Run in batches of 50 to avoid request size limits
+    for batch in [requests[k:k+50] for k in range(0, len(requests), 50)]:
+        if batch:
+            sh.batch_update({"requests": batch})
+            time.sleep(0.5)
+
+    return {
+        "main_end": main_end,
+        "title_rows": title_rows,
+        "subheader_rows": subheader_rows,
+        "patient_rows": patient_rows,
+    }

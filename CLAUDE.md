@@ -87,7 +87,7 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 14. **EMR prefill F/G**: EMR 摘要完成後自動預填術前診斷(F)和預計心導管(G)，列出讓使用者檢查
 15. **Second doctor priority**: 第二醫師多人時（如浩、晨），葉立浩優先 key attendingdoctor2，其餘放備註
 16. **詹世鴻 Friday exception**: 週五入院時 詹世鴻 視為**非時段醫師**——lottery/入院序不進主 round-robin（排在無時段醫師後），cathlab 也排非時段（H1 2100+, note="本日無時段"）。兩邊一致。
-17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-V ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。
+17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-V ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。**最簡解**：`from gsheet_utils import enforce_sheet_format; enforce_sheet_format('YYYYMMDD')` — idempotent，自動刷 BLUE/WHITE bg + LEFT 對齊 + 粗體 + WRAP。任何 diff/insert/delete/write_range 動到 sheet 之後**強制**收尾呼叫一次。
 
 ## WEBCVIS Cathlab System
 

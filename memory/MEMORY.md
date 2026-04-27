@@ -61,3 +61,4 @@
 - [排住院序 R 備註欄要從子表格 H 欄移植](feedback_subtable_H_to_R_ordering.md) — N-V R 備註優先讀子表格 H 欄『註記』，K paren 只是 H 為空時退路；漏這步 = 使用者 ordering-time 備註全丟
 - [Others:XXX 走 Others 母項 + 全字串 freetext](feedback_others_diag_freetext.md) — F 寫 `Others:DVT` 之類自定子項時 cathlab keyin 用 PDI20090908120008 + name 帶完整字串，不另建 mapping
 - [張獻元 週二入院 cathlab 規則](feedback_zhang_xianyuan_tuewed_manual.md) — H 含張倉惟/王思翰 → 全 W3；無王/張 → 前 3 W2 PM 同日，第 4+ W3 AM；週三入院維持同日
+- [F/G prefill 看 plan 不只看 Dx](feedback_fg_prefill_patterns.md) — Plan 提到 cath/CAG → F=CAD（即使 Dx 是 CHF/pAf/VPC）；valve G 留空；rotaablation 不算 RF；s/p 歷史不算當下 F

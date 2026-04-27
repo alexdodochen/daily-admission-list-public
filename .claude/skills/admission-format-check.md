@@ -79,6 +79,22 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 ### 6. Chart number consistency
 - Same patient's 病歷號 in main I / sub B / N-V S must match (leading zeros preserved)
 
+## Quick fix（首選）
+
+```python
+from gsheet_utils import enforce_sheet_format
+enforce_sheet_format('20260428')  # idempotent
+```
+
+`enforce_sheet_format(sheet_name)` 會掃整個 sheet 結構，把：
+- Row 1 + 子表格 title + 子表格 sub-header → BLUE 藍底/粗體/LEFT
+- 主資料 row 2..end + 子表格 patient rows + 中間 gap rows → WHITE 白底/不粗體/LEFT
+- 全部 LEFT 對齊
+
+一次刷上。任何 diff / insertDimension / deleteDimension / write_range 動到 sheet 之後**收尾必呼叫一次**。比手寫 batch_update_requests 安全，且 idempotent（重複呼叫不會壞）。
+
+`format_header_row(ws, row, num_cols)` 從 4/27 起也改成 LEFT 對齊（不再 CENTER）— 對應 memory `feedback_sheet_formatting.md` 的「全部 LEFT」規則。
+
 ## Workflow
 
 1. **Read sheet** (`gsheet_utils.get_worksheet(sheet_name)`)

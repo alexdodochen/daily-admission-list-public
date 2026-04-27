@@ -30,4 +30,22 @@ type: feedback
 - 整個 sheet 結構亂到無法局部修 → 以最近一份乾淨 sheet 為範本 duplicate + unmerge + clear + 重跑流程
 
 **Why:** 之前 reschedule flow 在 20260421 把詹世鴻 title row 蓋掉卻沒發現，直到驗證 cathlab 才浮現；類似的合併/換欄/蓋 title 問題歷史上多次發生。使用者明確說「有跑掉就重新整理一番」，不要留尾巴。
-**How to apply:** 任何 `write_range` / `batch_update` / `insert_rows` / `unmergeCells` 動到 sheet 之後都得跑這個檢查。簡單做法：寫一個 `verify_sheet_format(sheet_name)` 函式回傳 issue list，每個修改腳本結尾 call 一次，若有 issue 就 log + 嘗試自動修，修不完報給使用者。
+
+**How to apply（4/27 update 後最簡解）：**
+
+1. **首選工具**：
+   ```python
+   from gsheet_utils import enforce_sheet_format
+   enforce_sheet_format('YYYYMMDD')  # idempotent, 重複呼叫不會壞
+   ```
+   一次刷整片 BLUE/WHITE bg + LEFT 對齊 + 粗體 + WRAP，包含主資料、子表格 title/sub-header/patient、中間 gap。
+
+2. **任何 `write_range` / `batch_update` / `insertDimension` / `deleteDimension` / `unmergeCells` 動到日期 sheet 之後 → 強制呼叫一次 `enforce_sheet_format`**。不是 optional，是收尾。
+
+3. 若還有結構問題（title 不見、人數錯、合併殘留）`enforce_sheet_format` 處理不了 → 走 `admission-format-check` skill 的逐項 fix。
+
+**已知 case：** 4/27 sheet 在 cleanup 後 R4 R5 變藍底、sub-table title 是 CENTER 不是 LEFT，使用者抱怨「白底跑掉、靠左對齊跑掉、且懷疑沒同步到 GitHub」。根因：
+- `format_header_row` 預設 CENTER (4/27 已改 LEFT)
+- 各 diff 腳本沒收尾刷 format → 殘留前一狀態的 bg/align
+
+`enforce_sheet_format` + LEFT default 兩個修補一起把這條洞補起來（4/27 commit）。所有 clone 此 repo 的機器 pull 之後都有此 helper。
