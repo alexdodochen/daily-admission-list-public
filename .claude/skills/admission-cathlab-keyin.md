@@ -65,7 +65,12 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
 3. **跳過規則**：子表格 H 欄含「不排程」「檢查」→ 從 JSON 中排除。「無床改期」「非導管床」「HF AE」**不**跳過（見 CLAUDE.md rule #9）
 
-   **張獻元週二/週三 admission 全部 filter 掉 + 列清單提醒使用者**（不要 auto keyin；同日 vs N+1 規則太複雜易錯，使用者改手動處理。見 `feedback_zhang_xianyuan_tuewed_manual.md`）
+   **張獻元週二 admission 自動分配（4/27 update）**：
+   - H 含張倉惟/王思翰 → 全部 W3 AM C2（second = H 內的王/張）
+   - H 不含王/張 → 依 E 欄順序前 3 個 W2 PM H2（1800+i），第 4+ 個 W3 AM C2
+   - 週三 admission 維持同日 W3 AM/PM C2
+
+   見 `feedback_zhang_xianyuan_tuewed_manual.md` 的 `split_zhang_tue_admit()` 範例
 
 4. **N-V V 欄有值 = 改期**：該病人不進該日 cathlab keyin，從 JSON 排除（見 CLAUDE.md rule #5 reschedule 部分）
 
