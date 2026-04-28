@@ -6,13 +6,14 @@ Usage:
 JSON schema (list of patient dicts):
   [
     {"cathlab_date": "2026/04/28", "name": "陳爽", "chart": "04668242",
-     "doctor": "黃睦翔", "second": null, "room": "C2", "time": "1801",
+     "doctor": "黃睦翔", "second": null, "third": null, "room": "C2", "time": "1801",
      "diagnosis": "CAD", "procedure": "Left heart cath.", "note": ""},
     ...
   ]
 
 Required fields: cathlab_date, name, chart, doctor, room, time
-Optional: second, diagnosis, procedure, note (default empty)
+Optional: second (attendingdoctor2), third (recommendationDoctor), diagnosis, procedure, note
+時段表寫「黃鼎鈞(浩、晨)」= 2 位 second → second=葉立浩, third=洪晨惠
 
 Two-phase execution:
   Phase 1 — ADD: dedupe by chart against current WEBCVIS for each date.
@@ -130,6 +131,7 @@ def add_patient(page, p, existing):
         return 'skip'
     dcode = DOCTOR_CODES.get(p['doctor'], '')
     scode = DOCTOR_CODES.get(p.get('second')) if p.get('second') else ''
+    tcode = DOCTOR_CODES.get(p.get('third')) if p.get('third') else ''
     rcode = ROOM_CODES.get(p['room'], '')
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
     diag = _normalize_diag(diag)
@@ -152,6 +154,8 @@ def add_patient(page, p, existing):
         page.select_option('select[name="attendingdoctor1"]', value=dcode)
         if scode:
             page.select_option('select[name="attendingdoctor2"]', value=scode)
+        if tcode:
+            page.select_option('select[name="recommendationDoctor"]', value=tcode)
         page.evaluate('''([dj,pj]) => {
             if(dj) document.querySelector('[name="pdijson"]').value=dj;
             if(pj) document.querySelector('[name="phcjson"]').value=pj;
@@ -172,11 +176,12 @@ def add_patient(page, p, existing):
 
 def fix_diag(page, p):
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
-    if not diag and not proc: return
+    tcode = DOCTOR_CODES.get(p.get('third')) if p.get('third') else ''
+    if not diag and not proc and not tcode: return
     diag = _normalize_diag(diag)
     diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
-    if not diag_json and not proc_json: return
+    if not diag_json and not proc_json and not tcode: return
     found = page.evaluate('''(c) => {
         let rows=document.querySelectorAll("#row tr");
         for(let r of rows){let el=r.querySelector("#hes_patno");
@@ -192,6 +197,8 @@ def fix_diag(page, p):
         if(pj){document.querySelector('[name="phcjson"]').value=pj;
             let f=document.querySelector('[name="preheartcatheter"]'); if(f)f.value=pt;}
     }''', [diag_json, proc_json, diag, proc])
+    if tcode:
+        page.select_option('select[name="recommendationDoctor"]', value=tcode)
     time.sleep(0.3)
     page.evaluate('''() => {
         document.HCO1WForm.buttonName.name="UPT";
