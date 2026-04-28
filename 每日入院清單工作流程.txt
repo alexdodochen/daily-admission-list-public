@@ -278,7 +278,9 @@
   0. **病人清單來源：子表格（統整資料，主治醫師病人清單）**，不是 N-V 入院序
      （N-V 是給住服的子集；子表格才有所有需要做 cathlab 的病人）
   1. 整理成 cathlab_patients_YYYYMMDD.json（每病人 cathlab_date / name / chart /
-     doctor / second / room / time / diagnosis / procedure / note）
+     doctor / second / third / room / time / diagnosis / procedure / note）
+     - second = attendingdoctor2 (時段表第一個括號)
+     - third  = recommendationDoctor (時段表第二個括號，新規則 2026-04-29)
   2. 跑 python cathlab_keyin.py <json>，driver 自動：
      - 設定日期為導管日（入院隔天；週五入院 → 同日；張獻元週三入院 → 同日 PM）
      - WEBCVIS 登入 + 兩階段（Phase 1 ADD / Phase 2 UPT 補 pdijson/phcjson）
@@ -291,6 +293,12 @@
      - 主刀醫師（attendingdoctor1）
      - 第二醫師（attendingdoctor2）→ 只限括號簡稱對應的五位：
        寬→葉建寬  浩→葉立浩  晨→洪晨惠  齡→許毓軨  嘉→蘇奕嘉
+     - 兩位 second（時段表如「黃鼎鈞(浩、晨)」「陳儒逸(寬、嘉)」）
+       第一位 → second (attendingdoctor2)
+       第二位 → third  (recommendationDoctor 推薦醫師欄位)
+       舊規則「第二位放 note」已廢（2026-04-29 update）
+     - 黃鼎鈞 Mon cathlab → second 強制 = 洪晨惠
+       （即使時段表 Mon 看似黃鼎鈞無時段；2026-04-29 新規則）
      - 術前診斷（依 Sheet F 欄）
      - 預計心導管（依 Sheet G 欄）
        若不在 WEBCVIS 下拉選單 → 改填入 note 備註欄，
@@ -313,9 +321,13 @@
 
   【張獻元週三病人規則】
   張獻元的病人，週三入院時：
-  - 週三同日做導管（張獻元週三 AM C2 或 PM C2 時段）
+  - cathlab 同日做（張獻元週三 AM C2 或 PM C2 時段）
   - 週四張獻元無時段 → 不走 N+1 規則
   - key 在「attendingdoctor=張獻元」，cathlab 日=入院日同日
+  - 重要：lottery / ordering **視為非時段醫師**（看隔日 Thu 沒時段）
+    → 兩段 RR 中歸非時段組，排在時段醫師之後
+    → cathlab 仍同日 PM C2 (兩個系統判定獨立)
+    （2026-04-29 update — feedback_zhang_xianyuan_wed_lottery.md）
 
   【張獻元週二入院 cathlab 自動分配】（2026-04-27 規則 update）
   - H 註記含「張倉惟」或「王思翰」→ 全部排到隔日週三張獻元時段
