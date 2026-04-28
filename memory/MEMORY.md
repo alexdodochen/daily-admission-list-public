@@ -3,6 +3,7 @@
 - **[下次 session 要提醒的進度](project_next_session_resume.md)** — Phase 8 還差「實跑 pyinstaller」+「Chromium 首次下載」就能發 exe；使用者 4/20 夜休前明確要求主動提醒
 - [張獻元病人預設週二同日下午做](feedback_zhang_xianyuan_same_day.md) — 週二入院+註記無王思翰/張倉惟 → 週二PM張獻元自己時段（同日非N+1）
 - [張獻元週三入院也是同日 PM](feedback_zhang_xianyuan_wed_same_day.md) — 週三入院不走 N+1（週四無時段），同日做（張獻元週三 AM C2 / PM C2 時段）；verify_cathlab.py 已加規則
+- [張獻元週三入院 lottery 非時段](feedback_zhang_xianyuan_wed_lottery.md) — Wed 入院 lottery/ordering 視為非時段（看隔日 Thu 沒時段），但 cathlab 仍走同日 PM C2；兩系統判定獨立
 - [EMR 擷取範圍（SOAP only，截斷於 [Medicine]）](feedback_emr_html_parsing.md) — C 完整 SOAP、D 四段摘要，都不含藥品/檢驗/掛號
 - [建立新日期表必須先 unmerge](feedback_new_date_sheet_creation.md) — duplicate 後先 unmerge 全部 cells 才寫入，不然合併列會吃掉 B-H 欄
 - [所有資料寫 Google Sheet 不寫本地 xlsx](feedback_all_data_to_google_sheet.md) — 入院清單/EMR/排程只寫 Google Sheet，admission-image-to-excel skill 名稱誤導

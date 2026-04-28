@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Session start
 
-**Before any work**, run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback. The user actively maintains `每日入院清單工作流程.txt` as the source-of-truth workflow spec — **if it disagrees with this file, the txt wins**.
+**Before any work**:
+
+1. **`git fetch origin && git status -sb`** — check if origin is ahead. If so, `git pull --rebase` BEFORE touching any file. Multi-device user — origin may have new helper code (e.g. `_normalize_diag` in `cathlab_keyin.py`), new map entries (`cathlab_id_maps.json`), or per-date input (`cathlab_patients_YYYYMMDD.json`) that another session/machine already wrote. Skipping this step → you'll run with stale code, re-invent existing rules, or overwrite per-date work. Do not start any task before this check.
+2. Run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback.
+3. Check whether `cathlab_patients_<today>.json` / `emr_data_<today>.json` already exist on disk or in git — if yes, **use them**, don't rewrite.
+
+The user actively maintains `每日入院清單工作流程.txt` as the source-of-truth workflow spec — **if it disagrees with this file, the txt wins**.
 
 ## Project Overview
 
