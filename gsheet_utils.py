@@ -486,6 +486,8 @@ def enforce_sheet_format(sheet_name):
     - Sub-table sub-header rows (姓名/...): BLUE bg, bold, LEFT align
     - Sub-table patient rows: WHITE bg, normal, LEFT align, WRAP
     - Blank gap rows: WHITE bg, no bold
+    - Thick black borders: main data A:L, ordering N:V (if filled), sub-table A:H
+    - Gap rows: borders stripped (NONE)
 
     Per memory feedback_sheet_formatting.md (全部 LEFT) +
     feedback_post_edit_format_check.md (白底+左靠齊 必跑).
@@ -513,6 +515,7 @@ def enforce_sheet_format(sheet_name):
     title_rows = []
     subheader_rows = []
     patient_rows = []
+    sub_blocks = []  # (title_row, last_row) inclusive — for border framing
     i = main_end + 1
     while i <= n_rows:
         v = col_a[i-1] if i-1 < len(col_a) else ''
@@ -525,8 +528,10 @@ def enforce_sheet_format(sheet_name):
                 for k in range(i + 2, i + 2 + n):
                     if k - 1 < len(col_a) and col_a[k-1].strip():
                         patient_rows.append(k)
+                sub_blocks.append((i, i + 1 + n))
                 i = i + 2 + n
             else:
+                sub_blocks.append((i, i))
                 i += 1
         else:
             i += 1
@@ -608,6 +613,57 @@ def enforce_sheet_format(sheet_name):
             }
         })
 
+    # Thick black borders — clear gap rows first, then paint blocks (so adjacent
+    # block edges (sub-table top/bottom, main data bottom) re-overwrite the cleared
+    # shared edge with SOLID_THICK).
+    THICK = {"style": "SOLID_THICK", "color": BLACK}
+
+    for r in gap_rows:
+        requests.append({
+            "updateBorders": {
+                "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
+                          "startColumnIndex": 0, "endColumnIndex": 22},
+                "top": {"style": "NONE"}, "bottom": {"style": "NONE"},
+                "left": {"style": "NONE"}, "right": {"style": "NONE"},
+                "innerHorizontal": {"style": "NONE"}, "innerVertical": {"style": "NONE"},
+            }
+        })
+
+    if main_end >= 1:
+        requests.append({
+            "updateBorders": {
+                "range": {"sheetId": sid, "startRowIndex": 0, "endRowIndex": main_end,
+                          "startColumnIndex": 0, "endColumnIndex": 12},
+                "top": THICK, "bottom": THICK, "left": THICK, "right": THICK,
+                "innerHorizontal": THICK, "innerVertical": THICK,
+            }
+        })
+
+    col_n = ws.col_values(14)
+    n_end = 0
+    for idx, v in enumerate(col_n[1:], 2):
+        if (v or '').strip():
+            n_end = idx
+    if n_end >= 2:
+        requests.append({
+            "updateBorders": {
+                "range": {"sheetId": sid, "startRowIndex": 0, "endRowIndex": n_end,
+                          "startColumnIndex": 13, "endColumnIndex": 22},
+                "top": THICK, "bottom": THICK, "left": THICK, "right": THICK,
+                "innerHorizontal": THICK, "innerVertical": THICK,
+            }
+        })
+
+    for (s, e) in sub_blocks:
+        requests.append({
+            "updateBorders": {
+                "range": {"sheetId": sid, "startRowIndex": s - 1, "endRowIndex": e,
+                          "startColumnIndex": 0, "endColumnIndex": 8},
+                "top": THICK, "bottom": THICK, "left": THICK, "right": THICK,
+                "innerHorizontal": THICK, "innerVertical": THICK,
+            }
+        })
+
     # Run in batches of 50 to avoid request size limits
     for batch in [requests[k:k+50] for k in range(0, len(requests), 50)]:
         if batch:
@@ -619,4 +675,5 @@ def enforce_sheet_format(sheet_name):
         "title_rows": title_rows,
         "subheader_rows": subheader_rows,
         "patient_rows": patient_rows,
+        "sub_blocks": sub_blocks,
     }
