@@ -64,3 +64,5 @@
 - [張獻元 週二入院 cathlab 規則](feedback_zhang_xianyuan_tuewed_manual.md) — H 含張倉惟/王思翰 → 全 W3；無王/張 → 前 3 W2 PM 同日，第 4+ W3 AM；週三入院維持同日
 - [F/G prefill 看 plan 不只看 Dx](feedback_fg_prefill_patterns.md) — Plan 提到 cath/CAG → F=CAD（即使 Dx 是 CHF/pAf/VPC）；valve G 留空；rotaablation 不算 RF；s/p 歷史不算當下 F
 - [兩位 second → 第二位推薦醫師欄位 + 黃鼎鈞 Mon 強制 second 洪晨惠](feedback_cathlab_third_doctor.md) — 時段表「(浩、晨)」第一位 attendingdoctor2、第二位 recommendationDoctor；舊放 note 做法已廢；cathlab_keyin.py 已加 `third` 欄位
+- [N-V ordering 不自動跑](feedback_no_auto_ordering.md) — 任何情境都不自動 round-robin，使用者明確說「跑入院序/排序/抽籤」才動
+- [當週入院 JSON 保留至下週一](feedback_weekly_json_retention.md) — emr_data_*.json / cathlab_patients_*.json 當週(週日-週五)不刪，下週一才清，方便調動病人時讀舊 JSON 省 token
