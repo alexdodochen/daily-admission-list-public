@@ -7,8 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Before any work**:
 
 1. **`git fetch origin && git status -sb`** — check if origin is ahead. If so, `git pull --rebase` BEFORE touching any file. Multi-device user — origin may have new helper code (e.g. `_normalize_diag` in `cathlab_keyin.py`), new map entries (`cathlab_id_maps.json`), or per-date input (`cathlab_patients_YYYYMMDD.json`) that another session/machine already wrote. Skipping this step → you'll run with stale code, re-invent existing rules, or overwrite per-date work. Do not start any task before this check.
-2. Run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback.
-3. Check whether `cathlab_patients_<today>.json` / `emr_data_<today>.json` already exist on disk or in git — if yes, **use them**, don't rewrite.
+2. **`ls local_config.py`** — 沒有就立刻建 `SHEET_ID = '1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI'`。`gsheet_utils` 預設 fallback 到 public mirror（demo sheet），缺檔等於把所有 PHI 寫到公開 sheet。詳見 `memory/feedback_local_config_required.md`（5/1 踩過）。
+3. Run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback.
+4. Check whether `cathlab_patients_<today>.json` / `emr_data_<today>.json` already exist on disk or in git — if yes, **use them**, don't rewrite.
 
 The user actively maintains `每日入院清單工作流程.txt` as the source-of-truth workflow spec — **if it disagrees with this file, the txt wins**.
 
