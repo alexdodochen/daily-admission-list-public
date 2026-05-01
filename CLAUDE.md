@@ -12,6 +12,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The user actively maintains `每日入院清單工作流程.txt` as the source-of-truth workflow spec — **if it disagrees with this file, the txt wins**.
 
+## Public mirror（給別的行政總醫師 clone）
+
+- 公開 mirror: https://github.com/alexdodochen/daily-admission-list-public
+- `origin` remote 已設成 dual push URLs — `git push origin main` 自動推到私有 + 公開兩邊。
+- `origin` fetch URL 只有私有那一個 — `git pull` / `git fetch origin` 結構上不會碰到 public。
+- **絕對不要** `git remote add public ...` 或 `git fetch <public_url>` — public 上其他行政總醫師可能 push 過自己的改動，pull 回來會破壞我們的歷史。
+- Public 已分歧（push 被擋）時：用 `git push https://github.com/alexdodochen/daily-admission-list-public.git main --force`（私有那邊已成功就不重推），不要 merge public 歷史回來。
+- 詳見 `memory/project_public_mirror_sync.md`。
+
 ## Project Overview
 
 Hospital admission list management system for a cardiology department (成大醫院心臟科行政總醫師). Automates the daily workflow: patient list intake → lottery ordering → EMR extraction → admission sequencing → cathlab scheduling → LINE notifications.
@@ -21,7 +30,8 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Platform**: Windows 11, Python 3.14, `python` (not `python3`)
 - **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly. **Stdout redirect is also cp950 by default** — `python x.py > f.txt 2>&1` will still produce cp950 mojibake. Prefix with `PYTHONIOENCODING=utf-8 python x.py > f.txt 2>&1` (bash) or add `sys.stdout.reconfigure(encoding='utf-8')` at the top of the script. If you see garbled Chinese output like `��@�E`, stop and re-run with UTF-8 — never guess names from mojibake.
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
-- **Sheet ID**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`
+- **Sheet ID（私有）**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` — runtime 用這個（hardcoded in `gsheet_utils.py`）
+- **Sheet ID（public mirror 用）**: `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` — 推到 daily-admission-list-public 後，clone 出去給其他行政總醫師用的版本應指向這個（目前 hardcode 還是私有 ID，待處理；見 `memory/project_public_mirror_sync.md`）
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
 - **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
 - **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)

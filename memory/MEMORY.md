@@ -66,3 +66,4 @@
 - [兩位 second → 第二位推薦醫師欄位 + 黃鼎鈞 Mon 強制 second 洪晨惠](feedback_cathlab_third_doctor.md) — 時段表「(浩、晨)」第一位 attendingdoctor2、第二位 recommendationDoctor；舊放 note 做法已廢；cathlab_keyin.py 已加 `third` 欄位
 - [N-V ordering 不自動跑](feedback_no_auto_ordering.md) — 任何情境都不自動 round-robin，使用者明確說「跑入院序/排序/抽籤」才動
 - [當週入院 JSON 保留至下週一](feedback_weekly_json_retention.md) — emr_data_*.json / cathlab_patients_*.json 當週(週日-週五)不刪，下週一才清，方便調動病人時讀舊 JSON 省 token
+- [Public mirror 同步規則](project_public_mirror_sync.md) — `git push origin main` 自動推兩邊（私有 + public），絕不從 public pull 回 local；public 用不同 Sheet ID（待處理）
