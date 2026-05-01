@@ -14,11 +14,11 @@
   - Branch: main, clean（待會本次 workflow-docs 變更會 commit）
   - 部署: 私有 + public 都同步到 9a8055d（feat: SHEET_ID local override）
   - 最新 commit: 9a8055d feat: SHEET_ID local override mechanism for public mirror
-  - 此台機器環境: Node + Gemini CLI 已 setup；Python 尚未裝（user 跑 admission scripts 前要裝 Python 3 + pip 套件）
+  - 此台機器環境: Node v25.9.0 + Gemini CLI 0.40.1 + Python 3.14.4 + gspread/google-auth/playwright + Chromium browser 全部已裝；end-to-end 驗證 `from gsheet_utils import SHEET_ID` → 私有 ID（local_config.py 覆寫成功）
 
 【下一步該做什麼】
   - 5/1 (Fri) 若有入院清單 → 走標準流程（image OCR → lottery → EMR → ordering → cathlab）；週五入院 cathlab 同日（非 N+1）
-  - 此台機器若要實際跑 admission scripts → 先 winget install Python.Python.3.13 + pip install gspread google-auth playwright
+  - 此台機器已可直接跑 admission scripts（無需再裝任何依賴）
   - Gemini CLI OAuth 已由 user 自行完成；token 緊張時可用 ~/repos/Claude-Gemini-Dialogue/scripts/delegate.sh
 
 【已知問題 / 卡關】
