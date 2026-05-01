@@ -69,3 +69,4 @@
 - [Public mirror 同步規則](project_public_mirror_sync.md) — `git push origin main` 自動推兩邊（私有 + public），絕不從 public pull 回 local；public 用不同 Sheet ID（已用 local_config.py 解決）
 - [Claude-Gemini-Dialogue 委派工具](reference_claude_gemini_dialogue.md) — `~/repos/Claude-Gemini-Dialogue/scripts/delegate.sh` 把 grunt work 丟 Gemini 省 Claude token；長文搜尋/翻譯/批次轉檔適合
 - [statusline 顯示 5h/7d quota 不要 API cost](feedback_statusline_session_quota.md) — 訂閱用戶看的是 rate_limits.five_hour 用量，不是 USD；現有 ~/.claude/statusline.js
+- [各機器 python 路徑與跨機器 setup](reference_machine_python_path.md) — Win11 user 機 python 在 `Programs\Python\Python314`；WindowsApps stub 陷阱；hookify python3 不兼容
