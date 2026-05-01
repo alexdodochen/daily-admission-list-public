@@ -150,3 +150,8 @@ python <script>.py
 pip install gspread google-auth playwright
 playwright install chromium
 ```
+
+## External tools
+
+- **Claude-Gemini-Dialogue** (`~/repos/Claude-Gemini-Dialogue/scripts/delegate.sh`): Token-saving delegation wrapper — push grunt work (long-text search, translation, CSV→md, structural transforms) to Gemini CLI. See `memory/reference_claude_gemini_dialogue.md` for invocation patterns. Don't use for admission-list business logic (Gemini lacks our context).
+
