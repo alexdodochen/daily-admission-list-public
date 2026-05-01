@@ -30,8 +30,8 @@ Hospital admission list management system for a cardiology department (成大醫
 - **Platform**: Windows 11, Python 3.14, `python` (not `python3`)
 - **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly. **Stdout redirect is also cp950 by default** — `python x.py > f.txt 2>&1` will still produce cp950 mojibake. Prefix with `PYTHONIOENCODING=utf-8 python x.py > f.txt 2>&1` (bash) or add `sys.stdout.reconfigure(encoding='utf-8')` at the top of the script. If you see garbled Chinese output like `��@�E`, stop and re-run with UTF-8 — never guess names from mojibake.
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
-- **Sheet ID（私有）**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` — runtime 用這個（hardcoded in `gsheet_utils.py`）
-- **Sheet ID（public mirror 用）**: `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` — 推到 daily-admission-list-public 後，clone 出去給其他行政總醫師用的版本應指向這個（目前 hardcode 還是私有 ID，待處理；見 `memory/project_public_mirror_sync.md`）
+- **Sheet ID（私有）**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` — runtime 由 `local_config.py`（gitignored）覆寫進來
+- **Sheet ID（public mirror 預設）**: `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` — `gsheet_utils.py` 預設值；public clone 出去的人沒 `local_config.py` 自動用這個。要切換私有 → 在 repo 根目錄放 `local_config.py`：`SHEET_ID = '1DTIRNy...'`
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
 - **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
 - **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)

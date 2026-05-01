@@ -7,7 +7,12 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # --- Constants ---
-SHEET_ID = '1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI'
+# SHEET_ID 預設指向 public demo sheet（給 daily-admission-list-public clone 出去用）。
+# 私有環境：在 repo 根目錄放 local_config.py（已 gitignore）覆寫成私有 sheet。
+try:
+    from local_config import SHEET_ID
+except ImportError:
+    SHEET_ID = '1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8'
 CREDS_FILE = 'sigma-sector-492215-d2-0612bef3b39b.json'
 SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',

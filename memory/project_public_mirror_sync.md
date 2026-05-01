@@ -47,13 +47,26 @@ origin  https://github.com/alexdodochen/daily-admission-list-public.git (push)
 - 處理方式：另開 ad-hoc 命令 `git push https://github.com/alexdodochen/daily-admission-list-public.git main --force` 強推（我們是 source of truth；別人 push 到 public 的內容由他們自己 fork 保留）
 - 不要把 public 的歷史 merge 回私有
 
-## 待處理：Sheet ID 分歧
+## Sheet ID 分歧（已實作 2026-05-01）
 
-`gsheet_utils.py` 目前 hardcode 私有 Sheet ID。Public clone 出去的人會打不到自己的 sheet。
-解法待定（候選：`local_config.py` 覆寫 + 公開預設值；或 env var）。
-其他 hardcode 位置：CLAUDE.md / 每日入院清單工作流程.txt / .claude/skills/admission-image-to-excel/SKILL.md / memory/feedback_all_data_to_google_sheet.md。
+`gsheet_utils.py` 改成：
+
+```python
+try:
+    from local_config import SHEET_ID
+except ImportError:
+    SHEET_ID = '1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8'  # public default
+```
+
+- 我的本地有 `local_config.py`（gitignored，含 `SHEET_ID = '1DTIRNy...'`）→ runtime 走私有 sheet
+- Public clone 出去的人沒 `local_config.py` → 走 public demo sheet 預設值
+- `local_config.py` 在 `.gitignore`，不會推到 public
+
+公開 sheet `1u2FZE6...` 是大家共用的（user 2026-05-01 確認），不是每人各一份。
+
+文件中還有 4 處 hardcode 私有 Sheet ID（CLAUDE.md / 每日入院清單工作流程.txt / .claude/skills/admission-image-to-excel/SKILL.md / memory/feedback_all_data_to_google_sheet.md），但都是 doc／註解性質，不影響 runtime。CLAUDE.md 已標明兩個 ID 用途。
 
 ## 服務帳戶 JSON
 
 `sigma-sector-492215-d2-0612bef3b39b.json` 已在 .gitignore，不會推到 public。
-別的行政總醫師需要自備 service account + 自己 share 自己的 sheet 給該帳戶。
+別的行政總醫師需要自備 service account（或共用一個由 user 透過私下管道提供），share 公開 sheet 給該帳戶。
