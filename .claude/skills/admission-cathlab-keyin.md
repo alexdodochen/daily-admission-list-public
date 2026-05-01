@@ -19,7 +19,8 @@ description: Use when entering catheter lab scheduling data (導管排程 key-in
 | `cathlab_date` | YYYY/MM/DD 格式 |
 | `name` / `chart` | 子表格 A/B 欄 |
 | `doctor` | 主治醫師中文名（cathlab_keyin.py 內已有 25 醫師代碼） |
-| `second` | 第二醫師（無則 null） |
+| `second` | 第二醫師 `attendingdoctor2`（無則 null） |
+| `third` | 推薦醫師 `recommendationDoctor`（兩位 second 時第二位放這；無則 null） |
 | `room` | H1 / H2 / C1 / C2（查 `schedule_readable.txt` 該醫師當天時段） |
 | `time` | 時段醫師：上午 0600+ / 下午 1800+；非時段醫師 H1 2100+ |
 | `diagnosis` | 子表格 F 欄（如 CAD / pAf / SSS） |
@@ -28,14 +29,28 @@ description: Use when entering catheter lab scheduling data (導管排程 key-in
 
 ### 2. 寫成 JSON 檔
 
-```bash
-# cathlab_patients_20260428.json
+`cathlab_patients_20260428.json`（純 JSON，不能寫 `//` 註解）：
+
+```json
 [
   {"cathlab_date": "2026/04/28", "name": "陳爽", "chart": "04668242",
-   "doctor": "黃睦翔", "second": null, "room": "C2", "time": "1801",
-   "diagnosis": "CAD", "procedure": "Left heart cath.", "note": ""}
+   "doctor": "黃睦翔", "second": null, "third": null, "room": "C2", "time": "1801",
+   "diagnosis": "CAD", "procedure": "Left heart cath.", "note": ""},
+
+  {"cathlab_date": "2026/05/07", "name": "陳忻妤", "chart": "12345678",
+   "doctor": "黃鼎鈞", "second": "葉立浩", "third": "洪晨惠", "room": "C1", "time": "0600",
+   "diagnosis": "pAf", "procedure": "RF ablation", "note": ""},
+
+  {"cathlab_date": "2026/05/04", "name": "徐豐淇", "chart": "15302352",
+   "doctor": "黃鼎鈞", "second": "洪晨惠", "third": null, "room": "H1", "time": "2101",
+   "diagnosis": "pAf", "procedure": "RF ablation", "note": "本日無時段、全麻 LAAO+PFA Varipulse"}
 ]
 ```
+
+對照解釋：
+- 第 1 筆 — 標準時段醫師、單一 second。
+- 第 2 筆 — 時段表寫「黃鼎鈞(浩、晨)」兩位 second → 第一位 `second=葉立浩`，第二位 `third=洪晨惠`（recommendationDoctor）。
+- 第 3 筆 — 黃鼎鈞 Mon cathlab → `second` 強制 `洪晨惠`（即使時段表 Mon 沒寫黃鼎鈞，見下方規則 7）。
 
 ### 3. 跑通用 driver
 
@@ -80,7 +95,21 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
 6. **只 ADD 不修不刪既有**（CLAUDE.md rule #6）
 
+7. **兩位 second 醫師 → 第二位填 `third`（recommendationDoctor）**（2026-04-29 規則，見 `feedback_cathlab_third_doctor.md`）：
+
+   | 時段表寫法 | second | third |
+   |---|---|---|
+   | `黃鼎鈞(浩、晨)` | 葉立浩 | 洪晨惠 |
+   | `陳儒逸(寬、嘉)` | 葉建寬 | 蘇奕嘉 |
+   | `黃鼎鈞(浩)` | 葉立浩 | null |
+   | `廖瑀(晨)` | 洪晨惠 | null |
+
+   舊規則「第二位放 note」已廢，**不要再用 note**。`cathlab_keyin.py` ADD + UPT 兩階段都會處理 `third`。
+
+8. **黃鼎鈞 Mon cathlab → second 強制 `洪晨惠`**（同 memory 檔）：即使時段表 Mon 沒寫黃鼎鈞，凡 Mon 排到黃鼎鈞的病人一律 `second=洪晨惠`。Sun 入院 → Mon cathlab 適用；Mon 入院 → Tue cathlab 走 Tue 池規則不適用此條。
+
 ## 不要再做的事
 
 - ❌ 每天複製 200 行 `_cathlab_keyin_MMDD.py` per-date script — 用 `cathlab_keyin.py` + JSON 取代
 - ❌ 在 .py 內硬編 `DIAG_IDS = {...}` — 一律走 JSON 載入
+- ❌ 兩位 second 第二位放 note 欄位 — 改用 `third`（recommendationDoctor）
