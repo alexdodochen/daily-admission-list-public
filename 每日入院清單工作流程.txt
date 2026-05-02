@@ -277,6 +277,12 @@
   Claude 會：
   0. **病人清單來源：子表格（統整資料，主治醫師病人清單）**，不是 N-V 入院序
      （N-V 是給住服的子集；子表格才有所有需要做 cathlab 的病人）
+  0a. **HARD RULE：ADD 前必掃整週 (Mon-Fri) WEBCVIS chart no**
+     對 JSON 中每位病人，先 query 五天 chart no map。若該病人 chart 已在
+     當週**任何一天**（不只入院 N+1）→ STOP，列出「該病人 X 已排在
+     MM/DD ROOM TIME」給使用者看，從 JSON 移除該筆（不自動 ADD），
+     讓使用者決定要改 day/time 或 skip。2026-05-02 新規則 — 踩過坑：
+     康李金春 5/4 入院、5/6 CRT 已排，被誤 ADD 5/5 H1 2100 廖瑀。
   1. 整理成 cathlab_patients_YYYYMMDD.json（每病人 cathlab_date / name / chart /
      doctor / second / third / room / time / diagnosis / procedure / note）
      - second = attendingdoctor2 (時段表第一個括號)
@@ -299,6 +305,8 @@
        舊規則「第二位放 note」已廢（2026-04-29 update）
      - 黃鼎鈞 Mon cathlab → second 強制 = 洪晨惠
        （即使時段表 Mon 看似黃鼎鈞無時段；2026-04-29 新規則）
+     - **陳則瑋住院 + 劉秉彥門診** → second 預設 = 劉秉彥
+       （EMR 子表格 C 欄寫「(門診)... 劉秉彥 ...」即套用；2026-05-02 新規則，限劉秉彥）
      - 術前診斷（依 Sheet F 欄）
      - 預計心導管（依 Sheet G 欄）
        若不在 WEBCVIS 下拉選單 → 改填入 note 備註欄，

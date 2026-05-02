@@ -105,6 +105,9 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 15. **Second doctor priority**: 時段表寫「黃鼎鈞(浩、晨)」這類兩位 second → 第一位 (葉立浩=浩) → `attendingdoctor2`、第二位 (洪晨惠=晨) → **`recommendationDoctor` (推薦醫師欄位)**。`cathlab_keyin.py` 已支援 `third` JSON 欄位；舊「放 note」做法已廢。詳見 `memory/feedback_cathlab_third_doctor.md`。**黃鼎鈞 Mon cathlab 強制 second=洪晨惠**（即使時段表 Mon 沒寫他）。
 16. **詹世鴻 Friday exception**: 週五入院時 詹世鴻 視為**非時段醫師**——lottery/入院序不進主 round-robin（排在無時段醫師後），cathlab 也排非時段（H1 2100+, note="本日無時段"）。兩邊一致。
 17. **Post-edit format check**: 任何寫入/修改日期 sheet 病人清單之後，**一定要** 讀回驗證格式（主資料 A-L、N-V ordering、子表格 title/人數/空白隔行、無殘留合併、病歷號一致）。跑掉就當場修，不留尾巴給使用者（見 `memory/feedback_post_edit_format_check.md`）。**最簡解**：`from gsheet_utils import enforce_sheet_format; enforce_sheet_format('YYYYMMDD')` — idempotent，自動刷 BLUE/WHITE bg + LEFT 對齊 + 粗體 + WRAP。任何 diff/insert/delete/write_range 動到 sheet 之後**強制**收尾呼叫一次。
+18. **N-V 寫入前必當下重讀子表格 F/G/H** (HARD): session 早期讀的 cached 值不算；使用者會在抽籤/EMR/format check 之後到你寫 N-V 之前手動修 F/G/H。漏這步 → 入院序的術前診斷/預計心導管/備註全寫錯。詳見 `memory/feedback_subtable_H_to_R_ordering.md`（5/2 踩過：8/11 病人 F/G/H 寫錯）。
+19. **Cathlab ADD 前必掃整週 (Mon-Fri)** (HARD): 對 JSON 中每位病人，先用 playwright query 五天 chart no map。若 chart 已在當週**任何一天**（不只 N+1）→ STOP，列出「該病人已排在 MM/DD ROOM TIME」，從 JSON 移除該筆，**絕不自動 ADD** 到 N+1 那天。詳見 `memory/feedback_cathlab_week_check_before_keyin.md`（5/2 踩過：康李金春 5/6 CRT 已排，被誤 ADD 5/5 廖瑀 H1 2100）。
+20. **陳則瑋 + 劉秉彥門診 → cathlab second=劉秉彥**: 陳則瑋住院病人若 EMR 子表格 C 欄寫「(門診)... 劉秉彥 ...」→ JSON `second=劉秉彥`。限劉秉彥（不是通則）。見 `memory/feedback_chen_zewei_liu_bingyan_second.md`。
 
 ## WEBCVIS Cathlab System
 

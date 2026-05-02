@@ -21,9 +21,11 @@ type: feedback
 
 **How to apply:**
 1. `admission-ordering` skill 已記錄此規則（5c 欄位資料來源）
-2. 寫入 N-V 前，build `chart_to_H` map，每筆病人的 R 欄先看 H 是否有值
-3. H 同時包含 K paren 的內容時（如 H="王思翰 4/21無床延期"，K=" (4/21無床延期)"），**直接用 H**，不要做 dedup 嘗試 — H 是使用者經手過的版本
-4. Post-edit format check 時要驗證 R 欄與子表格 H 欄一致（除了 H 為空 fallback K 的情況）
+2. **寫入 N-V 前必須當下重讀子表格 F/G/H — 不可用 session 早期的 cached 值**。使用者會在抽籤後 / EMR 後 / 你寫 N-V 前的任何時刻手動修 F/G/H（更新診斷、加註記、改檢查項目）。讀過一次不算數，**每次寫 N-V 前一定要重讀**。
+3. 寫入 N-V 前，build `chart_to_(F,G,H)` map，每筆病人 T=F、U=G、R 先看 H 是否有值
+4. H 同時包含 K paren 的內容時（如 H="王思翰 4/21無床延期"，K=" (4/21無床延期)"），**直接用 H**，不要做 dedup 嘗試 — H 是使用者經手過的版本
+5. Post-edit format check 時要驗證 R 欄與子表格 H 欄一致（除了 H 為空 fallback K 的情況）
 
 **已知實例：**
 - 2026-04-27 排 4/28 入院序時，第一輪只寫 K paren，使用者糾正「你註記沒有幫我把 subtable 移植到入院清單」 — 9 筆 R 欄遺漏（張獻元 林機明/陳麗花/方文忠/王得福/陳中坤/鐘藍金英/林宗慶、黃睦翔 楊永瑞、廖瑀 王金章），補寫一次才完整
+- 2026-05-02 排 5/4 入院序時，用 session 早期讀的子表格 cached 值，沒重讀，結果 8/11 病人的 F/G/H 寫錯（林怡昌 STEMI→Others:NSTEMI 漏掉、陳麗花 CAD→PAOD 漏掉、黃嬌子 H="不用排導管...檢查" 整段漏掉等等）。使用者罵：「每次要做入院序列 不是都應該讀取最新的subtable嘛!!」 — **這條規則自此升級為 hard rule**
