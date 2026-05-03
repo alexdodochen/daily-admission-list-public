@@ -1,5 +1,5 @@
 ============================================
-  交班文件 — Last Updated: 2026-05-03 noon
+  交班文件 — Last Updated: 2026-05-03 afternoon
 ============================================
 
 【本次 session 做了什麼】
@@ -10,10 +10,11 @@
   5. 驗證 git history 0 筆 PEM private key（service account JSON 內容從沒進 commit）→ 接受不做歷史 rewrite
 
 【當前狀態】
-  - Branch: main, working tree 動了（memory 更新 + HANDOFF + 暫存清理待 commit）
-  - 最新 commit: e0c4189 (chore: harden public mirror — scrub private SHEET_ID + remove LINE infra)
-  - origin/main 已同步（私有 + public 兩邊都成功 push）
+  - Branch: main, working tree clean
+  - 最新 commit: f343d05 (docs: clarify — public doc scrub ≠ disable LINE feature)
+  - origin/main 已同步（私有 + public 兩邊都成功 push，3 個 commit）
   - pre-push hook 在這台機器已啟用（`git config core.hooksPath` = `.githooks`）
+  - 結束 session 後 user 要求關閉 terminal
 
 【下一步該做什麼】
   - 其他 clone 機器（OPD / 別台）首次工作前各跑一次 `git config core.hooksPath .githooks`
