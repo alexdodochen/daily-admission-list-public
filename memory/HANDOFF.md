@@ -16,9 +16,13 @@
   - pre-push hook 在這台機器已啟用（`git config core.hooksPath` = `.githooks`）
 
 【下一步該做什麼】
-  - **使用者要去 cron-job.org 把 4 個 LINE 推播 job 停用**（入院序推播 / 備援 / 週六版 ×2）— 不停的話每天 07:50 還是會發到「成醫-心內」群組。這個 repo 動不到 cron-job.org
   - 其他 clone 機器（OPD / 別台）首次工作前各跑一次 `git config core.hooksPath .githooks`
   - 跨機器 setup：`scp local_config.py` + service account JSON + `memory/_private_setup.md` 到新機器（這份 gitignored 不會自動同步）
+
+【LINE 推播注意：私有照常跑！】
+  - cron-job.org 那 4 個 job（入院序推播 / 備援 / 週六版 ×2）**繼續啟用**，私有環境每天 07:50 照常推到「成醫-心內」群組
+  - 此 session 只做了「public mirror 文件不顯示 bot infra」，**沒有**動 cron-job.org / Render bot / 推播實際運作
+  - 千萬不要建議使用者停 cron job —— 會把使用者每天用的功能整個關掉
 
 【已知問題 / 卡關】
   - public mirror sheet `1u2FZE6...` 仍殘留 5/3 真實病人 PHI（使用者尚未授權清理 — 5/1 殘留問題）

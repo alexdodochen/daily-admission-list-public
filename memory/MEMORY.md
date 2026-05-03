@@ -35,6 +35,7 @@
 - [忽略開刀日 col B + cathlab 預設 N+1](feedback_ignore_op_date_default_n_plus_1.md) — col A 統一為 sheet 對應日，col B 統一 N+1，使用者明說才改
 - [跨機器必先確認 local_config.py](feedback_local_config_required.md) — 缺則 SHEET_ID fallback 到 public mirror，所有寫入跑到公開 demo sheet（5/1 踩過）
 - [LINE / 私有 infra 一律寫 gitignored 檔](feedback_no_line_in_public.md) — LINE bot infra / 私有 SHEET_ID / service account 內容寫到 _*.md / memory/_*.md，pre-push hook 擋違規字串（5/3 部署）
+- [LINE 推播私有照常跑](feedback_line_push_stays_enabled.md) — public 撤文件 ≠ 關功能；cron-job.org 4 個 job 保持 enable，私有 07:50 照常推（5/3 差點建議使用者停掉）
 - [MTEER WEBCVIS 雙 booking 是正常](reference_mteer_double_booking.md) — Hybrid 房間（介入）+ xa-TEE 房間（影像）同時段配套案，verify_cathlab N+1 預設找不到 MTEER 要手動查後一天
 - [陳則瑋 + 劉秉彥門診 → second=劉秉彥](feedback_chen_zewei_liu_bingyan_second.md) — 陳則瑋住院病人若 OPD 看劉秉彥（EMR 子表格 C 欄門診來源）→ cathlab attendingdoctor2 預設劉秉彥
 - [cathlab ADD 前必掃整週 chart](feedback_cathlab_week_check_before_keyin.md) — Mon-Fri 五天都查，已存在任何一天 → STOP 給使用者看，不自動 ADD（5/2 踩過：康李金春 5/6 CRT 已排，被我誤 ADD 5/5 廖瑀 H1 2100）
