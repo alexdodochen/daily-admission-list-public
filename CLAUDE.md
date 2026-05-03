@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Before any work**:
 
 1. **`git fetch origin && git status -sb`** — check if origin is ahead. If so, `git pull --rebase` BEFORE touching any file. Multi-device user — origin may have new helper code (e.g. `_normalize_diag` in `cathlab_keyin.py`), new map entries (`cathlab_id_maps.json`), or per-date input (`cathlab_patients_YYYYMMDD.json`) that another session/machine already wrote. Skipping this step → you'll run with stale code, re-invent existing rules, or overwrite per-date work. Do not start any task before this check.
-2. **`ls local_config.py`** — 沒有就立刻建 `SHEET_ID = '1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI'`。`gsheet_utils` 預設 fallback 到 public mirror（demo sheet），缺檔等於把所有 PHI 寫到公開 sheet。詳見 `memory/feedback_local_config_required.md`（5/1 踩過）。
+2. **`ls local_config.py`** — 沒有就立刻從別台機器 copy 過來（或從 `memory/_private_setup.md` 重建，那檔 gitignored）。`gsheet_utils` 預設 fallback 到 public mirror（demo sheet），缺檔等於把所有 PHI 寫到公開 sheet。詳見 `memory/feedback_local_config_required.md`（5/1 踩過）。
 3. Run the `check-previous-progress` skill to load `memory/MEMORY.md` and prior feedback.
 4. Check whether `cathlab_patients_<today>.json` / `emr_data_<today>.json` already exist on disk or in git — if yes, **use them**, don't rewrite.
 
@@ -22,17 +22,37 @@ The user actively maintains `每日入院清單工作流程.txt` as the source-o
 - Public 已分歧（push 被擋）時：用 `git push https://github.com/alexdodochen/daily-admission-list-public.git main --force`（私有那邊已成功就不重推），不要 merge public 歷史回來。
 - 詳見 `memory/project_public_mirror_sync.md`。
 
+### Public 不能有的東西（HARD RULE — 在 push 環節強制檢查）
+
+`origin push` 同時推到 public mirror。任何帶有以下內容的 tracked 檔案**永遠不可被 commit**：
+
+- 私有 SHEET_ID（具體字串見 `memory/_private_setup.md`）
+- LINE 推播 bot 任何 infra：bot URL、bot ID（@-前綴）、`trigger-*` 系列 endpoint 路徑
+- Service account JSON 內容（PEM private key block）
+
+具體被擋的 regex 模式以 `scripts/pre_push_check.py` 的 `FORBIDDEN` list 為準。要看實際字串去 gitignored 的 `memory/_reference_line_reminder_bot.md` / `memory/_private_setup.md`。
+
+凡屬上面類別的內容**一律寫到 gitignored 檔案**：根目錄 `_*.md` / `_*.txt`、或 `memory/_*.md`。LINE 推播相關的工作流程細節都已搬到 `memory/_reference_line_reminder_bot.md` / `memory/_reference_line_monthly_quota.md` / `memory/_reference_cronjob_render_gotchas.md` / `_step5_line_push.md`，未來新增 LINE 相關規則或 bot 細節**一律加到 `_` 前綴檔案**，不要寫進 `CLAUDE.md` / `每日入院清單工作流程.txt` / 其他 tracked 檔案。
+
+**Push-time 護欄**（`scripts/pre_push_check.py` + `.githooks/pre-push`）：
+- 一次性 setup：`git config core.hooksPath .githooks`（每台 clone 機器各跑一次）
+- 之後每次 `git push` git hook 自動呼叫 `pre_push_check.py`，掃 tracked 檔案有沒有上述禁忌字串
+- 命中即 fail（exit 1），push 中止
+- 千萬不要為了讓 push 過用 `--no-verify` — 中標就乖乖把違規內容搬到 `_*.md`
+
+每次 commit + push 之前 Claude 也應自己跑 `python scripts/pre_push_check.py` 一次當作雙保險。
+
 ## Project Overview
 
-Hospital admission list management system for a cardiology department (成大醫院心臟科行政總醫師). Automates the daily workflow: patient list intake → lottery ordering → EMR extraction → admission sequencing → cathlab scheduling → LINE notifications.
+Hospital admission list management system for a cardiology department (成大醫院心臟科行政總醫師). Automates the daily workflow: patient list intake → lottery ordering → EMR extraction → admission sequencing → cathlab scheduling.
 
 ## Environment
 
 - **Platform**: Windows 11, Python 3.14, `python` (not `python3`). 跨機器 setup / WindowsApps stub 陷阱見 `memory/reference_machine_python_path.md`
 - **Terminal encoding**: cp950 — Chinese characters with special Unicode (emojis, ❌✅) will crash `print()`. Write output to UTF-8 files and read with the Read tool instead. All `open(..., 'w')` calls must pass `encoding='utf-8'` explicitly. **Stdout redirect is also cp950 by default** — `python x.py > f.txt 2>&1` will still produce cp950 mojibake. Prefix with `PYTHONIOENCODING=utf-8 python x.py > f.txt 2>&1` (bash) or add `sys.stdout.reconfigure(encoding='utf-8')` at the top of the script. If you see garbled Chinese output like `��@�E`, stop and re-run with UTF-8 — never guess names from mojibake.
 - **Google Sheets API**: `gspread` + service account (`sigma-sector-492215-d2-0612bef3b39b.json`)
-- **Sheet ID（私有）**: `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` — runtime 由 `local_config.py`（gitignored）覆寫進來
-- **Sheet ID（public mirror 預設）**: `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` — `gsheet_utils.py` 預設值；public clone 出去的人沒 `local_config.py` 自動用這個。要切換私有 → 在 repo 根目錄放 `local_config.py`：`SHEET_ID = '1DTIRNy...'`
+- **Sheet ID（私有）**: 由 `local_config.py`（gitignored）提供，public-tracked 文件不再硬寫；私有值記在 `memory/_private_setup.md`（gitignored）
+- **Sheet ID（public mirror 預設）**: `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` — `gsheet_utils.py` 預設值；public clone 出去的人沒 `local_config.py` 自動用這個
 - **Browser automation**: Playwright (`playwright.sync_api`, Chromium, non-headless). EMR scripts use sentinel-stamping to avoid race conditions between frame loads.
 - **gspread rate limits**: Google Sheets API has per-minute quotas. All batch writes should include `time.sleep(0.3–1)` between API calls. Use `batch_update` for bulk formatting requests (capped at 500 per batch in `gsheet_utils.py`).
 - **Worksheet access**: `sh.worksheet('name')` works for named sheets. Key sheets: 下拉選單, 麻醉, 主治醫師導管時段表, 主治醫師抽籤表, CathDuration, plus date sheets (20260406, 20260407, ...)
@@ -88,7 +108,7 @@ Scripts write results to `_*.txt` files (e.g., `_ordering_result.txt`) because c
 
 Full details in `每日入院清單工作流程.txt`. Critical rules:
 
-1. **Ordering columns N–V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). LINE 07:50 push only sends N-Q (first 4 cols) to 住服. **V 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 V 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
+1. **Ordering columns N–V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期 (user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服)). N-Q (first 4 cols) 是「住服需要的子集」，下游若有外部推播 consumer 只取這 4 欄。**V 欄=改期**：純人工標記欄位。使用者手動在該 ordering row 填 YYYYMMDD 表示此病人延後處理 → 該 row 不會進入 N+1 cathlab keyin，也會被 `verify_cathlab.py` skip。手動寫 V 時必須用 P 欄姓名或 S 欄病歷號比對 ordering row（不是主資料 row，round-robin 後 row 順序不同）。
 2. **Round-robin lottery (兩段獨立 RR)**: 時段組（在當日 cathlab 抽籤池）彼此 RR 排完 → 非時段組（不在池）再彼此 RR 接後面。**絕對不要時段+非時段混在一起 RR**（per `feedback_lottery_roundrobin.md` — 使用者多次糾正的關鍵規則）。組內：A1→B1→C1→A2→C2... 真 RR，醫師用完就 skip。組內醫師順序 = 真隨機抽籤 (`random.shuffle()`)，**不可**借用 sub-table 的醫師出現順序（兩者是獨立事件）。
 3. **Friday admission → Friday schedule**: 週五入院查週五抽籤表（週六無抽籤表）。日→一、一→二、二→三、三→四、四→五、**五→五**
 4. **Non-schedule doctors**: Never include in main round-robin.

@@ -6,7 +6,7 @@ description: Use when importing daily admission list data from a screenshot/imag
 # 每日入院名單圖片匯入 Google Sheet
 
 ## Overview
-從每日入院名單截圖提取病人資料，寫入 **Google Sheet** (ID `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`) 的日期工作表，複製既有格式並建立醫師子表。
+從每日入院名單截圖提取病人資料，寫入 **Google Sheet**（SHEET_ID 由 `local_config.py` 提供，gitignored）的日期工作表，複製既有格式並建立醫師子表。
 
 **重要：** 本 skill 歷史名稱叫 image-to-excel，但實際目標是 Google Sheet，不寫本地 `每日入院名單.xlsx`。user 明確要求所有資料寫 Google Sheet。
 

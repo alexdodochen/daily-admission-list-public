@@ -9,7 +9,7 @@ type: feedback
 - **Google Sheet**：「每天續等清單」worksheet 已刪除
 - **欄位**：YYYYMMDD sheet 的 ordering 從 N-W (10 欄) 改為 N-V (9 欄)。原 V=每日續等清單刪除，原 W=改期 移到 V
 - **Skills**：`admission-lottery` 的「每日續等抽籤」「整合入院清單（產生定案）」兩節已移除；`admission-ordering` 不再把非抽籤表醫師移到續等
-- **LINE Bot**：cron-job.org 的 W07「手動更新續等清單」job 已刪除；`/trigger-waitlist` endpoint 待下次 OPD push 時從 bot 移除
+- **LINE Bot**（私有基礎建設，public mirror 不應出現細節）：對應 cron job 已刪除；對應 endpoint 待從 bot 移除
 - **Memory**：`feedback_waitlist_merge.md`、`feedback_webapp_no_waitlist_integration.md` 已刪
 
 **Why:** 使用者明確表示「不需要每日續等清單這個功能了 幫我清除掉」，並授權刪 worksheet + 清全部相關。續等流程原本是「未入院病人歸檔 + 下次抽籤優先」，已不再需要此工作流。

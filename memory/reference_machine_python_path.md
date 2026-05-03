@@ -32,7 +32,7 @@ PYTHONIOENCODING=utf-8 "$PY" script.py
 2. `pip install gspread google-auth playwright`
 3. `playwright install chromium`
 4. **複製 service account JSON** `sigma-sector-492215-d2-0612bef3b39b.json` 到 repo 根目錄（gitignored，不從 git 來）
-5. 私有 sheet → 在 repo 根目錄建 `local_config.py`：`SHEET_ID = '1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI'`
+5. 私有 sheet → 在 repo 根目錄建 `local_config.py`：私有 `SHEET_ID` 從別台機器 `scp` 過來，或從 `memory/_private_setup.md`（gitignored）拿。
 
 ## hookify plugin Windows 不兼容
 

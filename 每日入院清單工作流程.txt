@@ -4,7 +4,8 @@
 
 【準備】
   - Google Sheet（主檔，已取代本地 Excel）
-    https://docs.google.com/spreadsheets/d/1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI
+    SHEET_ID 由 repo 根目錄 local_config.py 提供（gitignored）；
+    public clone 沒此檔時 gsheet_utils.py fallback 到 demo sheet
     透過 Service Account API 自動讀寫
   - 當天入院名單截圖（直接貼給 Claude 即可，不需存檔）
   - Chrome 開啟 Web EMR 系統
@@ -19,9 +20,8 @@
   步驟二 → admission-lottery
   步驟三 → admission-emr-extraction（單日）/ admission-emr-refresh（多日批次重抓）
   步驟四 → admission-ordering
-  步驟五 → admission-line-push
-  步驟六 → admission-cathlab-keyin
-  步驟七 → workflow-docs 階段 4.5（清除暫存檔）
+  步驟五 → admission-cathlab-keyin
+  步驟六 → workflow-docs 階段 4.5（清除暫存檔）
   共用   → admission-format-check（寫完 sheet 後格式驗證/修復，也可使用者直接叫）
           admission-sheet-rebuild（date sheet 誤刪/壞掉時從 template 重建）
           workflow-docs（session 結束時盤點變更 + 寫 memory + 清暫存 + 同步文件，/workflow-docs 觸發）
@@ -221,46 +221,11 @@
 
 
 ============================================
-  第三階段：推播與排程
+  第三階段：排程
 ============================================
 
 --------------------------------------------
-步驟五：LINE 推播入院序
---------------------------------------------
-  每天 07:50 自動推播當日入院序到「成醫-心內」LINE 群組
-  週六 07:50 自動推播離週六最近一天的入院序（先查週日，沒有再查週一...）
-
-  推播內容只有 N-Q 四欄（住服需要的資訊）：
-    📋 2026/04/07（二）入院名單
-
-    1. 詹世鴻 - 施焱騰（請盡量9B 非導管床）
-    2. 黃睦翔 - 曾永雄
-    ...
-
-  欄位：序號、主治醫師、病人姓名、備註(住服)
-  備註(住服) 來自 Q 欄（不是 R 欄的備註）
-
-  排程（cron-job.org）：
-    主 job：每天 07:50 /trigger-admission
-    備援：  每天 07:55 /trigger-admission（防 Render 休眠 503）
-    週六主：07:50 /trigger-admission-weekend
-    週六備：07:55 /trigger-admission-weekend
-    ─ Redis dedup 防止重複推播（07:50 成功 → 07:55 自動跳過）
-
-  程式：admission_push.py（讀取 Google Sheet N-Q 欄）
-  Bot：NCKUH-CV-CYChen（@500wcxsy，獨立 LINE Official Account）
-
-  手動觸發：
-    https://line-reminder-bot-wvwo.onrender.com/trigger-admission?secret=...
-    可加 &date=20260407 指定日期
-
-  【安全規則】
-  未經使用者明確許可，Claude 不得自行觸發推播到成醫-心內群組。
-  只有 cron-job.org 自動排程是預先授權的。
-  Claude 修改程式碼可以，但絕對不能自己打推播 endpoint。
-
---------------------------------------------
-步驟六：心導管排程 key-in [skill: admission-cathlab-keyin]
+步驟五：心導管排程 key-in [skill: admission-cathlab-keyin]
 --------------------------------------------
   系統：http://cardiopacs01.hosp.ncku:8080/WEBCVIS/HCO/HCO1W001.do
   帳號/密碼：107614 / 107614
@@ -381,7 +346,7 @@
 ============================================
 
 --------------------------------------------
-步驟七：清除暫存檔 [skill: workflow-docs 階段 4.5]
+步驟六：清除暫存檔 [skill: workflow-docs 階段 4.5]
 --------------------------------------------
   你的操作：
   - 「/workflow-docs」或「清理檔案」
@@ -418,7 +383,6 @@
   「下拉選單填好了，幫我整合入院序」
   「自動生成入院序」（直接讀取現有 F/G 欄）
   「導管排程」
-  「推播入院名單」或「測試推播」
   「更新工作流程」
 
   多天一起處理：

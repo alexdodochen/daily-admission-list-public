@@ -1,0 +1,5 @@
+#!/bin/sh
+# Block pushes that leak private values to the public mirror.
+# Install once: `git config core.hooksPath .githooks`
+# Bypass only in true emergency: `git push --no-verify`
+python scripts/pre_push_check.py

@@ -22,8 +22,6 @@
 - [EMR姓名自動校正不需提醒](feedback_emr_auto_name_fix.md) — 讀到EMR姓名就自動更新Sheet所有位置，不問使用者
 - [EMR病人姓名位置](feedback_emr_name_location.md) — 姓名在 span#divUserSpec 內（frame.aspx 頁面），用 CSS selector 提取
 - [EMR fallback 白名單](feedback_emr_fallback_doctors.md) — 目標醫師無門診時只能 fallback 到 劉秉彥/趙庭興/蔡惟全/許志新/陳柏升/李貽恒，都沒有就標記無資料
-- [不可自行觸發LINE推播](feedback_no_manual_push.md) — 修改程式可以，但不能自己打推播endpoint
-- [入院名單推播只傳N-Q四欄](feedback_admission_push_nq_only.md) — 只傳序號、主治醫師、病人姓名、備註(住服)
 - [工作流不反覆確認](feedback_no_reconfirm_workflow.md) — 圖＋session URL 齊全就一條龍跑到底，不要每 phase 問「要繼續嗎」
 - [格式跑掉根因分析](project_format_bug_postmortem.md) — 2026-04-21 postmortem，五個根因 + 已做/待做修復
 - [子表格寫完必須白底＋≥2列空列](feedback_post_edit_format_check.md) — write_doctor_table 要顯式刷白底＋2列 gap＋空列清框，否則 duplicate sheet 殘留藍底會透出

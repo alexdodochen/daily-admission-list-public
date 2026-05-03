@@ -8,7 +8,7 @@ type: project
 
 | 角色 | URL | Sheet ID |
 |---|---|---|
-| **私有（我們的）** | https://github.com/alexdodochen/daily-admission-list | `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` |
+| **私有（我們的）** | https://github.com/alexdodochen/daily-admission-list | 見 `memory/_private_setup.md`（gitignored） |
 | **公開 mirror** | https://github.com/alexdodochen/daily-admission-list-public | `1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8` |
 
 公開 mirror 給別的行政總醫師 clone 來用，他們可以自由改自己的 clone。
@@ -58,13 +58,13 @@ except ImportError:
     SHEET_ID = '1u2FZE6-Ldich_b2jI-i0gNnxu1ZsZtZ2Ra6ffCU2Er8'  # public default
 ```
 
-- 我的本地有 `local_config.py`（gitignored，含 `SHEET_ID = '1DTIRNy...'`）→ runtime 走私有 sheet
+- 我的本地有 `local_config.py`（gitignored，含私有 `SHEET_ID`）→ runtime 走私有 sheet
 - Public clone 出去的人沒 `local_config.py` → 走 public demo sheet 預設值
 - `local_config.py` 在 `.gitignore`，不會推到 public
 
 公開 sheet `1u2FZE6...` 是大家共用的（user 2026-05-01 確認），不是每人各一份。
 
-文件中還有 4 處 hardcode 私有 Sheet ID（CLAUDE.md / 每日入院清單工作流程.txt / .claude/skills/admission-image-to-excel/SKILL.md / memory/feedback_all_data_to_google_sheet.md），但都是 doc／註解性質，不影響 runtime。CLAUDE.md 已標明兩個 ID 用途。
+私有 SHEET_ID 已從所有 tracked 文件清掉（2026-05-03），集中保存在 `memory/_private_setup.md`（gitignored）。Public mirror 看不到任何私有值 → 結構上不可能寫到私有 sheet。
 
 ## 服務帳戶 JSON
 

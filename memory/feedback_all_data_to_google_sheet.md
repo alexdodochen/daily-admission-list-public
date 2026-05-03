@@ -4,7 +4,7 @@ description: User 明確要求所有入院清單/EMR/排程資料只寫入 Googl
 type: feedback
 ---
 
-所有入院清單工作的資料寫入目標是 **Google Sheet**（ID `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI`），**不是本地 `每日入院名單.xlsx`**。
+所有入院清單工作的資料寫入目標是 **Google Sheet**（SHEET_ID 由 `local_config.py` 提供，gitignored；私有值記在 `memory/_private_setup.md`），**不是本地 `每日入院名單.xlsx`**。
 
 **Why:** 本地 xlsx 是歷史檔（保留舊資料），目前主檔已完全遷到 Google Sheet。Claude 若誤寫到本地 xlsx，user 看不到，且會和 Sheet 不同步。2026-04-13 user 大聲明確要求「我全部都是要寫入google sheet!!!!」。
 
