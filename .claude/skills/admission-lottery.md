@@ -208,5 +208,5 @@ print('抽籤順序：', ' → '.join(order))
 - 所有 gspread 呼叫之間加 `time.sleep(0.3-1)` 避免 rate limit
 - **絕不覆蓋主資料 A-L**
 - 抽籤完顯示順序給使用者確認後，直接接 `admission-emr-extraction`
-- 不要自己推 LINE（`feedback_no_manual_push.md`）
+- 不要自己觸發外部推播 endpoint（即使在私有環境）— 改 code OK，自動觸發禁止
 - 已成文規則（如詹週五非時段、五→五、*2 抽籤）不要反覆問使用者，直接套用（`feedback_no_reconfirm_workflow.md`）

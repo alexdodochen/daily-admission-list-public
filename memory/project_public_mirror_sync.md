@@ -70,3 +70,25 @@ except ImportError:
 
 `sigma-sector-492215-d2-0612bef3b39b.json` 已在 .gitignore，不會推到 public。
 別的行政總醫師需要自備 service account（或共用一個由 user 透過私下管道提供），share 公開 sheet 給該帳戶。
+
+歷史驗證（2026-05-03）：`git log -p -S "BEGIN PRIVATE KEY"` 0 命中 — JSON 內容**從沒**進入過任何 commit。public repo 歷史會看到的私有 metadata 是 service account email、project ID、舊私有 SHEET_ID 字串，但這些**不能**登入 Google API（沒 private key 一切免談）。User 2026-05-03 接受不做歷史 rewrite。
+
+## LINE 推播功能：public 不存在（2026-05-03 規則）
+
+LINE 推播 bot（`alexdodochen/line-reminder-bot`）讀的是**私有 sheet**，跟 public mirror 完全無關 — public sheet 沒被 share 給 bot 的 service account，bot 也不知道 public sheet ID 存在 → public sheet 永遠不會被推播。
+
+但 **LINE bot infra metadata** (URL / endpoint / Bot ID / cron schedule) 已從所有 tracked 檔案撤除：
+- 步驟五整段移到 `_step5_line_push.md`（gitignored）
+- 三份 LINE 相關 reference memory 加 `_` 前綴 → gitignored：`_reference_line_reminder_bot.md` / `_reference_line_monthly_quota.md` / `_reference_cronjob_render_gotchas.md`
+- 工作流程 txt 由 7 步縮為 6 步（步驟五 = cathlab keyin、步驟六 = 清暫存）
+- CLAUDE.md overview 的「LINE notifications」字眼移除
+
+**未來新增 LINE 規則 / bot 細節 → 一律寫到 `_*.md`（root 或 memory/）**，不要寫進 tracked 檔案。
+
+## Push-time 護欄（2026-05-03 部署）
+
+- `scripts/pre_push_check.py` — 掃 tracked 檔案禁忌字串：私有 SHEET_ID、bot URL、bot ID、`trigger-*` endpoint 路徑、PEM private key block（具體 regex 見該腳本的 `FORBIDDEN` list）
+- `.githooks/pre-push` — git hook 自動跑 check
+- 一次性 setup（每台 clone）：`git config core.hooksPath .githooks`
+- 命中 → push 中止；不要用 `--no-verify` 繞，違規內容應搬到 `_*.md`
+- 加新禁忌字串 → 改 `scripts/pre_push_check.py` 的 `FORBIDDEN` list（描述 + regex）

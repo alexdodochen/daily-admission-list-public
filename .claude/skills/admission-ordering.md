@@ -286,4 +286,4 @@ for i in range(1, 1+len(rows)+1):
 - 所有 gspread 呼叫之間加 `time.sleep(0.3-1)`，避免 rate limit
 - **絕不覆蓋主資料 A-L**
 - 每次操作後顯示完整入院序表格供使用者確認
-- 不要自己推 LINE（`feedback_no_manual_push.md`）
+- 不要自己觸發外部推播 endpoint（即使在私有環境）— 改 code OK，自動觸發禁止
