@@ -102,7 +102,7 @@ non_slot = [d for d in admit_doctors if d not in seen]
 order.extend(non_slot)
 ```
 
-### 5. 建子表格（A-G 7 欄，post 5/4 — 已移除 D=EMR摘要）
+### 5. 建子表格（A-H 8 欄）
 
 每位 `order` 中的醫師都建一個 block，寫入主資料下方：
 
@@ -110,24 +110,25 @@ order.extend(non_slot)
 from gsheet_utils import write_doctor_table
 
 # write_doctor_table 會處理：
-# - 標題列「醫師（N人）」合併 A-G + 淺藍底
-# - 子 header「姓名 病歷號 EMR 手動設定入院序 術前診斷 預計心導管 註記」+ 淺藍底
-# - 病人資料行白底（C/E/F/D 欄留空待 EMR/ordering 填）
+# - 標題列「醫師（N人）」合併 A-H + 淺藍底
+# - 子 header「姓名 病歷號 EMR EMR摘要 手動設定入院序 術前診斷 預計心導管 註記」+ 淺藍底
+# - 病人資料行白底（C/D/E/F/G/H 欄留空待 EMR/Gemini/ordering 填）
 # - block 之間 ≥ 2 列空白 + 顯式刷白底（避免 duplicate sheet 殘留藍底透出）
 # 詳見 feedback_post_edit_format_check.md
 ```
 
-子表格 7 欄定義：
+子表格 8 欄定義：
 
 | 欄 | 內容 | 階段填入 |
 |---|---|---|
 | A | 病人姓名 | 抽籤（從主資料 F） |
 | B | 病歷號 | 抽籤（從主資料 I，TEXT 格式保前導 0） |
-| C | EMR 原文 | EMR extraction（無摘要，只填 raw text） |
-| D | 手動設定入院序 | ordering |
-| E | 術前診斷 | EMR auto-prefill → user 審核 |
-| F | 預計心導管 | EMR auto-prefill → user 審核 |
-| G | 註記（如「無資料病人」） | EMR / 手動 |
+| C | EMR 原文 | EMR extraction（raw text） |
+| D | EMR摘要 | **placeholder** — 留空白；使用者按需 call Gemini 才填，process_emr 不主動寫 |
+| E | 手動設定入院序 | ordering |
+| F | 術前診斷 | EMR auto-prefill → user 審核 |
+| G | 預計心導管 | EMR auto-prefill → user 審核 |
+| H | 註記（如「無資料病人」「張倉惟」「不用排檢查」） | EMR / 手動 |
 
 ### 6. 不寫 N-V
 

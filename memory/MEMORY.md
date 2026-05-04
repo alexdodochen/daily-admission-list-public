@@ -39,5 +39,6 @@
 - [陳則瑋 + 劉秉彥門診 → second=劉秉彥](feedback_chen_zewei_liu_bingyan_second.md) — 陳則瑋住院病人若 OPD 看劉秉彥（EMR 子表格 C 欄門診來源）→ cathlab attendingdoctor2 預設劉秉彥
 - [cathlab ADD 前必掃整週 chart](feedback_cathlab_week_check_before_keyin.md) — Mon-Fri 五天都查，已存在任何一天 → STOP 給使用者看，不自動 ADD（5/2 踩過：康李金春 5/6 CRT 已排，被我誤 ADD 5/5 廖瑀 H1 2100）
 - [圖→subtable→EMR 自動跑；lottery 等命令](feedback_no_auto_lottery.md) — 給圖自動接 subtable + EMR；lottery/ordering/cathlab 必須等使用者明說才跑（5/4 踩過 2 次糾正）
-- [入院提示文字註記要搬到子表格 G 欄](feedback_admission_hint_to_subtable_note.md) — K 欄非純數字的文字（建議再入院日 / 陪病確診 / 無床延期）抽到子表格 G 欄（原 H，5/4 起左移）；K 欄原樣保留
-- [取消 EMR 摘要 + D 欄整欄移除](feedback_no_emr_summary.md) — 5/4 起子表格 7 欄 A-G（原 D=EMR摘要 拿掉，E-H 左移成 D-G）；process_emr 不再生成摘要，F/G 自動判讀仍跑（讀 raw EMR）
+- [入院提示文字註記要搬到子表格 H 欄](feedback_admission_hint_to_subtable_note.md) — K 欄非純數字的文字（建議再入院日 / 陪病確診 / 無床延期）抽到子表格 H 欄；K 欄原樣保留
+- [D=EMR摘要 placeholder + 不主動寫](feedback_no_emr_summary.md) — Sub-table 8 欄 A-H canonical；D=EMR摘要 留空白，使用者要時 call Gemini 才填那一格；process_emr 寫 C/F/G 不寫 D（5/4 上午曾嘗試 7-col migration，下午反轉）
+- [diff-update sub-table 只動 ADD/DELETE](feedback_diff_update_subtable_minimal.md) — 重新匯入截圖時，既有 row 完全不碰；只新增截圖多的、刪除截圖沒有的（5/4 踩過：整塊 clear+rewrite 連 EMR 都洗掉）

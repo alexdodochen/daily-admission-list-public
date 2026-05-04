@@ -1,17 +1,20 @@
-"""Process EMR JSON, auto-detect F/G, write to Sheet (no summary — 5/4 onwards).
+"""Process EMR JSON, auto-detect F/G, write to Sheet.
 
 Usage: python process_emr.py <date8>   e.g. 20260419
 
 Reads emr_data_<date>.json, reads sub-tables from Sheet <date>, writes:
 - C col: full EMR text (raw)
-- E col: auto-detected 術前診斷 (was F before D-column drop)
-- F col: auto-detected 預計心導管 (was G before D-column drop)
+- F col: auto-detected 術前診斷
+- G col: auto-detected 預計心導管
 - A col (name): auto-corrected from EMR name
 
-Sub-table layout (post 5/4): A=姓名 | B=病歷號 | C=EMR | D=手動設定入院序 |
-                            E=術前診斷 | F=預計心導管 | G=註記
+Sub-table layout (8 cols, canonical): A=姓名 | B=病歷號 | C=EMR | D=EMR摘要
+                                      E=手動設定入院序 | F=術前診斷 | G=預計心導管 | H=註記
 
-Also updates main data G col and N-V P col if patient exists there.
+D=EMR摘要 is a placeholder column — this script does NOT auto-generate or write
+summary content. User triggers Gemini summary on demand to fill D when needed.
+
+Also updates main data F col (姓名) if EMR-corrected name differs.
 """
 import sys, json, re, time
 sys.path.insert(0, '.')
@@ -381,12 +384,12 @@ def main(date8):
 
                 f_diag, g_cath = detect_fg(emr_text)
 
-                # Post 5/4 layout: F=術前診斷 → E欄, G=預計心導管 → F欄
+                # 8-col layout: F=術前診斷, G=預計心導管. D=EMR摘要 left empty.
                 updates.append((f'C{pr}', emr_full))
                 if f_diag:
-                    updates.append((f'E{pr}', f_diag))
+                    updates.append((f'F{pr}', f_diag))
                 if g_cath:
-                    updates.append((f'F{pr}', g_cath))
+                    updates.append((f'G{pr}', g_cath))
 
                 prefill.append({
                     'chart': chart, 'name': name, 'doctor': doc_name,

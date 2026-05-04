@@ -7,7 +7,7 @@ Per date this module uses ≈6 API calls to respect the 60/min quota:
   1. Duplicate template (1)
   2. appendDimension / unmerge / clear (1 batch)
   3. Write main data A-L (1)
-  4. Write all sub-tables as one block A:G (1)
+  4. Write all sub-tables as one block A:H (1)
   5. Single batch_update for all formatting/merges/borders/dropdowns (1)
 
 Sleeps 45s between dates (see feedback_gsheet_quota_batching.md).
@@ -31,13 +31,13 @@ from _patients import PATIENTS
 TEMPLATE = '20260417'
 random.seed(42)
 
-SUB_HEADERS = ['姓名', '病歷號', 'EMR', '手動設定入院序',
+SUB_HEADERS = ['姓名', '病歷號', 'EMR', 'EMR摘要', '手動設定入院序',
                '術前診斷', '預計心導管', '註記']
 
 
 def build_sub_table_data(by_doctor, doctor_order, start_row):
     """Return (data_2d_rows, block_metas) where:
-    - data_2d_rows is a list of [7 cols] rows to write at A{start_row}:G{end}
+    - data_2d_rows is a list of [8 cols] rows to write at A{start_row}:H{end}
     - block_metas = list of {title_row, header_row, data_start, data_end, doctor, count}
     """
     rows = []
@@ -46,7 +46,7 @@ def build_sub_table_data(by_doctor, doctor_order, start_row):
     for doc in doctor_order:
         pts = by_doctor[doc]
         title = f'{doc}（{len(pts)}人）'
-        rows.append([title, '', '', '', '', '', ''])
+        rows.append([title, '', '', '', '', '', '', ''])
         title_r = cur
         cur += 1
         rows.append(SUB_HEADERS[:])
@@ -54,7 +54,7 @@ def build_sub_table_data(by_doctor, doctor_order, start_row):
         cur += 1
         data_start = cur
         for p in pts:
-            rows.append([p[5], p[8], '', '', '', '', ''])
+            rows.append([p[5], p[8], '', '', '', '', '', ''])
             cur += 1
         data_end = cur - 1
         metas.append({
@@ -66,7 +66,7 @@ def build_sub_table_data(by_doctor, doctor_order, start_row):
             'count': len(pts),
         })
         # blank row gap
-        rows.append(['', '', '', '', '', '', ''])
+        rows.append(['', '', '', '', '', '', '', ''])
         cur += 1
     return rows, metas
 
@@ -76,7 +76,7 @@ def build_format_requests(ws_id, main_end_row, metas):
     requests = []
     # Doctor sub-tables
     for m in metas:
-        # Merge title row A:G
+        # Merge title row A:H
         requests.append({
             'mergeCells': {
                 'range': {
@@ -84,7 +84,7 @@ def build_format_requests(ws_id, main_end_row, metas):
                     'startRowIndex': m['title_row'] - 1,
                     'endRowIndex': m['title_row'],
                     'startColumnIndex': 0,
-                    'endColumnIndex': 7,
+                    'endColumnIndex': 8,
                 },
                 'mergeType': 'MERGE_ALL',
             }
@@ -98,7 +98,7 @@ def build_format_requests(ws_id, main_end_row, metas):
                         'startRowIndex': r - 1,
                         'endRowIndex': r,
                         'startColumnIndex': 0,
-                        'endColumnIndex': 7,
+                        'endColumnIndex': 8,
                     },
                     'cell': {
                         'userEnteredFormat': {
@@ -120,18 +120,18 @@ def build_format_requests(ws_id, main_end_row, metas):
                     'startRowIndex': m['title_row'] - 1,
                     'endRowIndex': m['data_end'],
                     'startColumnIndex': 0,
-                    'endColumnIndex': 7,
+                    'endColumnIndex': 8,
                 },
                 'top': border_style, 'bottom': border_style,
                 'left': border_style, 'right': border_style,
                 'innerHorizontal': border_style, 'innerVertical': border_style,
             }
         })
-        # Dropdowns E (術前診斷) / F (預計心導管) on data rows (post 5/4 layout)
+        # Dropdowns F (術前診斷) / G (預計心導管) on data rows (8-col layout)
         if m['data_end'] >= m['data_start']:
             for col_idx, src_range in (
-                (4, "='下拉選單'!$A$2:$A$66"),
-                (5, "='下拉選單'!$D$2:$D$23"),
+                (5, "='下拉選單'!$A$2:$A$66"),
+                (6, "='下拉選單'!$D$2:$D$23"),
             ):
                 requests.append({
                     'setDataValidation': {

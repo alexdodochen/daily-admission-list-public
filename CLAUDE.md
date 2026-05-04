@@ -115,16 +115,16 @@ Full details in `每日入院清單工作流程.txt`. Critical rules:
 10. **Sheet no-overwrite**: Read target area before write; confirm empty first; never overwrite existing data.
 11. **EMR auto-write**: After EMR fetch, write raw EMR to C col without re-confirming.
 12. **EMR manual login**: Don't open browser yourself — wait for user to manually log in and paste session URL; then use Playwright with that session.
-13. **Ordering timing**: Wait for user to confirm sub-table E (術前診斷) / F (預計心導管) before writing N-U.
-14. **EMR prefill 術前診斷/預計心導管**: After EMR fetch, auto-prefill sub-table E and F (post 5/4 layout — was F/G before D-column drop); list for user review.
+13. **Ordering timing**: Wait for user to confirm sub-table F (術前診斷) / G (預計心導管) before writing N-U.
+14. **EMR prefill 術前診斷/預計心導管**: After EMR fetch, auto-prefill sub-table F and G (8-col layout); list for user review.
 15. **Second doctor priority**: 時段表 entries like 「黃鼎鈞(浩、晨)」 (two seconds) → first (葉立浩=浩) → `attendingdoctor2`; second (洪晨惠=晨) → **`recommendationDoctor`**. `cathlab_keyin.py` supports `third` JSON field; old "put in note" approach is obsolete. See `memory/feedback_cathlab_third_doctor.md`. **黃鼎鈞 Mon cathlab forces second=洪晨惠** (even if 時段表 Mon doesn't list her).
 16. **詹世鴻 Friday exception**: Friday admission with 詹世鴻 → treat as **non-schedule doctor** — lottery/ordering goes after schedule doctors; cathlab is non-schedule (H1 2100+, note="本日無時段"). Both systems consistent.
 17. **Post-edit format check**: After any write/modify to a date sheet's patient data, **always** read back to verify (main A-L, N-V ordering, sub-table title/count/blank gap, no residual merges, chart no consistent). Fix on the spot, don't leave loose ends (see `memory/feedback_post_edit_format_check.md`). **Easiest**: `from gsheet_utils import enforce_sheet_format; enforce_sheet_format('YYYYMMDD')` — idempotent, refreshes BLUE/WHITE bg + LEFT align + bold + WRAP. **Required** after any diff/insert/delete/write_range.
-18. **N-V write must re-read sub-table E/F/G NOW** (HARD): Cached values from earlier in session don't count. The user manually adjusts 術前診斷/預計心導管/註記 between lottery/EMR/format-check and your N-V write. Skip this → ordering's diagnosis/cathlab/note all wrong. Post 5/4 columns: E=術前診斷, F=預計心導管, G=註記 (were F/G/H before D-column drop). See `memory/feedback_subtable_H_to_R_ordering.md`.
+18. **N-V write must re-read sub-table F/G/H NOW** (HARD): Cached values from earlier in session don't count. The user manually adjusts 術前診斷/預計心導管/註記 between lottery/EMR/format-check and your N-V write. Skip this → ordering's diagnosis/cathlab/note all wrong. 8-col layout: F=術前診斷, G=預計心導管, H=註記. See `memory/feedback_subtable_H_to_R_ordering.md`.
 19. **Cathlab ADD must scan whole week (Mon-Fri)** (HARD): For each patient in JSON, Playwright-query 5 days for chart no. If chart exists on **any** day (not just N+1) → STOP, list "patient already scheduled MM/DD ROOM TIME", remove from JSON, **never auto-ADD** to N+1. See `memory/feedback_cathlab_week_check_before_keyin.md` (5/2: 康李金春 5/6 CRT existed, mistakenly ADDed to 5/5 廖瑀 H1 2100).
 20. **陳則瑋 + 劉秉彥 OPD → cathlab second=劉秉彥**: 陳則瑋 admission patient with sub-table C col 「(門診)... 劉秉彥 ...」 → JSON `second=劉秉彥`. Limited to 劉秉彥 (not a general rule). See `memory/feedback_chen_zewei_liu_bingyan_second.md`.
 21. **Workflow auto-chain boundary**: Image → Sheet is one step. **Every other step (lottery / EMR / ordering / cathlab) requires explicit user trigger** — even if the user provides multiple resources upfront ("把工作都跑完" + image + EMR URL + JSON). Stop after each step. See `memory/feedback_no_auto_lottery.md`.
-22. **No EMR summary** (5/4): Sub-table is 7-col A-G — original D=EMR摘要 column dropped entirely; columns E/F/G/H shifted left to D/E/F/G. `process_emr.py` writes C (raw EMR) + E (術前診斷) + F (預計心導管) only. User judges from raw EMR; no auto summary. See `memory/feedback_no_emr_summary.md`.
+22. **EMR summary on demand only**: Sub-table is 8-col A-H. D=EMR摘要 is a placeholder — `process_emr.py` writes only C (raw EMR) + F (術前診斷) + G (預計心導管). D stays empty until the user explicitly asks for a summary (then call Gemini to fill that single row). No auto-generated summary. See `memory/feedback_no_emr_summary.md`.
 
 ## WEBCVIS Cathlab System
 
@@ -148,11 +148,13 @@ N-V (row 1 = header, row 2+ = ordered list):
   N=序號 | O=主治醫師 | P=病人姓名 | Q=備註(住服) | R=備註
   S=病歷號 | T=術前診斷 | U=預計心導管 | V=改期
 
-Below main data: doctor sub-tables (7 cols A-G per block, post 5/4 — D=EMR摘要 dropped):
+Below main data: doctor sub-tables (8 cols A-H per block):
   [Doctor title row, merged]    e.g. "柯呈諭（2人）"
-  [Sub-header row]              A=姓名 | B=病歷號 | C=EMR | D=手動設定入院序 | E=術前診斷 | F=預計心導管 | G=註記
+  [Sub-header row]              A=姓名 | B=病歷號 | C=EMR | D=EMR摘要 | E=手動設定入院序 | F=術前診斷 | G=預計心導管 | H=註記
   [Patient rows]
   [blank row gap]
+
+  D=EMR摘要 is a placeholder column (left empty by process_emr; user calls Gemini on demand to fill).
 ```
 
 **Creating a new date sheet** — duplicate a recent sheet → `unmergeCells` on the entire range → `batch_clear` → write new main data → build doctor sub-tables with `write_doctor_table`. Unmerge is critical: merged title rows from the source (e.g. "李文煌（1人）" at A:H) will otherwise swallow writes at the same row index.

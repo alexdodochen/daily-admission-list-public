@@ -1,14 +1,12 @@
 ---
-name: 排住院序 R 備註欄要從子表格 G 欄移植 (post 5/4: 原 H 欄左移)
-description: 生成 N-V 入院序時，R 備註欄的權威來源是子表格 G 欄『註記』(post 5/4 — D=EMR摘要 拿掉後 H→G)，不是主資料 K 欄。K paren 只是 G 為空時的退路。
+name: 排住院序 R 備註欄要從子表格 H 欄移植
+description: 生成 N-V 入院序時，R 備註欄的權威來源是子表格 H 欄『註記』(8-col layout)，不是主資料 K 欄。K paren 只是 H 為空時的退路。
 type: feedback
 ---
 
-**規則 (post 5/4 column shift)：** 排住院序時 R 備註欄寫入規則：
-1. **優先**：讀子表格 G 欄『註記』(原 H 欄；5/4 起 D=EMR摘要 拿掉、E-H 全部左移成 D-G)
-2. **退路**：G 為空才用主資料 K 欄括號內文字 (`(4/23無床延期)` 之類)
-
-5/4 之前的舊文字提到「H 欄」「F/G/H」 — 都對應現在的 G 欄／E/F/G。下面殘留的舊敘述若有提到 H，請自動翻譯。
+**規則：** 排住院序時 R 備註欄寫入規則：
+1. **優先**：讀子表格 H 欄『註記』(8-col canonical)
+2. **退路**：H 為空才用主資料 K 欄括號內文字 (`(4/23無床延期)` 之類)
 
 **Why:**
 子表格 H 欄是**使用者親手寫的備註**：
@@ -16,6 +14,7 @@ type: feedback
 - 「王思翰 4/21無床延期」「張倉惟 12C可」 — 第二醫師借時段標註
 - 「CTA for TAVI 可能住到5/1」 — 住院規劃
 - 「Afib」「改周一住」 — 病情/排程備註
+- 「不用排導管 要排CTV 非導管床 外圍可 入院檢查」 — skip-cathlab 標記（含「檢查」keyword 觸發 SKIP_KEYWORDS）
 
 這些只有 H 有，主資料 K 欄沒有。漏抓 H → R 等於把使用者所有 ordering-time 備註都丟掉，使用者下個步驟（cathlab keyin / LINE 推播 / 印表）就會缺資訊。
 
@@ -31,3 +30,4 @@ type: feedback
 **已知實例：**
 - 2026-04-27 排 4/28 入院序時，第一輪只寫 K paren，使用者糾正「你註記沒有幫我把 subtable 移植到入院清單」 — 9 筆 R 欄遺漏（張獻元 林機明/陳麗花/方文忠/王得福/陳中坤/鐘藍金英/林宗慶、黃睦翔 楊永瑞、廖瑀 王金章），補寫一次才完整
 - 2026-05-02 排 5/4 入院序時，用 session 早期讀的子表格 cached 值，沒重讀，結果 8/11 病人的 F/G/H 寫錯（林怡昌 STEMI→Others:NSTEMI 漏掉、陳麗花 CAD→PAOD 漏掉、黃嬌子 H="不用排導管...檢查" 整段漏掉等等）。使用者罵：「每次要做入院序列 不是都應該讀取最新的subtable嘛!!」 — **這條規則自此升級為 hard rule**
+- 2026-05-04 跑 verify_cathlab.py 時用 7-col 的 r[:7] 切掉 H 欄 → SKIP_KEYWORDS「檢查」對黃嬌子（H="...入院檢查"）match 不到 → 誤報 missing。同日下午 user 反轉 7-col migration、保留 D=EMR摘要 placeholder，整個回到 8-col canonical（見 `feedback_no_emr_summary.md`）。

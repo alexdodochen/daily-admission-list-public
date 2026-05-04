@@ -171,11 +171,12 @@ for i, pt in enumerate(RETRY):
    - 截掉 `[Medicine]` 之後的段落（見 `feedback_emr_html_parsing.md`）
 3. 存成 `emr_data_{YYYYMMDD}.json` 給下一階段 `process_emr_{YYYYMMDD}.py` 做摘要 + 寫 sheet
 
-### 寫 Sheet（post 5/4 — 摘要功能停用，7-col 子表格）
+### 寫 Sheet（8-col 子表格）
 
 - **C 欄 value**：完整 EMR 原文 + visit header（`【EMR來源門診：醫師, 科別診次, 日期】`）
-- **E 欄 value**：DIAG_RULES auto-detect 結果（術前診斷）
-- **F 欄 value**：CATH_RULES auto-detect 結果（預計心導管）
+- **D 欄 value**：**留空** — D=EMR摘要 是 placeholder 容器，使用者按需求 call Gemini 才填，process_emr 不主動寫
+- **F 欄 value**：DIAG_RULES auto-detect 結果（術前診斷）
+- **G 欄 value**：CATH_RULES auto-detect 結果（預計心導管）
 
 **對齊要求**：寫入一律用 **chart number** 當 key 定位 sub-table patient row（掃 col B），**絕不用固定 row index**。寫完之後跑 `admission-format-check` 的對齊驗證（A 姓名、B chart、C 開頭 visit header 醫師），不對就重抽。不可沉默。
 
@@ -185,4 +186,4 @@ for i, pt in enumerate(RETRY):
 - `no_doctor_match` — leftFrame 有門診紀錄但全不是該醫師（常見於 8 科別／手術 only）
 - `no_record` — leftFrame 完全沒有門診紀錄
 
-後 3 種 → C 寫「無本院一年內主治醫師門診紀錄」、E/F 留空。per `feedback_nodata_still_keyin.md`，這些病人仍要照醫師時段 key 入導管。
+後 3 種 → C 寫「無本院一年內主治醫師門診紀錄」、F/G 留空。per `feedback_nodata_still_keyin.md`，這些病人仍要照醫師時段 key 入導管。

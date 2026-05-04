@@ -9,7 +9,7 @@
 //  4. 選單列出現「EMR 顯示」
 // ============================================================
 
-var EMR_COLUMNS = [3];      // C欄=3（EMR；摘要功能 5/4 起停用）
+var EMR_COLUMNS = [3, 4];   // C欄=3（EMR raw）, D欄=4（EMR摘要：使用者按需求 call Gemini 才填）
 var HEADER_ROWS = 1;
 var COLLAPSED_HEIGHT = 21;
 

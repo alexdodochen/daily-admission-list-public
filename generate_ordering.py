@@ -41,22 +41,22 @@ def extract_doctor_tables(all_data):
             header_row_seen = True
             continue
 
-        # 病人資料行 (7-col layout post 5/4)
+        # 病人資料行 (8-col layout — D=EMR摘要 留空白)
         if current_doc and header_row_seen and cell0 and cell0 != '姓名':
             name = row[0] if len(row) > 0 else ''
             chart = row[1] if len(row) > 1 else ''
-            d_order = row[3] if len(row) > 3 else ''   # D=手動設定入院序
-            e_diag = row[4] if len(row) > 4 else ''    # E=術前診斷
-            f_cath = row[5] if len(row) > 5 else ''    # F=預計心導管
-            g_note = row[6] if len(row) > 6 else ''    # G=註記
+            e_order = row[4] if len(row) > 4 else ''   # E=手動設定入院序
+            f_diag = row[5] if len(row) > 5 else ''    # F=術前診斷
+            g_cath = row[6] if len(row) > 6 else ''    # G=預計心導管
+            h_note = row[7] if len(row) > 7 else ''    # H=註記
 
             doctors[current_doc].append({
                 'name': name,
                 'chart': chart,
-                'e_order': d_order.strip() if d_order else '',  # key kept as 'e_order' for downstream compat
-                'diagnosis': e_diag.strip() if e_diag else '',
-                'cathlab': f_cath.strip() if f_cath else '',
-                'note': g_note.strip() if g_note else '',
+                'e_order': e_order.strip() if e_order else '',
+                'diagnosis': f_diag.strip() if f_diag else '',
+                'cathlab': g_cath.strip() if g_cath else '',
+                'note': h_note.strip() if h_note else '',
             })
             continue
 
