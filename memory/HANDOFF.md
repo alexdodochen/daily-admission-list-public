@@ -1,5 +1,5 @@
 ============================================
-  交班文件 — Last Updated: 2026-05-04 14:00
+  交班文件 — Last Updated: 2026-05-04 14:15
 ============================================
 
 【本次 session 做了什麼】
@@ -9,20 +9,15 @@
   4. 修了 admission-cathlab-keyin / admission-format-check 內幾條漏改的 H/F/G col ref + A:H ref（pre 5/4 殘留）。
 
 【當前狀態】
-  - Branch: main，working tree 有以下未 commit 變更（待你授權 commit）：
-    M  CLAUDE.md / 工作流程 txt / 6 個 .py / 6 個 skill md / process_emr.py / emr_toggle_script.js
-    M  memory/MEMORY.md, memory/feedback_subtable_H_to_R_ordering.md, memory/feedback_post_edit_format_check.md
-    ?? memory/feedback_no_auto_lottery.md (5/3 新增、未 commit)
-    ?? memory/feedback_no_emr_summary.md (本次新增)
-    ?? memory/HANDOFF.md (本檔)
+  - Branch: main，working tree clean (HANDOFF 時間戳更新後再次 dirty 是正常)
+  - 最新 commit: a824e14 `feat: drop EMR summary, sub-table 8→7 cols`
+  - 私有 + public mirror 都已 push 成功
   - 程式碼 syntax OK + pre_push_check.py 過
   - 公開 mirror 結構性護欄保持有效（pre-push hook + dual push routing）
 
 【下一步該做什麼】
-  - **使用者授權後** commit + push 上述變更（commit message 建議：`feat: drop EMR summary feature, sub-table 8→7 cols (D removed, E-H shift left)`）
-  - 使用者要求「memory 全英化」：等本批 commit 完才開新 batch（避免半套）
-  - 5/4 (Mon) 起可清掉上週 (4/27-5/1) 的 emr_data_2026042x.json / cathlab_patients_2026042x.json （workflow-docs cleanup rule：file_date < 5/3 sun → 刪）
-  - 本週 5/4-5/8 sheet 還沒建 — 等使用者命令再跑 admission-image-to-excel
+  - **memory 全英化 batch**：使用者要求把 CLAUDE.md / memory 主體改英文（晶晶體醫學詞 + user quote 保中文）；工作流程 txt 維持中文（user 自己維護）。約 50+ memory 檔，建議下個 session 開新 task 處理
+  - 本週 5/4-5/8 sheet：使用者命令再跑 admission-image-to-excel（已清理上週 JSON、保留本週/下週的 emr_data + cathlab_patients）
 
 【已知問題 / 卡關】
   - 舊 sheet (5/3 之前) 仍是 8 欄 layout — 使用者選 α 不 migrate；新版 verify_cathlab / generate_ordering / process_emr 跑舊 sheet 會抓錯欄。預期不會回頭跑（那週已 cathlab 完）
