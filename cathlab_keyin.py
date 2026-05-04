@@ -38,7 +38,8 @@ DOCTOR_CODES = {
     "葉建寬": "105234", "葉立浩": "105430", "洪晨惠": "636042",
     "許毓軨": "101696", "蘇奕嘉": "102180",
 }
-ROOM_CODES = {"H1": "xa-Hybrid1", "H2": "xa-Hybrid2", "C1": "xa-CATH1", "C2": "xa-CATH2"}
+ROOM_CODES = {"H1": "xa-Hybrid1", "H2": "xa-Hybrid2", "C1": "xa-CATH1", "C2": "xa-CATH2",
+              "外科開刀房25房": "xa-外科開刀房25房"}
 
 # IDs are loaded from cathlab_id_maps.json (66 diag + 22 proc verified entries).
 # Don't hardcode — wrong IDs would push wrong records into WEBCVIS.
