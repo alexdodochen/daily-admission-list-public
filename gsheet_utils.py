@@ -374,14 +374,14 @@ def batch_update_requests(requests):
 
 # --- Helper: build full doctor table section ---
 
-def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
+def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=7):
     """
-    Write a doctor patient table block.
-    patients = [{'name': ..., 'chart_no': ..., 'emr': '', 'emr_summary': '', ...}]
+    Write a doctor patient table block (7 cols A-G).
+    patients = [{'name', 'chart_no', 'emr', 'order', 'diagnosis', 'cathlab', 'note'}]
     Returns next available row (≥ 2 blank rows after block).
     """
     sh = get_spreadsheet()
-    sub_headers = ['姓名', '病歷號', 'EMR', 'EMR摘要', '手動設定入院序',
+    sub_headers = ['姓名', '病歷號', 'EMR', '手動設定入院序',
                    '術前診斷', '預計心導管', '註記'][:num_cols]
 
     # Doctor title (merged)
@@ -401,7 +401,6 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
             pt.get('name', ''),
             pt.get('chart_no', ''),
             pt.get('emr', ''),
-            pt.get('emr_summary', ''),
             pt.get('order', ''),
             pt.get('diagnosis', ''),
             pt.get('cathlab', ''),
@@ -491,7 +490,7 @@ def enforce_sheet_format(sheet_name):
     - Sub-table sub-header rows (姓名/...): BLUE bg, bold, LEFT align
     - Sub-table patient rows: WHITE bg, normal, LEFT align, WRAP
     - Blank gap rows: WHITE bg, no bold
-    - Thick black borders: main data A:L, ordering N:V (if filled), sub-table A:H
+    - Thick black borders: main data A:L, ordering N:V (if filled), sub-table A:G
     - Gap rows: borders stripped (NONE)
 
     Per memory feedback_sheet_formatting.md (全部 LEFT) +
@@ -552,12 +551,12 @@ def enforce_sheet_format(sheet_name):
 
     requests = []
 
-    # BLUE bg + bold + LEFT on header rows (cols A:H = 1..8 sufficient)
+    # BLUE bg + bold + LEFT on header rows (cols A:G = 1..7 sufficient for sub-tables)
     for r in blue_rows:
         requests.append({
             "repeatCell": {
                 "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
-                          "startColumnIndex": 0, "endColumnIndex": 12 if r == 1 else 8},
+                          "startColumnIndex": 0, "endColumnIndex": 12 if r == 1 else 7},
                 "cell": {"userEnteredFormat": {
                     "backgroundColor": BLUE_HEADER,
                     "textFormat": {"bold": True, "fontSize": 11},
@@ -585,12 +584,12 @@ def enforce_sheet_format(sheet_name):
             }
         })
 
-    # WHITE bg + LEFT on gap rows (A:H = 8 cols)
+    # WHITE bg + LEFT on gap rows (A:G = 7 cols)
     for r in gap_rows:
         requests.append({
             "repeatCell": {
                 "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
-                          "startColumnIndex": 0, "endColumnIndex": 8},
+                          "startColumnIndex": 0, "endColumnIndex": 7},
                 "cell": {"userEnteredFormat": {
                     "backgroundColor": WHITE,
                     "textFormat": {"bold": False, "fontSize": 11},
@@ -601,12 +600,12 @@ def enforce_sheet_format(sheet_name):
             }
         })
 
-    # WHITE bg + LEFT on sub-table patient rows (A:H = 8 cols)
+    # WHITE bg + LEFT on sub-table patient rows (A:G = 7 cols)
     for r in patient_rows:
         requests.append({
             "repeatCell": {
                 "range": {"sheetId": sid, "startRowIndex": r - 1, "endRowIndex": r,
-                          "startColumnIndex": 0, "endColumnIndex": 8},
+                          "startColumnIndex": 0, "endColumnIndex": 7},
                 "cell": {"userEnteredFormat": {
                     "backgroundColor": WHITE,
                     "textFormat": {"bold": False, "fontSize": 11},
@@ -663,7 +662,7 @@ def enforce_sheet_format(sheet_name):
         requests.append({
             "updateBorders": {
                 "range": {"sheetId": sid, "startRowIndex": s - 1, "endRowIndex": e,
-                          "startColumnIndex": 0, "endColumnIndex": 8},
+                          "startColumnIndex": 0, "endColumnIndex": 7},
                 "top": THICK, "bottom": THICK, "left": THICK, "right": THICK,
                 "innerHorizontal": THICK, "innerVertical": THICK,
             }

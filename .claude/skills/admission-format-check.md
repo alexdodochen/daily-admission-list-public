@@ -34,12 +34,12 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 - 序號 connected 1..N, O (醫師) and P (姓名) non-empty for filled rows
 - S (病歷號) **text format**
 
-### 3. Sub-tables (each doctor block)
-- Title row: `醫師名（N人）` merged A:H, blue header background, bold, left-align
-- Sub-header row: `姓名 | 病歷號 | EMR | EMR摘要 | 手動設定入院序 | 術前診斷 | 預計心導管 | 註記`
+### 3. Sub-tables (each doctor block — post 5/4 7-col layout)
+- Title row: `醫師名（N人）` merged A:G, blue header background, bold, left-align
+- Sub-header row: `姓名 | 病歷號 | EMR | 手動設定入院序 | 術前診斷 | 預計心導管 | 註記`
 - Patient rows: count must equal title's declared `N`
 - Col B (病歷號) text format
-- F/G cells have dropdowns from `下拉選單!A2:A66` / `下拉選單!D2:D23`
+- E/F cells have dropdowns from `下拉選單!A2:A66` / `下拉選單!D2:D23` (E=術前診斷, F=預計心導管)
 
 ### 4. Gaps (critical — user has corrected this multiple times)
 - **Main data last row → first sub-table title: ≥ 2 blank rows**
@@ -51,7 +51,7 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 `BLUE = {red:0.741, green:0.843, blue:0.933}`, `WHITE = {red:1,green:1,blue:1}`
 
 對於主資料以下（子表格區域）每一列：
-- **title row** `X（N人）`: 合併 A:H、藍底、粗體、靠左、四邊細框
+- **title row** `X（N人）`: 合併 A:G（post 5/4 — 7 欄）、藍底、粗體、靠左、四邊細框
 - **sub-header row** `姓名/病歷號/...`: 藍底、粗體、靠左、四邊細框
 - **patient row**: 白底、不粗體、靠左、四邊細框、`wrapStrategy=WRAP`
 - **blank row**: 白底、無邊框、無粗體（不能留「沒背景」的預設狀態）
@@ -63,17 +63,16 @@ Read-back verification + fix pass for any date sheet (e.g. `20260416`). Enforces
 - No merged range from a previous layout should be overlapping with a data row
 - If a data row reads as empty when it should have a value, suspect a leftover merge above
 
-### 6.5 EMR / EMR摘要 必須跟著病人 row 一起搬（critical — 使用者多次回報）
-**格式修復時絕不能只搬 A-B 欄而把 C/D 欄留在原位。** C (EMR 標籤 + 原文 note) 與 D (EMR 摘要首行 + 完整摘要 note) 是 row-level 資料。
+### 6.5 EMR 必須跟著病人 row 一起搬（critical — 使用者多次回報）
+**格式修復時絕不能只搬 A-B 欄而把 C 欄留在原位。** C (EMR 原文 + visit header) 是 row-level 資料。post 5/4 D 欄已改為「手動設定入院序」（普通字串，沒有 cell note），原 D=EMR摘要 已停用。
 
-- 移 row **一律用 `insertDimension` / `deleteDimension` / `moveDimension`** — 原生 row op 會連同 values + format + **cell notes** 一起平移。
+- 移 row **一律用 `insertDimension` / `deleteDimension` / `moveDimension`** — 原生 row op 會連同 values + format + cell notes 一起平移。
 - **禁止** 讀值 → reshape in memory → 寫回的模式（絕對無法搬 notes）。
 - `repeatCell` 修 format 時 fields 限定 `userEnteredFormat(...)`，**不得包含 `note`**。
 - 寫入/修復**結束後必做對齊驗證**：用 chart number 當 key，確認每個 sub-table patient row：
   1. A 姓名 ↔ 主資料 F 姓名相符
   2. B 病歷號 ↔ 主資料 I 病歷號相符
-  3. C 的 visit label 中醫師姓名 ↔ 該 row 所屬 sub-table 醫師（跨醫師誤置會被抓出來）
-  4. D 首行摘要 ↔ 該病人的年齡性別看得合理
+  3. C 開頭 visit header 中醫師姓名 ↔ 該 row 所屬 sub-table 醫師（跨醫師誤置會被抓出來）
   不符 → 當場報 + 重抽該病人 EMR，不沉默。
 
 ### 6. Chart number consistency
@@ -105,7 +104,7 @@ enforce_sheet_format('20260428')  # idempotent
 3. **Emit issue list** — check each rule above.
 4. **Fix** (if auto-fixable):
    - **Gap < 2**: insert `2 - current_gap` blank rows BEFORE the title row (bottom-up so indexes stay valid). Use `insertDimension` with `inheritFromBefore: False`.
-   - **Missing title row** (sub-header `姓名` appears without a `X（N人）` above): look up the doctor from main data D col using patient names, insert 3 blank rows before the sub-header, write the title at the topmost new row, merge A:H, apply blue header format.
+   - **Missing title row** (sub-header `姓名` appears without a `X（N人）` above): look up the doctor from main data D col using patient names, insert 3 blank rows before the sub-header, write the title at the topmost new row, merge A:G (post 5/4 — 7 cols), apply blue header format.
    - **Title-declared N ≠ actual patient count**: rewrite the title text with corrected count.
    - **Wrong N-V header** (old layout instead of current 9-col): rewrite row 1 of N:V.
    - **病歷號 not text format**: `repeatCell` with `numberFormat.type = TEXT` on col I / B / S.

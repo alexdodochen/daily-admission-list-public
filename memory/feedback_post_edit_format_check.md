@@ -13,9 +13,9 @@ type: feedback
 2. **N-V ordering**（若已跑過）：
    - row 1 header 9 欄齊全（序號/主治醫師/病人姓名/備註(住服)/備註/病歷號/術前診斷/預計心導管/改期）
    - 序號連續、P 姓名非空、S 病歷號非空
-3. **子表格**（每個醫師區塊）：
-   - 先有 title row `X（N人）` 合併 A:H
-   - 緊接 sub-header row `姓名/病歷號/EMR/EMR摘要/手動設定入院序/術前診斷/預計心導管/註記`
+3. **子表格**（每個醫師區塊，post 5/4 — 7 欄）：
+   - 先有 title row `X（N人）` 合併 A:G
+   - 緊接 sub-header row `姓名/病歷號/EMR/手動設定入院序/術前診斷/預計心導管/註記`（5/4 起 D=EMR摘要 拿掉）
    - 然後 N 筆 patient rows（數量要等於 title 聲明的 N）
    - **主資料最後一列與第一個子表格 title 之間至少 2 行空白**（見 `feedback_sheet_formatting.md`）
    - **子表格區塊之間也至少 2 行空白**（不是 1 行）

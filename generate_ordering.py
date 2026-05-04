@@ -1,8 +1,12 @@
 """
 生成住院序列 (N-S columns)
-讀取 Google Sheet 醫師病人表格的 F/G/H 欄，
-依據已有的 round-robin 醫師順序 + E 欄手動排序，
+讀取 Google Sheet 醫師病人表格的 E/F/G 欄（術前診斷/預計心導管/註記，post 5/4），
+依據已有的 round-robin 醫師順序 + D 欄手動排序，
 寫入正確的 N-S 欄位：序號|主治醫師|病人姓名|備註|術前診斷|預計心導管
+
+Sub-table layout (post 5/4 — D=EMR摘要 已移除):
+  A=姓名 | B=病歷號 | C=EMR | D=手動設定入院序 |
+  E=術前診斷 | F=預計心導管 | G=註記
 """
 import sys, time, json
 sys.path.insert(0, '.')
@@ -37,23 +41,22 @@ def extract_doctor_tables(all_data):
             header_row_seen = True
             continue
 
-        # 病人資料行
+        # 病人資料行 (7-col layout post 5/4)
         if current_doc and header_row_seen and cell0 and cell0 != '姓名':
             name = row[0] if len(row) > 0 else ''
             chart = row[1] if len(row) > 1 else ''
-            emr_summary = row[3] if len(row) > 3 else ''
-            e_order = row[4] if len(row) > 4 else ''
-            f_diag = row[5] if len(row) > 5 else ''
-            g_cath = row[6] if len(row) > 6 else ''
-            h_note = row[7] if len(row) > 7 else ''
+            d_order = row[3] if len(row) > 3 else ''   # D=手動設定入院序
+            e_diag = row[4] if len(row) > 4 else ''    # E=術前診斷
+            f_cath = row[5] if len(row) > 5 else ''    # F=預計心導管
+            g_note = row[6] if len(row) > 6 else ''    # G=註記
 
             doctors[current_doc].append({
                 'name': name,
                 'chart': chart,
-                'e_order': e_order.strip() if e_order else '',
-                'diagnosis': f_diag.strip() if f_diag else '',
-                'cathlab': g_cath.strip() if g_cath else '',
-                'note': h_note.strip() if h_note else '',
+                'e_order': d_order.strip() if d_order else '',  # key kept as 'e_order' for downstream compat
+                'diagnosis': e_diag.strip() if e_diag else '',
+                'cathlab': f_cath.strip() if f_cath else '',
+                'note': g_note.strip() if g_note else '',
             })
             continue
 

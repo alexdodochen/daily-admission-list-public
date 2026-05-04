@@ -3,7 +3,7 @@
 用法: python verify_cathlab.py 20260409
   → 讀取 20260409 子表格病人清單，查對應 WEBCVIS 排程日，輸出比對結果
 
-資料來源：子表格（主治醫師病人清單），欄位 A=姓名 B=病歷號 F=術前診斷 G=預計心導管 H=註記。
+資料來源：子表格（主治醫師病人清單，7-col post 5/4），欄位 A=姓名 B=病歷號 E=術前診斷 F=預計心導管 G=註記。
 子表格位置：日期工作表中的「X人）」title 行以下、空白行為區塊界線。
 不使用 N-V 入院序欄位（那是住服通知清單，是子表格的子集）。
 """
@@ -72,7 +72,7 @@ def read_ordering(sheet_name):
     seq = 0
 
     for row in data:
-        r = row[:8] + [''] * (8 - len(row[:8]))
+        r = row[:7] + [''] * (7 - len(row[:7]))
         col_a = r[0].strip()
 
         # Doctor title row: col A 含 "人）"
@@ -84,14 +84,14 @@ def read_ordering(sheet_name):
         if col_a == '姓名':
             continue
 
-        # Patient row: A=name, B=chart, F=diag, G=cath, H=note
+        # Patient row (7-col post 5/4): A=name, B=chart, E=diag, F=cath, G=note
         if col_a and r[1].strip() and current_doctor:
             seq += 1
             name = col_a
             chart = r[1].strip()
-            diag = r[5].strip()
-            cath = r[6].strip()
-            note = r[7].strip()
+            diag = r[4].strip()
+            cath = r[5].strip()
+            note = r[6].strip()
             v_mark = rescheduled.get(chart, '')
             should_skip = any(kw in note for kw in SKIP_KEYWORDS) or bool(v_mark)
             if v_mark:

@@ -9,7 +9,7 @@
 - [抽籤必須直接讀 Google Sheet「主治醫師抽籤表」](feedback_lottery_read_full_column.md) — 不要靠口述重建，直接 gspread 讀該工作表對應星期欄，*2 = 2 支、純名字 = 1 支
 - [各日（Mon-Fri）抽籤時段醫師清單 snapshot](reference_lottery_by_weekday.md) — lottery 離線交叉驗證；本檔僅快照，sheet 直讀仍為準
 - [抽籤表 vs 導管時段表 兩張表各司其職](feedback_two_doctor_sheets.md) — 抽籤表=入院抽籤，導管時段表=cathlab key-in 房間/時段，不要互相混用
-- [入院序列清單欄位順序](feedback_ordering_columns.md) — N-W欄(10欄)：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|每日續等清單|改期
+- [入院序列清單欄位順序](feedback_ordering_columns.md) — N-V 9 欄：序號|主治醫師|病人姓名|備註(住服)|備註|病歷號|術前診斷|預計心導管|改期
 - [導管排程時間規則](feedback_cathlab_times.md) — AM 0600+、PM 1800+、非時段H1 2100+（備註「本日無時段」）、備註含「檢查」跳過
 - [不在選單的項目填備註](feedback_cathlab_note_fallback.md) — 預計心導管不在WEBCVIS選單時改填note欄位
 - [導管排程keyin成功流程](feedback_cathlab_keyin_flow.md) — 完整WEBCVIS自動化：ADD新增、UPT修改、dTree popup ID映射
@@ -17,7 +17,6 @@
 - [CathDuration工作表](reference_cathduration.md) — Google Sheet中各類導管手術預估時間參考表
 - [EMR由使用者手動開啟](feedback_emr_manual_login.md) — 使用者手動登入EMR後貼session URL，摘要完自動寫入Sheet
 - [更新Sheet不覆蓋現有資料](feedback_sheet_no_overwrite.md) — 寫入前先檢查目標區域是否為空
-- [每日續等清單整合邏輯](feedback_waitlist_merge.md) — 有時段醫師接round-robin排續等、無時段醫師最後，V欄標1
 - [術前診斷只用子項目名稱](feedback_diag_short_names.md) — 不需母清單前綴，EP study/RFA > pAf 只寫 pAf
 - [EMR姓名自動校正不需提醒](feedback_emr_auto_name_fix.md) — 讀到EMR姓名就自動更新Sheet所有位置，不問使用者
 - [EMR病人姓名位置](feedback_emr_name_location.md) — 姓名在 span#divUserSpec 內（frame.aspx 頁面），用 CSS selector 提取
@@ -39,4 +38,6 @@
 - [MTEER WEBCVIS 雙 booking 是正常](reference_mteer_double_booking.md) — Hybrid 房間（介入）+ xa-TEE 房間（影像）同時段配套案，verify_cathlab N+1 預設找不到 MTEER 要手動查後一天
 - [陳則瑋 + 劉秉彥門診 → second=劉秉彥](feedback_chen_zewei_liu_bingyan_second.md) — 陳則瑋住院病人若 OPD 看劉秉彥（EMR 子表格 C 欄門診來源）→ cathlab attendingdoctor2 預設劉秉彥
 - [cathlab ADD 前必掃整週 chart](feedback_cathlab_week_check_before_keyin.md) — Mon-Fri 五天都查，已存在任何一天 → STOP 給使用者看，不自動 ADD（5/2 踩過：康李金春 5/6 CRT 已排，被我誤 ADD 5/5 廖瑀 H1 2100）
-- [陳則瑋 + 劉秉彥門診 → second=劉秉彥](feedback_chen_zewei_liu_bingyan_second.md) — 陳則瑋住院病人若 OPD 看劉秉彥（EMR 子表格 C 欄門診來源）→ cathlab attendingdoctor2 預設劉秉彥
+- [圖→subtable→EMR 自動跑；lottery 等命令](feedback_no_auto_lottery.md) — 給圖自動接 subtable + EMR；lottery/ordering/cathlab 必須等使用者明說才跑（5/4 踩過 2 次糾正）
+- [入院提示文字註記要搬到子表格 G 欄](feedback_admission_hint_to_subtable_note.md) — K 欄非純數字的文字（建議再入院日 / 陪病確診 / 無床延期）抽到子表格 G 欄（原 H，5/4 起左移）；K 欄原樣保留
+- [取消 EMR 摘要 + D 欄整欄移除](feedback_no_emr_summary.md) — 5/4 起子表格 7 欄 A-G（原 D=EMR摘要 拿掉，E-H 左移成 D-G）；process_emr 不再生成摘要，F/G 自動判讀仍跑（讀 raw EMR）

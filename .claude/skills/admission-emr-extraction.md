@@ -1,12 +1,12 @@
 ---
 name: admission-emr-extraction
-description: Use when extracting EMR records from Web EMR system for admission list patients. Triggered after lottery step completes, or when user says "提取EMR", "做摘要", "EMR extraction". Handles batch browser automation to query each patient's chart, extract clinical notes, generate 4-part summaries, correct names, and write to Excel.
+description: Use when extracting EMR records from Web EMR system for admission list patients. Triggered after lottery step completes, or when user says "提取EMR", "EMR extraction". Handles batch browser automation to query each patient's chart, extract raw clinical notes, auto-detect F/G (術前診斷/預計心導管), correct names, and write to sub-table. Post 5/4: no summary generation — only raw EMR + F/G prefill.
 ---
 
-# EMR 病歷摘要批次擷取
+# EMR 原文批次擷取（post 5/4 — 摘要功能已停用）
 
 ## Overview
-從 Web EMR 系統批次擷取入院名單病人的門診紀錄，生成四段式摘要，寫入 Excel 醫師病人表格的 C/D 欄。
+從 Web EMR 系統批次擷取入院名單病人的門診紀錄原文，寫入子表格 C 欄（EMR 原文）+ E/F 欄（auto-detect 術前診斷/預計心導管，由 process_emr.py 的 DIAG_RULES/CATH_RULES 在 raw EMR 上跑）。**5/4 起不再生成四段式摘要**，由使用者直接看 C 欄 raw EMR 判讀。
 
 ## Prerequisites
 - Chrome 已開啟 Web EMR：http://hisweb.hosp.ncku/Emrquery/
@@ -116,26 +116,10 @@ EMR 系統的姓名為正確來源。比對 Excel 並自動更新所有位置：
 - Round-robin N-S 的病人姓名欄
 - 醫師病人表格的姓名欄
 
-### 8. 生成四段式摘要
-
-```
-{age} y/o {性別}
-一、心臟科相關診斷：
-{從 Diagnosis 提取，去除 ICD-10 行}
-
-二、病史：
-{從 Subjective 提取 CC 和關鍵病史，跳過 No xxx 行}
-
-三、客觀檢查：
-{從 Objective 提取 BP/PR/PE/檢查報告}
-
-四、本次住院計畫：
-{從 Assessment & Plan 提取，去除 lab orders 和掛號}
-```
-
-### 9. 寫入 Excel
-- **C 欄（EMR）**：完整原文，wrap_text=True, vertical='top', width=55, outlineLevel=1（可收縮）
-- **D 欄（EMR摘要）**：完整四段式摘要 + cell comment（hover 顯示）
+### 8. 寫入 Sheet（post 5/4 — 摘要功能停用）
+- **C 欄（EMR 原文）**：完整原文 + visit header（`【EMR來源門診：...】`），wrap_text=True
+- **E 欄（術前診斷）**：DIAG_RULES auto-detect → 使用者審核
+- **F 欄（預計心導管）**：CATH_RULES auto-detect → 使用者審核
 - 無紀錄 → C 欄寫「無本院一年內主治醫師門診紀錄」
 - 需申請 → C 欄寫「本病歷號需要額外申請」
 
@@ -187,17 +171,13 @@ for i, pt in enumerate(RETRY):
    - 截掉 `[Medicine]` 之後的段落（見 `feedback_emr_html_parsing.md`）
 3. 存成 `emr_data_{YYYYMMDD}.json` 給下一階段 `process_emr_{YYYYMMDD}.py` 做摘要 + 寫 sheet
 
-### 寫 Sheet（新格式，cell value + cell note 分離）
+### 寫 Sheet（post 5/4 — 摘要功能停用，7-col 子表格）
 
-per `feedback_sheet_formatting.md` 與 admission-lottery skill：
+- **C 欄 value**：完整 EMR 原文 + visit header（`【EMR來源門診：醫師, 科別診次, 日期】`）
+- **E 欄 value**：DIAG_RULES auto-detect 結果（術前診斷）
+- **F 欄 value**：CATH_RULES auto-detect 結果（預計心導管）
 
-- **C 欄 value**：`門診, 醫師, 科別診次, 日期`（從 visit label 擷取的短標籤）
-- **C 欄 note**：完整 EMR 原文（用 `gsheet_utils.add_note(ws, row, col, text)`）
-- **D 欄 value**：一行診斷首行（從「一、心臟科相關診斷」下第一行）
-- **D 欄 note**：完整四段式摘要
-- **F/G 欄**：auto-detect 從 DIAG_RULES / CATH_RULES
-
-**對齊要求**：寫入一律用 **chart number** 當 key 定位 sub-table patient row（掃 col B），**絕不用固定 row index**。寫完之後跑 `admission-format-check` 的對齊驗證（A 姓名、B chart、C visit 醫師、D 摘要年齡性別），不對就重抽。不可沉默。
+**對齊要求**：寫入一律用 **chart number** 當 key 定位 sub-table patient row（掃 col B），**絕不用固定 row index**。寫完之後跑 `admission-format-check` 的對齊驗證（A 姓名、B chart、C 開頭 visit header 醫師），不對就重抽。不可沉默。
 
 ### 無紀錄情況的分類
 - `ok` — visit label 匹配該醫師，拿到 SOAP 全文
@@ -205,4 +185,4 @@ per `feedback_sheet_formatting.md` 與 admission-lottery skill：
 - `no_doctor_match` — leftFrame 有門診紀錄但全不是該醫師（常見於 8 科別／手術 only）
 - `no_record` — leftFrame 完全沒有門診紀錄
 
-後 3 種 → C 寫「無本院一年內主治醫師門診紀錄」、D 寫 `{age} y/o {gender}`、note 清空。per `feedback_nodata_still_keyin.md`，這些病人仍要照醫師時段 key 入導管。
+後 3 種 → C 寫「無本院一年內主治醫師門診紀錄」、E/F 留空。per `feedback_nodata_still_keyin.md`，這些病人仍要照醫師時段 key 入導管。

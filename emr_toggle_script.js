@@ -1,5 +1,5 @@
 // ============================================================
-// Google Sheets Apps Script：一鍵切換 EMR 列高（C、D 欄）
+// Google Sheets Apps Script：一鍵切換 EMR 列高（C 欄）
 // ============================================================
 //
 // 【設定步驟】
@@ -9,7 +9,7 @@
 //  4. 選單列出現「EMR 顯示」
 // ============================================================
 
-var EMR_COLUMNS = [3, 4];   // C欄=3, D欄=4（EMR, EMR摘要）
+var EMR_COLUMNS = [3];      // C欄=3（EMR；摘要功能 5/4 起停用）
 var HEADER_ROWS = 1;
 var COLLAPSED_HEIGHT = 21;
 
@@ -30,7 +30,7 @@ function collapseRows() {
   var dataStartRow = HEADER_ROWS + 1;
   var numRows = lastRow - HEADER_ROWS;
 
-  // 關鍵：把「所有欄位」都設 CLIP，不只 C/D
+  // 關鍵：把「所有欄位」都設 CLIP，不只 C
   // 只要有任何一欄是 WRAP，Google Sheets 就會自動撐高列高
   var allDataRange = sheet.getRange(dataStartRow, 1, numRows, lastCol);
   allDataRange.setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
@@ -52,7 +52,7 @@ function expandRows() {
   var dataStartRow = HEADER_ROWS + 1;
   var numRows = lastRow - HEADER_ROWS;
 
-  // 把 C、D 欄改回 WRAP，讓 EMR 內容完整顯示
+  // 把 C 欄改回 WRAP，讓 EMR 內容完整顯示
   EMR_COLUMNS.forEach(function(col) {
     sheet.getRange(dataStartRow, col, numRows, 1)
       .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);

@@ -1,13 +1,15 @@
-"""Process EMR JSON, generate summaries + auto-detect F/G, write to Sheet.
+"""Process EMR JSON, auto-detect F/G, write to Sheet (no summary — 5/4 onwards).
 
 Usage: python process_emr.py <date8>   e.g. 20260419
 
 Reads emr_data_<date>.json, reads sub-tables from Sheet <date>, writes:
-- C col: full EMR text
-- D col: 4-section summary
-- F col: auto-detected 術前診斷
-- G col: auto-detected 預計心導管
+- C col: full EMR text (raw)
+- E col: auto-detected 術前診斷 (was F before D-column drop)
+- F col: auto-detected 預計心導管 (was G before D-column drop)
 - A col (name): auto-corrected from EMR name
+
+Sub-table layout (post 5/4): A=姓名 | B=病歷號 | C=EMR | D=手動設定入院序 |
+                            E=術前診斷 | F=預計心導管 | G=註記
 
 Also updates main data G col and N-V P col if patient exists there.
 """
@@ -239,71 +241,6 @@ def detect_fg(emr_text):
         g_cath = F_TO_G_DEFAULT.get(f_diag, '')
     return f_diag, g_cath
 
-def generate_summary(emr_text, age='', gender=''):
-    sections = {'diag': '', 'subj': '', 'obj': '', 'plan': ''}
-    parts = re.split(r'\[(Diagnosis|Subjective|Objective|Assessment & Plan)\]', emr_text)
-    for i, part in enumerate(parts):
-        if part == 'Diagnosis' and i+1 < len(parts):
-            sections['diag'] = parts[i+1].strip()
-        elif part == 'Subjective' and i+1 < len(parts):
-            sections['subj'] = parts[i+1].strip()
-        elif part == 'Objective' and i+1 < len(parts):
-            sections['obj'] = parts[i+1].strip()
-        elif part == 'Assessment & Plan' and i+1 < len(parts):
-            sections['plan'] = parts[i+1].strip()
-
-    # If no structured sections found, dump whole text into "病史" so user sees something
-    all_raw = emr_text.strip()
-    if not any(sections.values()):
-        sections['subj'] = all_raw[:1500]
-
-    diag_lines = [l for l in sections['diag'].split('\n')
-                  if l.strip() and not l.strip().startswith('* (ICD')]
-    diag_clean = '\n'.join(diag_lines) if diag_lines else ''
-
-    subj_lines = []
-    for l in sections['subj'].split('\n'):
-        l = l.strip()
-        if l and not l.startswith('No ') and not l.startswith('Family history') and not l.startswith('Current medication'):
-            subj_lines.append(l)
-    subj_clean = '\n'.join(subj_lines[:15])
-
-    obj_lines = [l.strip() for l in sections['obj'].split('\n')
-                 if l.strip() and '[Plan' not in l and '[Medicine' not in l]
-    obj_clean = '\n'.join(obj_lines[:20])
-
-    plan_lines = []
-    for l in sections['plan'].split('\n'):
-        l = l.strip()
-        cut = len(l)
-        for tag in ('[Medicine]', '[Medication]', '------'):
-            idx = l.find(tag)
-            if idx != -1 and idx < cut:
-                cut = idx
-        if cut < len(l):
-            prefix = l[:cut].strip()
-            if prefix:
-                plan_lines.append(prefix)
-            break
-        if l:
-            plan_lines.append(l)
-    plan_clean = '\n'.join(plan_lines[:10])
-
-    header = f'{age} y/o {gender}' if age else ''
-    return f"""{header}
-一、心臟科相關診斷：
-{diag_clean[:500]}
-
-二、病史：
-{subj_clean[:500]}
-
-三、客觀檢查：
-{obj_clean[:500]}
-
-四、本次住院計畫：
-{plan_clean[:500]}""".strip()
-
-
 def parse_name_from_raw(raw):
     # raw like "姓名 : 謝秀嬌 , 生日 : 1955/02/20 , 性別 : 女 ..."
     m = re.search(r'姓名\s*[：:]\s*([^\s,，]+)', raw)
@@ -442,15 +379,14 @@ def main(date8):
                 visit_header = f'【EMR來源門診：{visit}】{src_tag}\n' if visit else ''
                 emr_full = visit_header + emr_text
 
-                summary = generate_summary(emr_text, mi.get('age', ''), mi.get('gender', ''))
                 f_diag, g_cath = detect_fg(emr_text)
 
+                # Post 5/4 layout: F=術前診斷 → E欄, G=預計心導管 → F欄
                 updates.append((f'C{pr}', emr_full))
-                updates.append((f'D{pr}', summary))
                 if f_diag:
-                    updates.append((f'F{pr}', f_diag))
+                    updates.append((f'E{pr}', f_diag))
                 if g_cath:
-                    updates.append((f'G{pr}', g_cath))
+                    updates.append((f'F{pr}', g_cath))
 
                 prefill.append({
                     'chart': chart, 'name': name, 'doctor': doc_name,
@@ -459,7 +395,6 @@ def main(date8):
                 })
             elif info and info.get('status') in ('no_visit', 'empty'):
                 updates.append((f'C{pr}', '無本院一年內主治醫師門診紀錄'))
-                updates.append((f'D{pr}', '(無門診紀錄)'))
                 prefill.append({
                     'chart': chart, 'name': name, 'doctor': doc_name,
                     'f': '', 'g': '', 'row': pr, 'matched': False, 'visit': '(無)',

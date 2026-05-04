@@ -23,8 +23,8 @@ description: Use when entering catheter lab scheduling data (導管排程 key-in
 | `third` | 推薦醫師 `recommendationDoctor`（兩位 second 時第二位放這；無則 null） |
 | `room` | H1 / H2 / C1 / C2（查 `schedule_readable.txt` 該醫師當天時段） |
 | `time` | 時段醫師：上午 0600+ / 下午 1800+；非時段醫師 H1 2100+ |
-| `diagnosis` | 子表格 F 欄（如 CAD / pAf / SSS） |
-| `procedure` | 子表格 G 欄（如 Left heart cath. / PPM / RF ablation） |
+| `diagnosis` | 子表格 E 欄（術前診斷，如 CAD / pAf / SSS — post 5/4 layout，原 F 欄） |
+| `procedure` | 子表格 F 欄（預計心導管，如 Left heart cath. / PPM / RF ablation — post 5/4 layout，原 G 欄） |
 | `note` | 可選：「本日無時段」「無資料病人」「無床改期」等 |
 
 ### 2. 寫成 JSON 檔
@@ -80,11 +80,11 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
 2. **病人已 pre-keyed → SKIP ADD + 仍跑 UPT**（per `feedback_webcvis_preserve_existing_slot.md`）。Phase 1 自動依病歷號 dedupe，Phase 2 只補 F/G
 
-3. **跳過規則**：子表格 H 欄含「不排程」「檢查」→ 從 JSON 中排除。「無床改期」「非導管床」「HF AE」**不**跳過（見 CLAUDE.md rule #9）
+3. **跳過規則**：子表格 G 欄（註記，post 5/4 — 原 H 欄左移）含「不排程」「檢查」→ 從 JSON 中排除。「無床改期」「非導管床」「HF AE」**不**跳過（見 CLAUDE.md rule #9）
 
-   **張獻元週二 admission 自動分配（4/27 update）**：
-   - H 含張倉惟/王思翰 → 全部 W3 AM C2（second = H 內的王/張）
-   - H 不含王/張 → 依 E 欄順序前 3 個 W2 PM H2（1800+i），第 4+ 個 W3 AM C2
+   **張獻元週二 admission 自動分配（4/27 update — post 5/4 column shift applied）**：
+   - G 欄（原 H）含張倉惟/王思翰 → 全部 W3 AM C2（second = G 內的王/張）
+   - G 欄不含王/張 → 依 D 欄（原 E，手動設定入院序）順序前 3 個 W2 PM H2（1800+i），第 4+ 個 W3 AM C2
    - 週三 admission 維持同日 W3 AM/PM C2
 
    見 `feedback_zhang_xianyuan_tuewed_manual.md` 的 `split_zhang_tue_admit()` 範例

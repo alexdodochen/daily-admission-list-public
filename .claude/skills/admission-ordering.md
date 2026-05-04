@@ -1,19 +1,19 @@
 ---
 name: admission-ordering
-description: Use when assigning patient admission order (排住院序) for a specific date's admission list. Triggered when user says "排住院序", "排入院序", "設定入院順序", "生成入院序列", or after EMR extraction completes. Reads sub-tables, asks user for multi-patient order, writes E column + N-V round-robin. Google Sheets only (no xlsx).
+description: Use when assigning patient admission order (排住院序) for a specific date's admission list. Triggered when user says "排住院序", "排入院序", "設定入院順序", "生成入院序列", or after EMR extraction completes. Reads sub-tables, asks user for multi-patient order, writes D column (post 5/4 — 手動設定入院序) + N-V round-robin. Google Sheets only (no xlsx).
 ---
 
 # 排住院序（入院順序確認）
 
 ## Overview
-根據抽籤結果（醫師順序）+ 使用者決定的醫師內部順序，寫入 N-V 入院序列（9 欄）+ 子表格 E 欄「手動設定入院序」。
+根據抽籤結果（醫師順序）+ 使用者決定的醫師內部順序，寫入 N-V 入院序列（9 欄）+ 子表格 D 欄「手動設定入院序」（post 5/4 — D=EMR摘要 已移除）。
 
 ## 前置條件
 
 進入本 skill 之前，同日 Google Sheet `YYYYMMDD` 應該已具備：
 - 主資料 A-L（A-L 12 欄 × N 人）
-- 子表格（各醫師 8 欄 A-H × 病人數，含姓名、病歷號、EMR、EMR摘要、手動設定入院序、術前診斷、預計心導管、註記）
-- F/G（術前診斷、預計心導管）已由 EMR 預填並經使用者審核
+- 子表格（各醫師 7 欄 A-G × 病人數，含姓名、病歷號、EMR、手動設定入院序、術前診斷、預計心導管、註記）
+- E/F（術前診斷、預計心導管）已由 EMR 預填並經使用者審核
 
 若 N-V 空且子表格也空 → 回到 `admission-lottery` 先抽籤建子表格。
 若主資料存在但抽籤未做 → `admission-lottery` 要先跑。
@@ -73,17 +73,17 @@ data = ws.get_all_values()
 
 ```
 **{醫師名}（{N}人）：**
-1. **{病人A}** ({病歷號}) — {EMR摘要首段}
-2. **{病人B}** ({病歷號}) — {EMR摘要首段}
+1. **{病人A}** ({病歷號}) — {C 欄 EMR 第 1-3 行 / 診斷}
+2. **{病人B}** ({病歷號}) — {C 欄 EMR 第 1-3 行 / 診斷}
 ```
 
 等使用者回覆才繼續寫。單病人醫師無需詢問。
 
-### 5. 寫入子表格 E 欄 + N-V 9 欄
+### 5. 寫入子表格 D 欄 + N-V 9 欄
 
-#### 5a. 子表格 E 欄（手動設定入院序）
+#### 5a. 子表格 D 欄（手動設定入院序，post 5/4 layout）
 
-掃描 A 欄找到每個醫師的 block，在 E 欄（col 5）填入使用者指定的順序（1, 2, 3...）。單病人醫師填 1 即可（或留空照舊習慣）。
+掃描 A 欄找到每個醫師的 block，在 D 欄（col 4）填入使用者指定的順序（1, 2, 3...）。單病人醫師填 1 即可（或留空照舊習慣）。
 
 #### 5b. N-V 9 欄 round-robin
 
@@ -179,28 +179,28 @@ final_doctor_order = slot_docs + non_slot
 | 欄 | 來源 |
 |---|---|
 | Q 備註(住服) | 主資料 K 欄（入院提示）中 住服相關 free text（如「住南投提早通知」「非導管床」） |
-| R 備註 | **優先：子表格 H 欄『註記』**（如「12C可」「張倉惟 12C可」「王思翰 4/21無床延期」「Afib」「CTA for TAVI 可能住到5/1」「改周一住」）；H 為空才 fallback 到主資料 K 欄 parenthetical（如「(4/13無床延床)」） |
+| R 備註 | **優先：子表格 G 欄『註記』**（post 5/4 — 原 H 欄左移；如「12C可」「張倉惟 12C可」「王思翰 4/21無床延期」「Afib」「CTA for TAVI 可能住到5/1」「改周一住」）；G 為空才 fallback 到主資料 K 欄 parenthetical（如「(4/13無床延床)」） |
 | S 病歷號 | 主資料 I 欄（**TEXT 格式寫入**，前導 0 不可丟） |
-| T 術前診斷 | 子表格 F 欄 |
-| U 預計心導管 | 子表格 G 欄 |
+| T 術前診斷 | 子表格 E 欄（post 5/4 — 原 F 欄左移） |
+| U 預計心導管 | 子表格 F 欄（post 5/4 — 原 G 欄左移） |
 | V 改期 | 空白（使用者事後手動填 YYYYMMDD 表示延後） |
 
-**重點：子表格 H 欄是使用者實際寫備註的地方** — 排住院序時 R 欄一定要從 H 欄移植，K 欄 paren 只是沒 H 時的退路。漏了這步會被使用者糾正。
+**重點：子表格 G 欄是使用者實際寫備註的地方** — 排住院序時 R 欄一定要從 G 欄移植，K 欄 paren 只是沒 G 時的退路。漏了這步會被使用者糾正。
 
 ```python
-# Build chart -> H from sub-tables
-chart_to_H = {}
+# Build chart -> G from sub-tables (post 5/4: 7-col layout, note at index 6)
+chart_to_note = {}
 for i, row in enumerate(data, 1):
-    m = re.search(r'^(.+?)（(\d+)人）', (row+['']*8)[0])
+    m = re.search(r'^(.+?)（(\d+)人）', (row+['']*7)[0])
     if m:
         n = int(m.group(2))
         for j in range(i+2, i+2+n):
-            r = (data[j-1]+['']*8)[:8]
+            r = (data[j-1]+['']*7)[:7]
             if not any(r): break
-            if r[1]: chart_to_H[r[1]] = r[7]  # B=chart, H=note
+            if r[1]: chart_to_note[r[1]] = r[6]  # B=chart, G=note
 
 # When building each N-V row:
-R = chart_to_H.get(chart, '').strip() or K_paren
+R = chart_to_note.get(chart, '').strip() or K_paren
 ```
 
 ### 6. S 欄 TEXT 格式（病歷號）
@@ -253,8 +253,8 @@ sh = get_spreadsheet()
 # 1. 修 V1 header（如需）
 write_range(ws, 'V1', [['改期']], raw=True); time.sleep(0.4)
 
-# 2. 子表格 E 欄（使用者指定順序）
-for cell, val in [('E8','1'), ('E12','1'), ('E13','2')]:
+# 2. 子表格 D 欄（使用者指定順序，post 5/4 layout）
+for cell, val in [('D8','1'), ('D12','1'), ('D13','2')]:
     write_range(ws, cell, [[val]], raw=True); time.sleep(0.4)
 
 # 3. S 欄 TEXT 格式
