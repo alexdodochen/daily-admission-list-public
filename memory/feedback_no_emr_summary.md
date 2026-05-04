@@ -21,6 +21,8 @@ type: feedback
 - N-V ordering R 欄 (備註) 來源：以前是子表格 H 欄 (註記)，現在是 G 欄 (`row[6]`)。
 - N-V 寫入前必當下重讀子表格 E/F/G (而非 F/G/H — 跟 CLAUDE.md rule #18 對齊更新)。
 - **舊 sheet (5/3 之前) 不動**：使用者選 α，舊 sheet 仍是 8 欄，新 verify/ordering/process_emr 對舊 sheet 會抓錯欄。預期不再對舊 sheet 跑這些 script (那週已 cathlab 完)。如果使用者真要回頭跑某張舊 sheet，要明說「這張是舊 layout」並做臨時兼容。
+- **5/10-5/14 例外** (5/4 session 中段建的)：今天早上跑 image-to-excel + EMR 時程式碼還是 OLD 8 欄版，這 5 張 sheet 當時就以 8 欄 layout 寫好（含 D=EMR摘要）。使用者 5/4 明說「這 5 張就維持 8 欄，下次新建才用 7 欄」→ **不要遷移、不要刪 D 欄**。對這 5 張跑 ordering / verify / cathlab 時要當「舊 layout」處理，子表格欄位用 8 欄假設（H=註記）。5/15 起的新 sheet 才走 7 欄。
+- **5/5-5/7 例外** (5/4 下午 diff-update 過的)：本週三張 sheet (20260505/0506/0507) 在 5/4 下午做截圖 diff-update + EMR 抽取時，已存在的 sub-table 是 8-col（建立時程式碼還是舊版）。為了不破壞既有 EMR 資料，當天用 `_diff_update_week.py`（write_range raw=True、SUB_HEADER 8-col）+ `_run_emr_8col.py`（process_emr 模組 + 自訂寫法，C/F/G 對 8-col 欄位）處理。這 3 張**也維持 8 欄**到那週工作完結，跑 ordering / verify / cathlab 時等同 5/10-5/14 例外處理。
 - 不要再生成「四段式摘要」(`一、心臟科相關診斷 / 二、病史 / 三、客觀檢查 / 四、本次住院計畫`) — 使用者 5/4 明說捨棄。
 
 **相關檔案 (5/4 改過)：** `gsheet_utils.py` (write_doctor_table + enforce_sheet_format)、`process_emr.py`、`generate_ordering.py`、`verify_cathlab.py`、`rebuild_date_sheet.py`、`emr_toggle_script.js`、4 個 admission-* skills、`每日入院清單工作流程.txt`、`CLAUDE.md` rule #14/#18/#22。
