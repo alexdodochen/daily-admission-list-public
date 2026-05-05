@@ -1,11 +1,11 @@
 ---
 name: admission-reschedule
-description: Use when user wants to reschedule admission patients to other dates — full move (not just V flag). Triggered by 「重啟改期功能」, 「改 MM/DD 住院」 with patient list, 「改期」 + new date, or similar. Performs V mark on source sheet + main A-L copy to target sheet + sub-table merge/rebuild + builds cathlab ADD JSON + lists DEL candidates for manual handling. Overrides the conservative "V flag only" rule.
+description: Use when user wants to reschedule admission patients to other dates — full move (not just V flag). Triggered by 「重啟改期功能」, 「改 MM/DD 住院」 with patient list, 「改期」 + new date, or similar. Performs V mark on source sheet + main A-L copy to target sheet + sub-table merge/rebuild + builds cathlab ADD JSON + presents DEL list for user confirmation, then runs automated Playwright DEL. Overrides the conservative "V flag only" rule.
 ---
 
 # Admission Reschedule (full move)
 
-Move admission patients from one date sheet to another, including main A-L, sub-table under attending doctor, and cathlab schedule (ADD only — DEL is manual).
+Move admission patients from one date sheet to another, including main A-L, sub-table under attending doctor, and cathlab schedule (ADD via cathlab_keyin.py; DEL via automated Playwright after user confirms the candidate list).
 
 ## Triggers
 
@@ -129,21 +129,32 @@ Run: `python cathlab_keyin.py cathlab_patients_reschedule.json`
 
 Verify section at end of cathlab_keyin output confirms ADD success per chart.
 
-### PHASE 5 — Cathlab DEL list (manual)
+### PHASE 5 — Cathlab DEL (list → user OK → automated Playwright)
 
-DEL is NOT automatable (account 107614 lacks DEL perm — see `memory/feedback_webcvis_del_manual.md`).
+Per `memory/feedback_webcvis_del_manual.md`: present the DEL candidates first, wait for user OK, then run automation. Don't auto-DEL without confirmation, don't punt to "user does it manually" by default.
 
-Output a clear table to user:
-
+**Step 5a — list candidates:**
 ```
-WEBCVIS 5/{old_cath_date} 需手動 DEL：
-| 病歷號 | 姓名 | 主治 | 改到 → 新 cath 日 |
-|---|---|---|---|
-| 02742922 | 蘇正勝 | 黃睦翔 | 5/6 admit → 5/7 cath |
+WEBCVIS 5/{old_cath_date} DEL 候選清單（請確認後說 OK）：
+| 病歷號 | 姓名 | 主治 | 房間 | 時間 | 改到 → 新 cath 日 |
+|---|---|---|---|---|---|
+| 02742922 | 蘇正勝 | 黃睦翔 | H1 | 2100 | 5/6 admit → 5/7 cath |
 ...
 ```
 
-Wait for user confirmation that they DEL'd. Then run a verify (query 5/{old_cath_date} via Playwright) to confirm all targets are gone.
+**Step 5b — wait for user explicit OK.**
+
+**Step 5c — run automated Playwright DEL** (after OK):
+- For each candidate: navigate WEBCVIS → query date → locate row by chart no → trigger DEL
+- Approaches to try (avoid the two known-failed paths):
+  - Row click first to select → click `#deleteButton` (mimics UPT-enable flow)
+  - If a confirm dialog fires → accept via `page.on("dialog", lambda d: d.accept())`
+  - Inspect actual jQuery click handler binding on `#deleteButton` (check `cathlab_page.html` / live DOM)
+- Failed before (don't re-try verbatim): direct `buttonName="DEL"` form submit; `removeAttribute("disabled")` + naive click
+
+**Step 5d — verify:** re-query 5/{old_cath_date}, confirm all target charts absent. Report per-chart success/fail.
+
+**Step 5e — fallback:** If automation provably fails (rows still present after fresh attempt), report exact DOM/server response and ask user to manual-DEL the residuals.
 
 ## Files this skill writes
 
@@ -156,7 +167,7 @@ Wait for user confirmation that they DEL'd. Then run a verify (query 5/{old_cath
 - Quoting CLAUDE.md "manual flag only" when user explicitly invoked reschedule — that's the OLD rule. CLAUDE.md rule 5 has dual mode now.
 - `find_main_end` via blank-row scan — fails when sub-table is right below main A-L. Use YYYY-MM-DD regex on col A.
 - Rebuild without capturing unrelated doctor blocks first — rate-limit interruption = data loss.
-- Trying to automate WEBCVIS DEL — server rejects silently. Always list + ask user manual.
+- Punting WEBCVIS DEL to "user does it manually" by default. Correct flow: list candidates → wait for user OK → run automated DEL → verify → fallback to manual only if automation provably fails.
 
 ## Coordination with other skills
 
@@ -167,7 +178,7 @@ Wait for user confirmation that they DEL'd. Then run a verify (query 5/{old_cath
 ## Memory references
 
 - `memory/feedback_reschedule_active.md` — workflow rules
-- `memory/feedback_webcvis_del_manual.md` — DEL not automatable
+- `memory/feedback_webcvis_del_manual.md` — DEL flow: list → user OK → automated Playwright
 - `memory/feedback_post_edit_format_check.md` — enforce_sheet_format mandatory
 - `memory/feedback_subtable_H_to_R_ordering.md` — 8-col sub-table layout
 

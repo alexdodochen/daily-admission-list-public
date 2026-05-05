@@ -335,9 +335,10 @@
 --------------------------------------------
 改期註記（V 欄）
 --------------------------------------------
-  V 欄填 YYYYMMDD 純屬人工註記，表示該病人不做原訂 N+1 cathlab
-  （另行處理，Claude 不自動搬 sheet / 不自動 DEL/ADD WEBCVIS）。
-  - cathlab keyin 與 verify_cathlab.py 會把有 V 值的 ordering row 視為 skip
+  V 欄填 YYYYMMDD 有兩種模式：
+  （A）預設：純人工註記。cathlab keyin 與 verify_cathlab.py 會把有 V 值的 ordering row 視為 skip
+  （B）完整搬遷：你說「重啟改期功能」/「改 MM/DD 住院」+ 病人清單 → Claude 跑 admission-reschedule skill：
+       V 標記 + 主資料/sub-table 搬到目標日 + cathlab DEL（列清單給你 OK 後自動跑）+ ADD（自動 cathlab_keyin.py）
   - 手動寫 V 必須透過 P 欄姓名 / S 欄病歷號比對 ordering row
     （round-robin 打散後 row 順序與主資料不同，不能直接用主資料 row 編號）
 

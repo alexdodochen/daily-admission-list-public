@@ -18,7 +18,7 @@ SCHEDULE_URL = f"{BASE_URL}/HCO/HCO1W001.do"
 ACCOUNT = "107614"
 PASSWORD = "107614"
 
-SKIP_KEYWORDS = ["不排程", "檢查"]
+SKIP_KEYWORDS = ["不排程", "檢查", "不排檢"]
 ZHANG_BORROWED_BY = ["王思翰", "張倉惟"]
 
 

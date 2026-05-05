@@ -71,7 +71,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 
 **Reschedule** has two modes:
 - *Default (V flag only)*: V column with YYYYMMDD = patient skipped from N+1 cathlab. cathlab keyin + verify both skip rows where V has a value.
-- *Full move (when user says 「重啟改期功能」or「改 MM/DD 住院」 with patient list)*: V mark on source + main A-L copy to target + sub-table rebuild on target + cathlab DEL/ADD per `主治醫師導管時段表`. Cathlab DEL is NOT automatable (account 107614 lacks DEL perm — see `memory/feedback_webcvis_del_manual.md`); list candidates and ask user to delete manually. ADD goes through `cathlab_keyin.py`. See `memory/feedback_reschedule_active.md`.
+- *Full move (when user says 「重啟改期功能」or「改 MM/DD 住院」 with patient list)*: V mark on source + main A-L copy to target + sub-table rebuild on target + cathlab DEL/ADD per `主治醫師導管時段表`. **Cathlab DEL flow** (per `memory/feedback_webcvis_del_manual.md`): list DEL candidates (chart/name/date/room/time) → wait for user OK → run automated Playwright DEL → verify → fall back to manual only if automation provably fails. ADD goes through `cathlab_keyin.py`. See `memory/feedback_reschedule_active.md`.
 
 **Each step is independent — don't auto-chain.** Even if user provides multiple resources upfront (image + EMR URL + JSON), only run the step the user explicitly triggered. The next step waits for the user's command. See `memory/feedback_no_auto_lottery.md`.
 
