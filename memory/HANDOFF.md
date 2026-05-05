@@ -1,48 +1,58 @@
 ============================================
-  交班文件 — Last Updated: 2026-05-04 18:02
+  交班文件 — Last Updated: 2026-05-05 17:30
 ============================================
 
-【本次 session 做了什麼】（5/4 整天，超長 session）
-  1. 5/5/5/6/5/7 三張 sheet 截圖 diff-update（+14 病人 + K/E 欄更新）
-  2. EMR 抽取 16 位（含 2 名校正：吳莉雄→吳菊雄、宋香光→宋哲光）
-  3. **8-col canonical revert (commit d55ae66)**：撤回 5/4 上午的 7-col migration（保留 D=EMR摘要 placeholder，process_emr 不主動寫，使用者要時 call Gemini 填）。動到 7 個 .py + 4 skill md + CLAUDE.md + 工作流程 txt + 4 個 memory 檔
-  4. 5/5 lottery + ordering 寫 N-V 18 人；cathlab keyin 5 missing (歐黃江/蕭秀雲/楊三益/吳菊雄/許慶山) + verify 0 missing
-  5. 5/6/5/7 cathlab verify → 4 ADD: 黃翠娟/陳秀里/宋哲光 + 胡川陵 5/7 LHC; 加 5/13 TAVI（推薦醫師=林佳凌）
-  6. cathlab_keyin.py 補 ROOM_CODES「外科開刀房25房」→「xa-外科開刀房25房」(TAVI 用)
+【本次 session 做了什麼】
+  1. 設置 PostToolUse hook (scripts/post_sheet_format_check.py + .claude/settings.json) — 偵測 process_emr/generate_ordering/rebuild_date_sheet/refresh_emr.py + YYYYMMDD 自動跑 enforce_sheet_format
+  2. 重啟改期功能：5/5 admit 18 人中 10 人改期 → V 標記 + 主資料 + 子表格 rebuild + 5/6 cathlab DEL/ADD
+     - 5/5 sheet: 10 人 V 欄寫上目標日期 (5/12 王樹英, 5/12 楊瑪露, 5/6 蘇正勝, 5/7 其他 7 人)
+     - 5/6 sheet: 蘇正勝 + 黃睦翔 sub-table 新增
+     - 5/7 sheet: 7 人 + 詹世鴻(6人)/陳儒逸(4人) rebuild + 陳柏偉 placeholder
+     - 5/12 sheet: 王樹英+楊瑪露 + 張獻元 sub-table 新增
+  3. cathlab DEL+ADD: 10 ADD 全部 verify OK (5/7 H2/5/8 C1/C2/5/13 C2)；DEL 自動化失敗，使用者手動處理 7 筆
+  4. enforce_sheet_format 跑 5/5/5/6/5/7/5/12/5/10/5/11/5/13/5/14 — 都 OK
+  5. CLAUDE.md rule 5 更新（reschedule 雙 mode：V flag only / 完整搬遷）
 
 【當前狀態】
-  - Branch: main, working tree dirty (3 個檔等 commit: cathlab_keyin.py + cathlab_patients_20260505.json + 即將寫的 HANDOFF.md)
-  - 最新 commit (待推): d55ae66 (8-col revert)
-  - WEBCVIS 排程已 keyin: 5/6 (24)、5/7 (14)、5/8 (9)、5/13 (1) — 全週 5/4-5/14 都 OK
-  - 5 張 sheet 5/4-5/8 主資料 + 子表格 + EMR + N-V + cathlab 全部完成
+  - Branch: main, 工作樹 dirty (待 commit:
+      .claude/settings.json
+      scripts/post_sheet_format_check.py
+      cathlab_patients_reschedule.json
+      memory/feedback_webcvis_del_manual.md
+      memory/feedback_reschedule_active.md
+      memory/reference_post_sheet_format_hook.md
+      memory/MEMORY.md
+      memory/HANDOFF.md
+      CLAUDE.md)
+  - Hook 不在本 session 生效 — 下次啟動或 /hooks 重載才會
+  - WEBCVIS：5/6 16 人，5/7 16 人，5/8 16 人，5/13 3 人 — 全部 verify OK
 
 【下一步該做什麼】
-  - 等下一週 5/11+ 的入院清單截圖
-  - 「memory 全英化 batch」（從 5/4 上午留下）仍待開新 task 做
-  - public mirror sheet `1u2FZE6...` 5/3 真實病人 PHI 仍未清（從 5/1 留下）
+  - 5/7 sub-table 陳柏偉 → 潘美香 (chart 15282032) 重抓 EMR：`python process_emr.py 20260507`（之前 rebuild 中途 429 損失 EMR/F/G 資料，目前 H 欄寫「[EMR/F/G need refetch — script crash]」）
+  - 5/11+ 下週入院清單截圖（等使用者送）
+  - （仍待）memory 全英化 batch、public mirror sheet `1u2FZE6...` PHI 清除
 
 【已知問題 / 卡關】
-  - 5/4 上午 8→7 col migration 留下「過渡期文字」散在多份 memory（`feedback_admission_hint_to_subtable_note.md` 之類提到「G 欄」「左移」），等將來做 memory 英化 batch 時順便清掉
-  - 5/13 TAVI 預設 attendingdoctor=柯呈諭（胡川陵主治）。若 TAVI 該由 結構/瓣膜 team 其他醫師主刀，使用者要 DEL/ADD 改
+  - WEBCVIS account 107614 沒 DEL 權限（自動化嘗試 v1 form-direct submit + v2 force-enable button click 都失敗）。新 memory: feedback_webcvis_del_manual.md
+  - cathlab_keyin.py 沒 DEL 功能（只 ADD/UPT）。如要自動化 DEL 需另開 script + 解決帳號權限
+  - sub-table rebuild 大規模 write 易碰 429 quota（5/7 第一次跑 4 個 block 中途死於 quota，第 4 block 陳柏偉 損失資料）。緩解：batch_write_cells、time.sleep(2.0+)、超過一定 patient 數可拆兩 session
 
 【不要重蹈覆轍】
-  - **Sub-table 8-col canonical**（A=姓名 B=病歷號 C=EMR D=EMR摘要 E=手動序 F=術前 G=預計 H=註記）。所有 code/skills/docs 都對齊。看到 7-col 假設（r[:7] / A:G / D=手動序）的字串 = 5/4 上午過渡死碼，立刻改回
-  - **D=EMR摘要 placeholder 不主動寫** — process_emr 寫 C/F/G。使用者「我以後需要的時候會呼叫 gemini 幫我做摘要」→ 一次一格 user 自己 call
-  - **diff-update sub-table 只動 ADD/DELETE row**（既有 row 完全不碰）— `feedback_diff_update_subtable_minimal.md`。5/4 整塊 clear+rewrite 連 EMR 都洗掉是反面教材
-  - **gspread RAW**（不是 USER_ENTERED）寫 chart_no 保前導 0
-  - **diff-update 前先 unmerge A2:V80** 再 clear（merged sub-table title 會吃寫入）
-  - **verify_cathlab.py 不能盲信** — 對 8-col sheet 的 NG 結果要套 SKIP_KEYWORDS + 張獻元規則手動重判，原 verify 用 `r[:7]` 切掉 H 那 bug 已修但若再有 layout 偏移要重新檢查
-  - **cathlab ADD 前必跑 week-scan**（CLAUDE.md rule #19）— Mon-Fri 5 天查 chart 有無重複，已存在 → STOP 不自動 ADD
-  - 圖→Sheet→sub-table→EMR auto；lottery / ordering / cathlab 等命令（feedback_no_auto_lottery.md）
+  - **find_main_end 不能只看 blank row**：sub-table title 也在 col A 有值，naive scan 會回傳錯誤 main_end（5/12 do_5_12 第 1 版踩過）→ 改用 YYYY-MM-DD regex（gsheet_utils.enforce_sheet_format 範本）
+  - **sub-table rebuild 要先 capture ALL existing blocks**（不只目標醫師那塊）— 不然 unrelated doctor 資料被 clear 後消失，rebuild 又只重畫 captured 的 blocks（5/7 陳柏偉 case：原本是因為 capture OK 但 rebuild 中途 quota 死於第 4 block）
+  - **WEBCVIS DEL 直接 form submit 不會生效**（buttonName=DEL 被 server 默默丟棄）— 不要再嘗試自動化 DEL
+  - **改期完整搬遷需使用者明確授權** — 不要看到 V 欄就自動移 sheet。預設仍是「V flag only」mode
+  - **enforce_sheet_format 在 hook 中跑** vs 手動跑：hook 只在 4 個指定腳本後跑，手動跑（如本次 5/10-14）需 `python -c "from gsheet_utils import enforce_sheet_format; ..."`
 
 【相關檔案】
-  - 程式碼：cathlab_keyin.py (ROOM_CODES 加「外科開刀房25房」)、其他 5 .py + 1 .js 都已在 d55ae66 反轉
-  - JSON：cathlab_patients_20260505.json (重寫成 5 missing 那版)
-  - scratch（將清）：`_diff_update_week.py`, `_run_emr_8col.py`, `_ordering_20260505.py`, `_week_scan_*.py`, `_cathlab_more_keyin.json`, `_cathlab_tavi_keyin.json`, `_*.log`, `_verify_cathlab_2026050[4-7].txt`
+  - 程式碼新增：scripts/post_sheet_format_check.py
+  - 設定新增：.claude/settings.json
+  - JSON：cathlab_patients_reschedule.json (10 人 ADD source of truth)
+  - 規則更新：CLAUDE.md (rule 5 reschedule 雙 mode)
+  - sheets 動到：20260505 / 20260506 / 20260507 / 20260512（全部 enforce_sheet_format OK）
 
-【重要 memory 檔（本 session 新增/更新/刪除）】
-  - feedback_no_emr_summary.md（重寫：8-col canonical + D placeholder + 反轉 7-col migration history）
-  - feedback_subtable_H_to_R_ordering.md（G→H 退回原 H）
-  - feedback_diff_update_subtable_minimal.md（新：diff-update minimal 規則）
-  - feedback_verify_cathlab_8col_broken.md（刪：obsolete after revert）
-  - MEMORY.md（索引同步反轉）
+【重要 memory 檔（本 session 新增/更新）】
+  - feedback_webcvis_del_manual.md (新)
+  - feedback_reschedule_active.md (新)
+  - reference_post_sheet_format_hook.md (新)
+  - MEMORY.md (索引同步)

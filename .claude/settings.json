@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python scripts/post_sheet_format_check.py",
+            "timeout": 60,
+            "statusMessage": "Verifying sheet format..."
+          }
+        ]
+      }
+    ]
+  }
+}

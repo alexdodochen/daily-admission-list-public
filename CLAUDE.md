@@ -69,7 +69,9 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 
 **EMR data pipeline**: `fetch_emr.py` (Playwright → `emr_data_<date>.json`) → `process_emr.py` (JSON → F/G auto-detect → Sheet writes; summary generation removed 5/4). The JSON intermediary allows re-processing without re-fetching. Auto-detect uses keyword rules (`DIAG_RULES` for E=術前診斷, `CATH_RULES` for F=預計心導管 in `process_emr.py`) — runs on raw EMR text.
 
-**Reschedule is a manual flag.** V column with YYYYMMDD = patient skipped from N+1 cathlab. User decides handling (manual reschedule / notify). No auto sheet move, no auto WEBCVIS DEL/ADD, no sub-table changes. Both cathlab keyin and verify must skip rows where V has a value.
+**Reschedule** has two modes:
+- *Default (V flag only)*: V column with YYYYMMDD = patient skipped from N+1 cathlab. cathlab keyin + verify both skip rows where V has a value.
+- *Full move (when user says 「重啟改期功能」or「改 MM/DD 住院」 with patient list)*: V mark on source + main A-L copy to target + sub-table rebuild on target + cathlab DEL/ADD per `主治醫師導管時段表`. Cathlab DEL is NOT automatable (account 107614 lacks DEL perm — see `memory/feedback_webcvis_del_manual.md`); list candidates and ask user to delete manually. ADD goes through `cathlab_keyin.py`. See `memory/feedback_reschedule_active.md`.
 
 **Each step is independent — don't auto-chain.** Even if user provides multiple resources upfront (image + EMR URL + JSON), only run the step the user explicitly triggered. The next step waits for the user's command. See `memory/feedback_no_auto_lottery.md`.
 
@@ -93,6 +95,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 - `cathlab_page.html` — Saved HTML of WEBCVIS cathlab system for form field analysis.
 - `cathlab_id_maps.json` — pdijson/phcjson ID mappings (diagnosis→PDI ID, procedure→PHC ID).
 - `schedule_readable.txt` — Human-readable doctor schedule (Mon-Fri, AM/PM rooms). A named cell = doctor has a slot that day, even with annotations like "結構", "齡", "寬" (those are secondary-doctor / theme tags, not "no slot").
+- `scripts/post_sheet_format_check.py` — PostToolUse hook (registered in `.claude/settings.json`). After Bash runs `process_emr.py` / `generate_ordering.py` / `rebuild_date_sheet.py` / `refresh_emr.py` with a YYYYMMDD arg → auto runs `enforce_sheet_format(date)` and reports OK/FAIL via `additionalContext`. Silent for non-matching commands. Watcher caveat: new `.claude/settings.json` only activates next session or via `/hooks` reload.
 
 ## Workflow (6 steps)
 

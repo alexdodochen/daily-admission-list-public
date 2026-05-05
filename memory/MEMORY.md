@@ -42,3 +42,6 @@
 - [入院提示文字註記要搬到子表格 H 欄](feedback_admission_hint_to_subtable_note.md) — K 欄非純數字的文字（建議再入院日 / 陪病確診 / 無床延期）抽到子表格 H 欄；K 欄原樣保留
 - [D=EMR摘要 placeholder + 不主動寫](feedback_no_emr_summary.md) — Sub-table 8 欄 A-H canonical；D=EMR摘要 留空白，使用者要時 call Gemini 才填那一格；process_emr 寫 C/F/G 不寫 D（5/4 上午曾嘗試 7-col migration，下午反轉）
 - [diff-update sub-table 只動 ADD/DELETE](feedback_diff_update_subtable_minimal.md) — 重新匯入截圖時，既有 row 完全不碰；只新增截圖多的、刪除截圖沒有的（5/4 踩過：整塊 clear+rewrite 連 EMR 都洗掉）
+- [WEBCVIS DEL 不能自動化 → 使用者手動刪](feedback_webcvis_del_manual.md) — account 107614 沒 DEL 權限，Playwright form submit/click button 都被 server 擋；列出 DEL 清單請使用者手動處理（5/5 踩過）
+- [改期功能已重啟 → 完整搬資料 + cathlab DEL/ADD](feedback_reschedule_active.md) — 使用者說「重啟改期功能」就跑完整搬遷（V 標記 + 主資料 + 子表格 rebuild + cathlab 移動），覆寫 CLAUDE.md rule 5「manual flag only」舊規則
+- [PostToolUse hook 自動跑 enforce_sheet_format](reference_post_sheet_format_hook.md) — `.claude/settings.json` 的 hook 在 process_emr/generate_ordering/rebuild_date_sheet/refresh_emr.py + YYYYMMDD 跑完後補格式；新 session 才生效
