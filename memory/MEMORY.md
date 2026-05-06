@@ -49,3 +49,5 @@
 - [WEBCVIS DEL 真實機制 = 第一格 chk checkbox](feedback_webcvis_del_checkbox.md) — `<input type=checkbox name=chk>` onclick 啟用 #deleteButton → click → confirm → submit。hes_referno 常為空不可靠。用 `webcvis_del.py` 不要再寫一次性 script（5/6 三版才成功）
 - [cathlab_patients_*.json 必 gitignored + unique 名](feedback_cathlab_json_unique_filename.md) — 5/6 踩過 stale 5/5 JSON 重跑 10 人 Phase 2 UPT。改 unique filename 或 Read-then-Write 露出錯
 - [WEBCVIS Playwright permanent helpers](reference_webcvis_helpers.md) — webcvis_query.py / webcvis_del.py / schedule_lookup.py 三件常用，別再寫 ad-hoc Playwright script
+- [Leverage retained week-of cache JSON](feedback_leverage_cache_files.md) — emr_data/cathlab_patients_*.json are kept on purpose; reuse for reschedule moves before any re-fetch (added 5/6)
+- [After prep + sensible default, just execute](feedback_just_execute_after_prep.md) — show analysis + state default + run, don't end turn with "要我跑嗎"; pause only for genuine clinical ambiguity (added 5/6)

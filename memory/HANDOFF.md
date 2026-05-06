@@ -1,44 +1,45 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-05 evening (post-reschedule day-2)
+  HANDOFF — Last Updated: 2026-05-06 (Tue, evening)
 ============================================
 
 [What this session did]
-  1. 5/6 admission ordering — wrote N-V 15 rows + sub-table E (黃嬌子=3, 黃周笑=1) + enforce_sheet_format
-  2. 5/10 — added 王福財 (chart 09835366) main r9 + 許志新 sub-table r27 (title → 2人); 王雅音 already there
-  3. Cathlab verify 5/6+5/7 → found 3 missing → ADDed (黃周笑 5/7 H1 0601, 黃和泉 5/7 C2 1801, 陳建諭 5/8 C2 0606); all OK after re-verify
-  4. Updated WEBCVIS DEL feedback (twice): list candidates → wait for user OK → run automated Playwright DEL → fallback manual only if automation fails
-  5. Q col fix: cleared Q2:Q16 on 5/6 after user pushed back ("為何Q欄多了這些勾勾"); the V's in 5/5 are user's manual marks, NOT a convention to mimic
-  6. Patched verify_cathlab.py SKIP_KEYWORDS to include "不排檢" (黃嬌子 case)
+  1. 5/7 admission ordering: N-V written for 16 patients (RR 詹→劉→陳儒→陳柏→柯). 黃嬌子 H = 不排檢 CTV; 潘美香 H residue cleared; S-col TEXT format applied.
+  2. 5/10-14 cathlab keyin batch: 23 ADD / 0 errors across 5 dates. Week-scan caught 6 same-date dups already pre-keyed manually (王雅音/王福財/姜滄源/王樹英/楊瑪露/譚翠翠) → removed from JSONs (Plan A) so manual room/time stays untouched.
+  3. 5/12 sub-table B chart-no fix: 6 entries lost leading zeros (莊永慶 9488011 etc) — applied TEXT format + zfill(8); verify ALL CLEAR after fix.
+  4. Global CLAUDE.md (~/.claude/CLAUDE.md): added «Don't reinvent the wheel» section (search OSS first; high-star + maintained + clean; ASK before any install/clone).
+  5. Two new project memories (English): feedback_leverage_cache_files.md, feedback_just_execute_after_prep.md.
 
 [Current state]
-  - Branch: main, working tree dirty (script edits + memory + HANDOFF + workflow.txt + 1 ephemeral JSON)
-  - WEBCVIS: 5/7 18 entries verified, 5/8 16 entries verified
-  - Sheets clean: 5/6 (15 N-V + format), 5/10 (8 main + sub-table 許志新 2人 + format)
-  - Latest commit: e747da4 (before today's work) → 0f12b46 (pulled at session start)
+  - Branch: main (clean before commit step)
+  - Latest commit: 66a833e feat: WEBCVIS helpers (query/del/schedule) + reschedule skill rewrite
+  - WEBCVIS: 5/11-15 fully scheduled; 5/7 ordering on Google Sheet ready for 5/8 cathlab
+  - Cache files (kept on purpose per user feedback): emr_data_20260503-07 + 20260510-14, cathlab_patients_20260503-07 + 20260510-14, cathlab_patients_reschedule
 
-[Next steps]
-  - Wait for 5/8 admission list screenshot (Friday admit)
-  - 5/11+ next-week admission lists when user sends them
-  - (long-term) memory full-English migration; public mirror sheet 1u2FZE6... PHI cleanup
+[Next-up actions when next session opens]
+  - 5/8 (Fri) admission workflow: 截圖 → image-to-sheet → lottery (Fri uses col E; 詹世鴻 non-slot) → EMR → ordering → SAME-DAY cathlab (Fri rule).
+  - 5/9 (Sat): typically no admissions.
+  - 5/10-14 sheets: ordering N-V is NOT yet written, only cathlab is keyed. If 住服 push needs N-V for those dates, run admission-ordering for each.
+  - Before Fri evening push, verify 5/8 batch.
 
-[Known issues / blockers]
-  - cathlab_keyin.py silent ADD failure case observed: 陳建諭 was in 5/5 reschedule JSON but never appeared in WEBCVIS 5/8 — script reported success. Root cause unclear (possibly query timing / dialog handling). Recommend: post-Phase-1 verify per chart, retry once if missing
-  - SKIP_KEYWORDS extension to "不排檢" deployed — re-verify 5/6 should now show 黃嬌子 as SKIP not NG (test on next run)
+[Known issues / waiting on user]
+  - verify_cathlab.py false positives discovered this session:
+      • «不排導管» not in skip-keyword set (5/10 林魏金英 reported NG even though user-confirmed SKIP).
+      • «檢查» substring match is too aggressive — flags «肺功能檢查» / «需檢查等等» even when user wants to schedule (5/12 鄭蘇金葉 reported as «竟然在排程中»).
+    Fix candidate: tighten to whole-word «不排程» / «檢查»; add «不排導管» / «不排檢» to skip set.
+  - Mid-session user flipped Plan A↔B↔A on dup-handling. For SAME-DATE dups, Plan B (UPT refresh) is probably the right default in future — kept conservative this time.
 
-[Don't repeat these mistakes]
-  - **Q col 備註(住服) defaults to '' — never write 'V' as placeholder.** The V's in 5/5 are user's own manual marks (notification tracking). Don't mimic patterns from existing sheets — source Q values from K col text or reschedule date only.
-  - **Don't infer column conventions from peer sheets** — when in doubt, ask. Old data may contain user's manual annotations.
-  - **WEBCVIS DEL flow is now: list → user OK → automate** (NOT punt-to-manual by default, NOT auto-DEL without confirmation)
-  - **cathlab_keyin.py only queries cathlab_date** — must do separate week-scan (Mon-Fri) before ADD for any chart, per CLAUDE.md rule 19 (HARD)
+[Don't repeat]
+  - Wrote a new MEMORY.md index entry in Chinese while global CLAUDE.md says «internal docs → English» — user caught; rewritten to English. ALL memory/skill/handoff/CLAUDE.md goes English from now on.
+  - Initially picked admission-lottery skill when sub-tables already existed; correct skill was admission-ordering. Read sheet state before picking skill.
 
-[Relevant files]
-  - 每日入院名單/cathlab_patients_3missing.json — today's 3-patient ADD JSON (delete after retain-window)
-  - 每日入院名單/verify_cathlab.py — SKIP_KEYWORDS patched
-  - 每日入院名單/CLAUDE.md — rule 5 reschedule DEL flow updated
-  - 每日入院名單/每日入院清單工作流程.txt — 改期 V 欄段落改為雙模式描述
-  - 每日入院名單/.claude/skills/admission-reschedule/SKILL.md — PHASE 5 rewritten
+[Key artifacts touched]
+  - Google Sheet 20260507 (N-V + sub-table H cleanup)
+  - Google Sheet 20260512 (B-col TEXT format + zero-padded chart no)
+  - WEBCVIS schedule 2026/05/11 ~ 2026/05/15 (23 ADD)
+  - C:\Users\dr\.claude\CLAUDE.md (added OSS no-reinvent section)
+  - cathlab_patients_20260510.json ~ 20260514.json (built fresh, 6 dups removed)
 
-[Important memory files]
-  - feedback_q_col_no_default_v.md (NEW)
-  - feedback_webcvis_del_manual.md (rewritten — list → OK → automate)
-  - MEMORY.md (index updated)
+[Memory files updated]
+  - memory/feedback_leverage_cache_files.md (NEW)
+  - memory/feedback_just_execute_after_prep.md (NEW)
+  - memory/MEMORY.md (+2 index lines)
