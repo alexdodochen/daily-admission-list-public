@@ -6,7 +6,7 @@ originSessionId: a237e859-cb18-4efd-8aa5-0e8ae104bf8e
 ---
 # 主治醫師抽籤表 — by weekday（snapshot 2026-04-26）
 
-**權威來源**：Google Sheet `1DTIRNy10Tx3GfhuFq46Eu2_4J74Z3ZiIh7ymZtetZUI` 工作表 `主治醫師抽籤表`，col A-E = 週一至週五。
+**權威來源**：Google Sheet（私有 SHEET_ID via `local_config.py`）工作表 `主治醫師抽籤表`，col A-E = 週一至週五。
 
 **每次 lottery 仍要直讀 sheet**（見 `feedback_lottery_read_full_column.md`）；此檔僅作離線對照、避免重蹈把非時段醫師當時段醫師的覆轍（4/24 session 我把張獻元/劉嚴文誤當週一時段醫師被使用者糾正）。
 

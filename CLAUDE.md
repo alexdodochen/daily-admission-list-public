@@ -76,7 +76,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 **Each step is independent — don't auto-chain.** Even if user provides multiple resources upfront (image + EMR URL + JSON), only run the step the user explicitly triggered. The next step waits for the user's command. See `memory/feedback_no_auto_lottery.md`.
 
 **Ephemeral vs permanent files**:
-- **Permanent** (reference implementations): `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, `cathlab_keyin.py`, `rebuild_date_sheet.py`, `refresh_emr.py`, plus active skills under `.claude/skills/`.
+- **Permanent** (reference implementations): `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, `cathlab_keyin.py`, `rebuild_date_sheet.py`, `refresh_emr.py`, `webcvis_query.py`, `webcvis_del.py`, `schedule_lookup.py`, plus active skills under `.claude/skills/`.
 - **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `cathlab_patients_*.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` screenshots.
 
 ## Key Files
@@ -89,6 +89,9 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 - `fetch_emr.py` — Playwright-based EMR fetcher. Session URL + (chart, doctor) pairs → `emr_data_<date>.json`. Sentinel-stamping for race safety. Falls back to whitelist doctors when target has no clinic visit.
 - `process_emr.py` — Generic EMR processor. Reads `emr_data_<date>.json`, auto-detects 術前診斷/預計心導管 (no summary post 5/4), corrects names/age/gender from `#divUserSpec`, writes C (raw EMR) / E (術前診斷) / F (預計心導管) to sub-tables + main data. Usage: `python process_emr.py 20260419`.
 - `verify_cathlab.py` — Verifies admission patients appear in WEBCVIS cathlab schedule. Reads sub-table (統整資料), respects V column (skip if value). Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`.
+- `webcvis_query.py` — Generic WEBCVIS schedule query helper. `python webcvis_query.py YYYYMMDD [...] [--chart CHART] [--json]`. Importable: `from webcvis_query import query_dates`. Use for week-scan (rule 19), DEL-candidate listing, schedule diff. Replaces ad-hoc Playwright query scripts.
+- `webcvis_del.py` — Generic WEBCVIS DEL helper. `python webcvis_del.py CHART YYYYMMDD [CHART YYYYMMDD ...]`. Per-row checkbox approach (verified 5/6). See `memory/feedback_webcvis_del_checkbox.md`.
+- `schedule_lookup.py` — `主治醫師導管時段表` lookup. `python schedule_lookup.py DOCTOR WEEKDAY` or `--weekday WEEKDAY`. Importable: `from schedule_lookup import lookup`. Returns `[{session, room, second, third, tags, raw}, ...]`. Auto-resolves abbrev (浩→葉立浩, 晨→洪晨惠, 寬→葉建寬, 嘉→蘇奕嘉) and skips non-doctor tags (齡, 結構).
 - `每日入院清單工作流程.txt` — Canonical workflow spec. **Read first for any workflow question — if it disagrees with CLAUDE.md, the txt wins** (user actively maintains).
 - `memory/MEMORY.md` — Persistent memory index. **Run `check-previous-progress` skill at session start.**
 - `_*.py` / `_*.txt` — Underscore-prefixed = throwaway debug/verification. Not reference implementations.

@@ -99,75 +99,105 @@ Always — don't rely on the post-Bash hook (only fires for specific scripts; th
 
 ### PHASE 4 — Cathlab ADD
 
-Build `cathlab_patients_reschedule.json` per cathlab_keyin.py spec:
+**Step 4a — schedule + week-scan via permanent helpers (no ad-hoc scripts):**
 
-```json
-[
-  {
-    "cathlab_date": "YYYY/MM/DD",     // = target admit date + 1 (Mon-Thu) or same (Fri admit)
-    "name": "...",
-    "chart": "...",
-    "doctor": "...",                   // attending from sub-table
-    "second": null,                    // or 醫師 from H column / 時段表 paren tag (per CLAUDE.md rule 15)
-    "third": null,                     // or 第二位 paren tag
-    "room": "H1/H2/C1/C2",            // from 主治醫師導管時段表 lookup
-    "time": "HHMM",                   // AM=0601+, PM=1801+, sequential per doctor
-    "diagnosis": "...",                // from sub-table F
-    "procedure": "...",                // from sub-table G
-    "note": ""
-  }
-]
+```python
+from schedule_lookup import lookup
+slots = lookup("黃鼎鈞", "Thu")  # → [{session, room, second, third, ...}]
+# Pick AM or PM based on diag/procedure preference; non-schedule fallback if empty.
 ```
 
-Schedule lookup (主治醫師導管時段表):
-- rows 2-7 = AM, rows 8-12 = PM
-- cols C=Mon, D=Tue, E=Wed, F=Thu, G=Fri
-- Find doctor's slot for target+1 weekday
-- If doctor has no slot that day → non-schedule fallback: room=H1, time=2100+, note="本日無時段"
+Week-scan per CLAUDE.md rule 19 (HARD) — verify chart not already keyed Mon-Fri:
 
-Run: `python cathlab_keyin.py cathlab_patients_reschedule.json`
+```bash
+python webcvis_query.py 20260511 20260512 20260513 20260514 20260515 --chart 01808613
+```
 
-Verify section at end of cathlab_keyin output confirms ADD success per chart.
+**Step 4b — build cathlab_keyin JSON (UNIQUE FILENAME, gitignored):**
+
+⚠️ **NEVER write to a generic `cathlab_patients_reschedule.json`** — stale tracked content can re-run prior session's data (踩過 5/6, 10-patient mishap). Per `memory/feedback_cathlab_json_unique_filename.md`:
+
+```python
+# Use unique filename per run
+fn = f"cathlab_patients_reschedule_{chart}_{cathlab_date_yyyymmdd}.json"
+# OR Read-then-Write the generic one to surface "file exists" error
+```
+
+Schema:
+```json
+[{
+  "cathlab_date": "YYYY/MM/DD",     // = target admit date + 1 (Mon-Thu) or same (Fri admit)
+  "name": "...", "chart": "...", "doctor": "...",
+  "second": "...",                   // schedule_lookup result['second'] (CLAUDE.md rule 15)
+  "third": "...",                    // schedule_lookup result['third']
+  "room": "H1/H2/C1/C2",            // schedule_lookup result['room']
+  "time": "HHMM",                   // AM=0601+, PM=1801+, sequential per doctor
+  "diagnosis": "...",               // sub-table F
+  "procedure": "...",               // sub-table G
+  "note": ""
+}]
+```
+
+Non-schedule fallback (doctor has no slot that day): room=H1, time=2100+, note="本日無時段".
+
+**Step 4c — run + verify:**
+
+```bash
+python cathlab_keyin.py cathlab_patients_reschedule_<chart>_<date>.json
+# verify section at end confirms ADD success per chart
+rm cathlab_patients_reschedule_<chart>_<date>.json   # delete after run
+```
 
 ### PHASE 5 — Cathlab DEL (list → user OK → automated Playwright)
 
-Per `memory/feedback_webcvis_del_manual.md`: present the DEL candidates first, wait for user OK, then run automation. Don't auto-DEL without confirmation, don't punt to "user does it manually" by default.
+Per `memory/feedback_webcvis_del_manual.md`: present DEL candidates, wait for user OK, then run automation.
 
-**Step 5a — list candidates:**
+**Step 5a — list candidates** (use `webcvis_query.py` to fetch fresh state):
+
+```bash
+python webcvis_query.py 20260507 --chart 01808613    # confirm row exists with current room/time
+```
+
 ```
 WEBCVIS 5/{old_cath_date} DEL 候選清單（請確認後說 OK）：
 | 病歷號 | 姓名 | 主治 | 房間 | 時間 | 改到 → 新 cath 日 |
 |---|---|---|---|---|---|
 | 02742922 | 蘇正勝 | 黃睦翔 | H1 | 2100 | 5/6 admit → 5/7 cath |
-...
 ```
 
 **Step 5b — wait for user explicit OK.**
 
-**Step 5c — run automated Playwright DEL** (after OK):
-- For each candidate: navigate WEBCVIS → query date → locate row by chart no → trigger DEL
-- Approaches to try (avoid the two known-failed paths):
-  - Row click first to select → click `#deleteButton` (mimics UPT-enable flow)
-  - If a confirm dialog fires → accept via `page.on("dialog", lambda d: d.accept())`
-  - Inspect actual jQuery click handler binding on `#deleteButton` (check `cathlab_page.html` / live DOM)
-- Failed before (don't re-try verbatim): direct `buttonName="DEL"` form submit; `removeAttribute("disabled")` + naive click
+**Step 5c — run via permanent helper:**
 
-**Step 5d — verify:** re-query 5/{old_cath_date}, confirm all target charts absent. Report per-chart success/fail.
+```bash
+python webcvis_del.py CHART YYYYMMDD [CHART YYYYMMDD ...]
+```
 
-**Step 5e — fallback:** If automation provably fails (rows still present after fresh attempt), report exact DOM/server response and ask user to manual-DEL the residuals.
+`webcvis_del.py` uses the verified per-row checkbox approach (per `memory/feedback_webcvis_del_checkbox.md`):
+1. Login + query date
+2. Find row by `#hes_patno`
+3. Set chk checkbox `checked=true` + fire `chk.onclick()` → enables `#deleteButton`
+4. Click `#deleteButton` → confirm dialog auto-accept → form submits buttonName=DEL
+5. Re-query → verify chart removed
+
+DO NOT write a one-off Playwright DEL script. The 5/6 session burned 3 trial-and-error iterations (form submit / diagnostic / checkbox); the helper encodes the working answer.
+
+**Step 5d — verify:** webcvis_del.py reports per-chart success/fail. If FAIL → automation broke; report exact DOM/error and ask user to manual-DEL.
 
 ## Files this skill writes
 
-- `cathlab_patients_reschedule.json` — ADD source of truth (commit-worthy)
-- May read/modify date sheets via `gsheet_utils`
-- Optionally creates `_reschedule_*.py` scratch (delete after run)
+- `cathlab_patients_reschedule_<chart>_<date>.json` — ADD source of truth (gitignored ephemeral; delete after run)
+- Date sheet writes via `gsheet_utils` (PHASES 1-3)
+- ⚠️ Do NOT create `_reschedule_*.py` scratch for queries/DEL — use `webcvis_query.py` / `webcvis_del.py` directly.
 
 ## Anti-patterns (踩過)
 
 - Quoting CLAUDE.md "manual flag only" when user explicitly invoked reschedule — that's the OLD rule. CLAUDE.md rule 5 has dual mode now.
 - `find_main_end` via blank-row scan — fails when sub-table is right below main A-L. Use YYYY-MM-DD regex on col A.
 - Rebuild without capturing unrelated doctor blocks first — rate-limit interruption = data loss.
-- Punting WEBCVIS DEL to "user does it manually" by default. Correct flow: list candidates → wait for user OK → run automated DEL → verify → fallback to manual only if automation provably fails.
+- Punting WEBCVIS DEL to "user does it manually" by default. Correct flow: list → user OK → `webcvis_del.py` → verify → fallback to manual only if helper provably fails.
+- ❌ **Writing to generic `cathlab_patients_reschedule.json`** when prior session left a tracked stale version → cathlab_keyin runs the wrong data. Use unique filename or Read-then-Write. (5/6 踩過 10-patient Phase 2 UPT)
+- ❌ **Re-writing one-off Playwright DEL scripts** — burned 3 versions to find the checkbox mechanism. Use `webcvis_del.py`. If it breaks, fix the helper, don't fork a new script.
 
 ## Coordination with other skills
 
@@ -179,6 +209,9 @@ WEBCVIS 5/{old_cath_date} DEL 候選清單（請確認後說 OK）：
 
 - `memory/feedback_reschedule_active.md` — workflow rules
 - `memory/feedback_webcvis_del_manual.md` — DEL flow: list → user OK → automated Playwright
+- `memory/feedback_webcvis_del_checkbox.md` — verified DEL mechanism (chk checkbox)
+- `memory/feedback_cathlab_json_unique_filename.md` — JSON safety pattern
+- `memory/reference_webcvis_helpers.md` — webcvis_query / webcvis_del / schedule_lookup
 - `memory/feedback_post_edit_format_check.md` — enforce_sheet_format mandatory
 - `memory/feedback_subtable_H_to_R_ordering.md` — 8-col sub-table layout
 

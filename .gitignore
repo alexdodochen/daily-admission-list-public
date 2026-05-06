@@ -17,6 +17,7 @@ _*/
 *.jpg
 *.xlsx
 emr_data*.json
+cathlab_patients_*.json
 
 # Per-date ephemeral scripts
 cathlab_keyin_*.py
