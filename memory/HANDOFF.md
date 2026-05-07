@@ -1,59 +1,66 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-07 evening
+  HANDOFF — Last Updated: 2026-05-07 late evening
 ============================================
 
 [What this session did]
   1. Reschedule 6 patients off 5/7 admission: 3 to 5/8 Fri (黃和泉/陳建諭/歐黃江),
      3 to 5/12 Tue (許慶山/宋哲光/蔡建添). V-mark on 5/7, created 5/8 (3 patients),
-     rebuilt 5/12 (existing 7 + new 3 = 10 patients, 5 doctor blocks).
-  2. Cathlab ADD via cathlab_keyin: 黃和泉 5/8 H2 1801, 蔡建添 5/13 H1 2100. Verified OK.
-     Other 4 charts left at existing positions per user (rule 19 + user "leave for now").
-  3. Generated 5/8 N-V ordering (3 rows).
-  4. Re-discovered chk-checkbox DEL flow during this session — already-known on remote
-     (5/6 from another machine: webcvis_del.py + memory/feedback_webcvis_del_checkbox.md).
-     Rebased onto remote, dropped duplicate work.
+     rebuilt 5/12 (existing 7 + new 3 = 10 patients).
+  2. Cathlab ADD: 黃和泉 5/8 H2 1801, 蔡建添 5/13 H1 2100. Other 4 left as-is per user.
+  3. 5/8 ordering N-V (3 rows: 黃和泉/陳建諭/歐黃江).
+  4. Re-discovered chk-checkbox DEL flow — already known on remote 5/6. Rebased + dedup.
+  5. Deployed user-level SessionStart + SessionEnd hooks for cross-session continuity.
 
 [Current state]
-  - Branch: main, after rebase onto origin (took remote's webcvis_del.py + skill rewrite).
-  - Sheets touched: 20260507 (V col), 20260508 (new), 20260512 (rebuilt).
-  - Cathlab state on WEBCVIS:
-      5/8: 22 entries (added 黃和泉; 陳建諭/歐黃江 stayed at H2 1230/1530 per user).
+  - Branch: main, clean, pushed up to 68086ed.
+  - Sheets touched: 20260507 (V col), 20260508 (new), 20260512 (rebuilt). All unhidden.
+  - Cathlab on WEBCVIS:
+      5/8: 22 entries (added 黃和泉; 陳建諭/歐黃江 stay at H2 1230/1530 per user).
       5/13: 12 entries (added 蔡建添; 許慶山/宋哲光 already at C1 0800).
-  - Pending push: this commit (today's reschedule + 2 new memory files).
+  - User-level hooks live (effective NEXT session — not this one):
+      ~/.claude/hooks/session_start_handoff.py — injects HANDOFF/MEMORY at session start
+      ~/.claude/hooks/session_end_marker.py — writes memory/.session_end_marker.json on end
+      Registered in ~/.claude/settings.json hooks.SessionStart + hooks.SessionEnd
 
 [Next steps]
+  - Verify next morning's 7:50 admission push for 5/8.
   - User may manual-DEL 陳建諭 (5/8 H2 1230) and 歐黃江 (5/8 H2 1530) if they want
-    rule-16 non-schedule H1 2100 placement; user said leave for now.
-  - Verify 5/8 admission list push next morning (07:50 cron).
-  - Hook design pending: SessionStart -> /check-previous-progress; project end -> /workflow-docs.
+    them re-keyed at H1 2100 non-schedule per rule 16 — they said leave for now.
+  - Confirm next session that the hooks fire correctly: SessionStart should inject this
+    HANDOFF + MEMORY into context. If not visible → check
+    ~/.claude/hooks/session_start_handoff.py runs OK (test snippet in
+    memory/reference_user_level_hooks.md).
 
 [Known issues / blockers]
-  - rebuild_date_sheet.py has A:G->A:H sub-table bug — workaround: inline rewrite or fix
-    upstream. See memory/reference_rebuild_date_sheet_subtable_bug.md.
+  - rebuild_date_sheet.py has A:G->A:H sub-table bug — workaround: inline write to A:H.
+    See memory/reference_rebuild_date_sheet_subtable_bug.md.
 
 [Don't repeat these mistakes]
-  - Always git fetch + check origin/main BEFORE starting work. Today I duplicated 5/6's
-    DEL discovery + reinvented the chk-checkbox approach because I skipped the fetch.
-    CLAUDE.md project-level Session-start step #1 says fetch + git status -sb first.
+  - Always git fetch + check origin/main BEFORE starting work. This session I duplicated
+    5/6's DEL discovery + reinvented the chk-checkbox approach because I skipped fetch.
+    Project CLAUDE.md Session-start step #1 says fetch + git status -sb first.
   - Don't auto-create date sheets without unhiding — user wants every sheet visible.
   - Don't import rebuild_date_sheet.rebuild_one — A:G bug; inline 8-col write to A:H.
   - When rebuilding an existing sheet, capture sub-table data from the JSON snapshot
     (tgt_state) BEFORE deletion, not from live (live may be wiped after a failed retry).
   - Use webcvis_del.py / webcvis_query.py / schedule_lookup.py as permanent helpers for
     WEBCVIS work — don't write _cathlab_*.py / _inspect_*.py one-offs.
+  - Internal docs are ENGLISH ONLY (incl. MEMORY.md index hooks). Use Chinese only when
+    talking to the user, or in `*工作流程*.txt`.
 
 [Relevant files]
-  - Permanent: webcvis_del.py, webcvis_query.py, schedule_lookup.py (added 5/6 from
-    other machine — rebased into local).
-  - Skill: .claude/skills/admission-reschedule/SKILL.md (now references the 3 helpers).
-  - Today's ephemerals to clean: _reschedule_*.py, _cathlab_*.py, _inspect_row.py,
-    _row_dump.html, _reschedule_data.json, _cathlab_keyin_*.log.
+  - Permanent (added 5/6 from another machine):
+      webcvis_del.py, webcvis_query.py, schedule_lookup.py
+  - Skill: .claude/skills/admission-reschedule/SKILL.md (PHASE 5 references helpers)
+  - Hooks (user-level, NOT in this repo):
+      ~/.claude/hooks/session_start_handoff.py
+      ~/.claude/hooks/session_end_marker.py
+      ~/.claude/settings.json (hooks section)
 
 [Important memory files]
-  - memory/feedback_new_sheet_must_unhide.md (NEW today — unhide newly created sheets)
-  - memory/reference_rebuild_date_sheet_subtable_bug.md (NEW today — 8-col write bug)
+  - memory/reference_user_level_hooks.md (NEW — hook locations + testing)
+  - memory/feedback_new_sheet_must_unhide.md (5/7 — unhide newly created sheets)
+  - memory/reference_rebuild_date_sheet_subtable_bug.md (5/7 — 8-col write bug)
   - memory/feedback_webcvis_del_checkbox.md (5/6 — chk-checkbox DEL mechanism, primary)
   - memory/reference_webcvis_helpers.md (5/6 — 3 permanent Playwright helpers)
-  - memory/feedback_cathlab_json_unique_filename.md (5/6 — never reuse generic JSON name)
-  - Global CLAUDE.md: language policy strengthened — internal docs ENGLISH ONLY (incl.
-    MEMORY.md index hooks).
+  - Global ~/.claude/CLAUDE.md: language policy strengthened — internal docs ENGLISH ONLY.
