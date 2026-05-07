@@ -4,6 +4,9 @@ sigma-sector-492215-d2-0612bef3b39b.json
 # Local overrides (private SHEET_ID etc) — public mirror uses gsheet_utils default
 local_config.py
 
+# Session-end marker written by user-level SessionEnd hook (per-machine state)
+memory/.session_end_marker.json
+
 # Temp files (underscore-prefixed = ephemeral scratch / private notes)
 _*.py
 _*.txt
