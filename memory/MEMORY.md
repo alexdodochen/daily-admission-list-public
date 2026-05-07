@@ -1,5 +1,7 @@
 # Memory Index
 
+- [Newly created date sheets must be unhidden](feedback_new_sheet_must_unhide.md) — after duplicateSheet, queue updateSheetProperties hidden=False; user wants every date sheet visible
+- [rebuild_date_sheet.py sub-table A:G→A:H bug](reference_rebuild_date_sheet_subtable_bug.md) — 8-col rows written to A:G fail with APIError 400; workaround: inline write to A:H
 - [圖片讀取須放大再三確認](feedback_image_ocr_zoom.md) — 低解析度截圖必須用 PIL 放大 3-6x 分區裁切才能正確辨識表格資料，不可直接靠 Read 預覽下判斷
 - [EMR HTML 擷取範圍規則](feedback_emr_html_parsing.md) — 只看含 SOAP note 的 div.small，略過 iportlet-content / plan / medicine
 - [EMR 資料驗證](feedback_emr_validation.md) — 病歷號與姓名吻合才寫入，不符合要標記錯誤
