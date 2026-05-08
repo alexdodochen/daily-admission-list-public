@@ -76,7 +76,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 **Each step is independent — don't auto-chain.** Even if user provides multiple resources upfront (image + EMR URL + JSON), only run the step the user explicitly triggered. The next step waits for the user's command. See `memory/feedback_no_auto_lottery.md`.
 
 **Ephemeral vs permanent files**:
-- **Permanent** (reference implementations): `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, `cathlab_keyin.py`, `rebuild_date_sheet.py`, `refresh_emr.py`, `webcvis_query.py`, `webcvis_del.py`, `schedule_lookup.py`, `backfill_emr_age_gender.py`, plus active skills under `.claude/skills/`.
+- **Permanent** (reference implementations): `gsheet_utils.py`, `generate_ordering.py`, `verify_cathlab.py`, `fetch_emr.py`, `process_emr.py`, `cathlab_keyin.py`, `rebuild_date_sheet.py`, `refresh_emr.py`, `webcvis_query.py`, `webcvis_del.py`, `schedule_lookup.py`, `backfill_emr_age_gender.py`, `lottery_utils.py`, plus active skills under `.claude/skills/`.
 - **Ephemeral** (do not commit, do not copy patterns from): `_*.py` / `_*.txt` scratch, `emr_data*.json`, `cathlab_patients_*.json`, `每日入院名單*.xlsx` local backups, `20260*.jpg` screenshots.
 
 ## Key Files
@@ -89,6 +89,7 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
 - `fetch_emr.py` — Playwright-based EMR fetcher. Session URL + (chart, doctor) pairs → `emr_data_<date>.json`. Sentinel-stamping for race safety. Falls back to whitelist doctors when target has no clinic visit.
 - `process_emr.py` — Generic EMR processor. Reads `emr_data_<date>.json`, auto-detects 術前診斷/預計心導管 (no summary post 5/4), corrects names/age/gender from `#divUserSpec`, writes C (raw EMR with `<age> y/o <gender>` prefix) / E (術前診斷) / F (預計心導管) to sub-tables + main data. Usage: `python process_emr.py 20260419`.
 - `backfill_emr_age_gender.py` — Idempotent backfill: prepends `<age> y/o <gender>\n` to sub-table C col on date sheets where missing. Sources demographics from main data G/H by chart-no. Usage: `python backfill_emr_age_gender.py YYYYMMDD [...]` or `--all-recent`. Skips rows already prefixed (regex `^\d+ y/o [男女]`).
+- `lottery_utils.py` — Lottery helpers. `read_lottery_tickets(weekday)` → `[(name, count)]` from 主治醫師抽籤表 (parses `*N` suffix). `weighted_doctor_shuffle(tickets)` → ordered list with weighted prob (pool=[name×count], shuffle, dedup). `filter_by_names(tickets, names)` to limit pool to today's admitted doctors. Use this everywhere instead of plain `random.shuffle()` for doctor order.
 - `verify_cathlab.py` — Verifies admission patients appear in WEBCVIS cathlab schedule. Reads sub-table (統整資料), respects V column (skip if value). Handles Friday same-day cathlab. Usage: `python verify_cathlab.py 20260409`.
 - `webcvis_query.py` — Generic WEBCVIS schedule query helper. `python webcvis_query.py YYYYMMDD [...] [--chart CHART] [--json]`. Importable: `from webcvis_query import query_dates`. Use for week-scan (rule 19), DEL-candidate listing, schedule diff. Replaces ad-hoc Playwright query scripts.
 - `webcvis_del.py` — Generic WEBCVIS DEL helper. `python webcvis_del.py CHART YYYYMMDD [CHART YYYYMMDD ...]`. Per-row checkbox approach (verified 5/6). See `memory/feedback_webcvis_del_checkbox.md`.
@@ -108,10 +109,39 @@ All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format
                     ↘ format-check after each write step ↗
 ```
 
-Full details in `每日入院清單工作流程.txt`. Critical rules:
+Full details in `每日入院清單工作流程.txt`.
+
+### Step → Skill mapping (HARD RULE — no inline freelancing)
+
+**Every step in this workflow has a dedicated skill. When the user's message contains any trigger phrase below, the FIRST action MUST be `Skill <name>` — not Bash, not Edit, not inline `python -c`.** The skill encodes the algorithm (weighted lottery, format gaps, sub-table H→R mapping, sentinel-stamping, etc.) — bypassing it reproduces bugs the skill already solved. CLAUDE.md is a reminder; the skill is procedural truth. See `memory/feedback_skill_trigger_match_must_invoke.md`.
+
+| User says (literal trigger) | Step | Skill |
+|---|---|---|
+| 匯入入院名單 / 讀取圖片匯入 / (給入院名單圖) | 1. Image → Sheet | `admission-image-to-excel` |
+| 抽籤 / 排序 / 排入院順序 / 抽住院籤 | 2. Lottery + sub-tables | `admission-lottery` |
+| 提取EMR / 做摘要 / EMR extraction | 3. EMR fetch + write | `admission-emr-extraction` |
+| 重抓 EMR / refresh EMR / 重跑 EMR / 更新本週 EMR | 3'. EMR refresh batch | `admission-emr-refresh` |
+| 排住院序 / 排入院序 / 設定入院順序 / 生成入院序列 | 4. N-V ordering | `admission-ordering` |
+| 排導管 / key-in導管 / 導管排程 | 5. Cathlab keyin | `admission-cathlab-keyin` |
+| 重啟改期功能 / 改 MM/DD 住院 (with patient list) | Reschedule | `admission-reschedule` |
+| 重建 sheet / 重新建立 [date] / sheet 壞了 / 從頭建 sheet | Sheet rebuild | `admission-sheet-rebuild` |
+| 推播入院名單 / 推入院序 / 測試推播 / LINE推播 | LINE group push | `admission-line-push` |
+| 新增提醒 / 修改提醒 / 移除提醒 (LINE bot) | Reminder mgmt | `reminder-management` |
+| 跑 Euroscore / 算 Euroscore / Euroscore 評估 | EuroSCORE batch | `euroscore-workflow` |
+| PCI 認證 / PCI 病歷小抄 / 認證病歷 | PCI cert (Group 1) | `pci-cert-cheatsheet` |
+| PCI 認證 第二組 / complication 認證 | PCI cert (Group 2) | `pci-cert-cheatsheet-complication` |
+| 更新工作流程 / 同步說明文件 / 盤點 / 交班 / /workflow-doc(s) | Session wrap-up | `workflow-docs` |
+| /check-previous-progress | Session start | `check-previous-progress` |
+| 重啟改期功能 + new date | Full move (V flag + main A-L copy + sub-table merge + cathlab DEL/ADD) | `admission-reschedule` |
+
+**Self-check before any inline write:** if the user's exact phrasing matches a row above, **stop the inline plan, invoke the skill instead**. The skill takes JSON / args; trust it. If the skill is wrong, fix the skill — don't bypass.
+
+**No skill matches?** Then it's free-form work — Bash / Edit / inline are fine. But scan every user message against this table first.
+
+Critical rules:
 
 1. **Ordering columns N-V (9 columns)**: 序號 | 主治醫師 | 病人姓名 | 備註(住服) | 備註 | 病歷號 | 術前診斷 | 預計心導管 | 改期. The user has corrected this multiple times — do not reorder, do not omit 病歷號 or 備註(住服). N-Q (first 4 cols) = subset for 住服 push consumers. **V = 改期**: pure manual marker. User writes YYYYMMDD to defer that patient → row excluded from N+1 cathlab keyin and skipped by `verify_cathlab.py`. Manual V writes must match by P (name) or S (chart no) since round-robin reorders rows.
-2. **Round-robin lottery (two independent RR groups)**: 時段組 (in same-day cathlab pool) round-robin among themselves first → 非時段組 (not in pool) round-robin among themselves after. **Never mix the two groups in one RR** (per `feedback_lottery_roundrobin.md` — the user has corrected this multiple times). Within a group: A1→B1→C1→A2→C2... true RR, skip exhausted doctors. Doctor draw order within a group = pure random (`random.shuffle()`); **don't borrow the sub-table doctor order** (those are independent events).
+2. **Round-robin lottery (two independent RR groups)**: 時段組 (in same-day cathlab pool) round-robin among themselves first → 非時段組 (not in pool) round-robin among themselves after. **Never mix the two groups in one RR** (per `feedback_lottery_roundrobin.md` — the user has corrected this multiple times). Within a group: A1→B1→C1→A2→C2... true RR, skip exhausted doctors. Doctor draw order within a group = **weighted random** by `*N` tickets from `主治醫師抽籤表` — use `lottery_utils.weighted_doctor_shuffle()`, pool = [name × ticket_count] → shuffle → dedup keep first occurrence. *2 doctor lands earlier more often, but still occupies one RR slot. **Don't use plain `random.shuffle(names)` — that ignores tickets** (`feedback_lottery_weighted_shuffle.md`). Don't borrow sub-table doctor order (independent events). User-pinned doctor («許志新順位第一») overrides — pin slot 1, weight-shuffle the rest.
 3. **Friday admission → Friday schedule**: Friday admission uses Friday's lottery (no Saturday schedule). Sun→Mon, Mon→Tue, Tue→Wed, Wed→Thu, Thu→Fri, **Fri→Fri**.
 4. **Non-schedule doctors**: Never include in main round-robin.
 5. **Cathlab direction**: Day-N admit → day N+1 cathlab. **Exception**: Friday admit → Friday cathlab (same day; no Saturday schedule).

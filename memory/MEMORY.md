@@ -57,3 +57,7 @@
 - [Mon cathlab + EP → 洪晨惠 forced as 2nd](feedback_monday_ep_hong_chenhui_second.md) — generalizes 黃鼎鈞 Mon rule: any Monday cathlab with EP procedure (RF ablation/PFA/etc) sets 洪晨惠 as attendingdoctor2 (added 5/8)
 - [EMR cell first line = `XX y/o 性別`](feedback_emr_cell_age_gender_prefix.md) — sub-table C col must start with `<age> y/o <gender>\n` before EMR header; backfill via `backfill_emr_age_gender.py` (added 5/8)
 - [Age = EMR DOB-based, not admission system](feedback_age_emr_canonical.md) — admission-list image age ≈ EMR_age + 1 (虛歲-style); always use EMR DOB → today as canonical (added 5/8)
+- [Doctor RR = always random, never ask](feedback_doctor_rr_auto_random.md) — `random.shuffle()` is the default for doctor RR order; only explicit pin («許志新順位第一») overrides; don't ask user to choose between random vs default (added 5/8)
+- [Lottery shuffle is WEIGHTED by *N tickets](feedback_lottery_weighted_shuffle.md) — `主治醫師抽籤表` `*2` means 2 tickets; pool=[A,A,B,C] shuffle dedup; use `lottery_utils.weighted_doctor_shuffle()` (added 5/8)
+- [Main → first sub-table = 2 blank rows](feedback_main_to_subtable_two_blank_rows.md) — gap between main A-L and first sub-table title must be exactly 2 blank rows; insert_rows then enforce_format (added 5/8)
+- [Skill trigger phrase match → MUST invoke skill](feedback_skill_trigger_match_must_invoke.md) — literal trigger phrase in user message ⇒ Skill tool first, no inline reimplementation; CLAUDE.md is reminder, skill is procedural truth (added 5/8)

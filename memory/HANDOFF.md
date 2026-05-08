@@ -1,50 +1,59 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-08 evening
+  HANDOFF — Last Updated: 2026-05-08 late evening
 ============================================
 
 [What this session did]
-  1. 5/10 admission list audit (image vs sheet vs EMR): rejected image age (admission system shows EMR_age+1, NOT canonical), kept sheet ages. Fixed 4 fields (王雅音/王福財 科別 內科重症→心臟血管科, 王福財 床號 09B37D, 林魏金英 入院提示 1). Fetched 王福財 EMR (chart 09835366 was missing from cache); corrected age 88→87 (EMR DOB 1938/11/06). Merged into emr_data_20260510.json (now 8 entries).
-  2. New rule: Mon cathlab + EP (RF ablation/PFA/etc) → second=洪晨惠 強制 (broader than old 黃鼎鈞-Mon special case). Applied to 5/11: UPT 郭永泉 + 蘇招治 added 洪晨惠 as doctor2 (陳清發 already had her).
-  3. cathlab_keyin.py.fix_diag extended: now UPTs attendingdoctor2 (`second`) too, not just recommendationDoctor (`third`). Backwards-compatible.
-  4. V1 header drift fixed across 14 sheets: 5/9, 5/10, 5/12-17, 5/19-20, 5/11-14 had `每日續等清單` → now `改期` (CLAUDE.md spec).
-  5. New rule: EMR cell first line = `<age> y/o <gender>`. Updated process_emr.py (auto-prefix on future writes); built backfill_emr_age_gender.py and ran across 29 sheets (~210 EMR cells now prefixed). Old archive sheets (4/06–4/12) skipped — sub-table charts not in main data.
-  6. PostToolUse format hook upgraded: now fires on any Bash with date + sheet-mutation hint (was: only 4 named scripts). Catches `python -c batch_write_cells` etc that previously bypassed it.
+  1. 5/10 admission audit + ordering: fixed 4 sheet fields, fetched 王福財 EMR (chart 09835366), corrected age 88→87 (EMR DOB-canonical). Generated N-V ordering for 8 patients with 許志新 pinned #1, mid 3 doctors random.shuffle (廖→詹→陳).
+  2. New rule: Mon cathlab + EP procedure → second=洪晨惠 強制 (broader than 黃鼎鈞-Mon). Applied to 5/11: UPT 郭永泉/蘇招治 doctor2.
+  3. cathlab_keyin.py.fix_diag extended to UPT attendingdoctor2 (was only third).
+  4. New rule: EMR cell first line = `<age> y/o <gender>`. Built backfill_emr_age_gender.py + ran across 29 sheets (~210 cells).
+  5. PostToolUse format hook upgraded: any Bash with date+sheet-mutation hint (was: 4 named scripts only). Catches inline `python -c batch_write_cells` that bypassed pre-5/8.
+  6. V1 header drift fix on 14 sheets (每日續等清單→改期).
+  7. Late-session — caught self-criticism + structural fix: built `lottery_utils.py` (weighted_doctor_shuffle), CLAUDE.md «Step → Skill mapping» HARD-RULE table, and `UserPromptSubmit` hook (`scripts/skill_route_reminder.py`) that injects system-reminder when user message matches a skill trigger phrase. 8 case smoke test passed.
 
 [Current state]
-  - Branch: main, will be pushed via this /workflow-docs run.
-  - Cache: emr_data_20260503-07 + 20260510-14 retained (week-of, this is Friday so week_sunday=2026-05-03).
-  - WEBCVIS: 5/11 has 12 entries; all 3 EP cases have 洪晨惠 as doctor2.
-  - User-level hooks (~/.claude/hooks/session_start_handoff.py, session_end_marker.py) live from prior session; this session benefited from the SessionStart auto-injection.
+  - Branch: main, latest commit pending push (commit 918c326 already pushed earlier this session; this round adds lottery_utils + skill_route_reminder hook + 4 new memory files + CLAUDE.md mapping table).
+  - Sheets touched today: 20260510 (sub-tables shifted +2 rows for 2-blank-row gap, N-V ordering written, age/gender prefix on all 8 EMR cells), 20260511 cathlab UPT, 14 sheets V1 header fix, 29 sheets EMR prefix backfill.
+  - User-level hooks (~/.claude/hooks/session_start_handoff.py + session_end_marker.py) live from prior session.
+  - PROJECT-level hooks (this repo): PostToolUse format hook (broad trigger) + NEW UserPromptSubmit skill_route_reminder hook. Both registered in .claude/settings.json.
 
 [Next steps]
-  - 5/8 (Fri) admission workflow: image OCR → lottery → EMR → ordering → SAME-DAY cathlab (Friday rule).
+  - 5/8 (Fri) admission workflow when ready: image OCR → lottery → EMR → ordering → SAME-DAY cathlab.
   - 5/9 (Sat): typically no admissions.
-  - 5/10-14 sheets ordering N-V is NOT yet written (only cathlab keyed). If 住服 push needs N-V, run admission-ordering per date.
-  - Verify 5/8 morning push results.
+  - 5/11 cathlab is fully prepped (12 entries, 3 EP cases all have 洪晨惠).
+  - When next session starts: SessionStart hook should auto-inject this HANDOFF + MEMORY. UserPromptSubmit hook will start advising on skill routing.
+  - 5/10-14 sheets ordering N-V status: 5/10 NOW done; 5/11-14 still NOT done (only cathlab keyed).
 
-[Known issues / waiting on user]
-  - Old sheets 4/06-4/12 have sub-table chart numbers not present in main data (different layout era) → backfill skipped them (no_main_demo). If user wants those backfilled, would need separate strategy (probably parse age/gender from the EMR text body).
-  - verify_cathlab.py false-positives (logged in prior HANDOFF): «不排導管» not in skip-keyword set, «檢查» substring too aggressive — still pending fix.
+[Known issues / pending]
+  - 4/06–4/12 archive sheets EMR prefix (no_main_demo era) — only if user wants.
+  - verify_cathlab.py false positives («不排導管», 「檢查」 substring too aggressive) — carried forward.
+  - lottery_utils.py not yet wired into admission-ordering skill body — skill still has inline weighted-pool logic. Same algorithm, different code paths. If we want one source of truth, refactor skill to call helper. Optional.
+  - Skill descriptions could mention lottery_utils for discovery — not done this session.
 
 [Don't repeat]
-  - Don't write `python -c "...batch_write_cells..."` without the format hook catching it. Hook is now broad enough, but if you add a new mutation API, update SHEET_API_HINTS.
-  - Don't trust admission-list image age — always cross-reference EMR DOB. Image is consistently +1 (likely 虛歲).
-  - Don't add doctor2 update in a one-off script — use cathlab_keyin.py with second= field; fix_diag now UPTs attendingdoctor2.
-  - Don't introduce ad-hoc `_query_5_11.py` etc — use webcvis_query.py / webcvis_del.py / schedule_lookup.py / cathlab_keyin.py permanent helpers.
-  - Don't run --all-recent backfill in one shot — 60 reads/min quota; split into 15-sheet batches with a 75s gap.
+  - Don't bypass skills when the user's message matches a skill trigger phrase. The new UserPromptSubmit hook will warn — read its system-reminder. The literal trigger phrases live in `scripts/skill_route_reminder.py` TRIGGERS dict + CLAUDE.md «Step → Skill mapping» table.
+  - Don't write `python -c "...batch_write_cells..."` — fall back to Skill or named helper. Format hook now catches it (broad trigger), but inline still bypasses skill rules.
+  - Don't `random.shuffle(names)` for doctor order — use lottery_utils.weighted_doctor_shuffle (or skill internals). *N tickets matter.
+  - Don't ask the user «要隨機還是依默認» for doctor order — random is the only default.
+  - Don't trust admission-list image age — always EMR DOB-based.
+  - When creating/rebuilding date sheet, leave 2 blank rows between main A-L and first sub-table (not 1).
 
 [Key artifacts touched]
-  - Google Sheet 20260510 (4 main fields + 8 EMR prefixes + 王福財 EMR write + age fix)
-  - Google Sheet 20260507 onwards (29 sheets EMR prefix backfill, 14 sheets V1 header)
-  - WEBCVIS 5/11 (UPT 2 EP entries with 洪晨惠 as doctor2)
   - Code: process_emr.py, cathlab_keyin.py, scripts/post_sheet_format_check.py
-  - New: backfill_emr_age_gender.py
-  - CLAUDE.md (rules 15, 22→23 added; Key Files updated)
+  - NEW: backfill_emr_age_gender.py, lottery_utils.py, scripts/skill_route_reminder.py
+  - .claude/settings.json (UserPromptSubmit registered)
+  - CLAUDE.md (rule 2 weighted, rule 15 Mon-EP broadened, rule 23 EMR prefix added, Step→Skill mapping table, Key Files updated)
   - Skills: admission-cathlab-keyin.md (rule 8 broadened), admission-emr-extraction.md (C col format)
+  - Google Sheet: 20260510 (heavy edits), 20260511 (UPT 2 EP), 14×V1 header, 29×EMR prefix backfill
+  - WEBCVIS: 5/11 doctor2 UPTs
 
-[Memory files updated/added]
-  - memory/feedback_monday_ep_hong_chenhui_second.md (NEW)
-  - memory/feedback_emr_cell_age_gender_prefix.md (NEW)
-  - memory/feedback_age_emr_canonical.md (NEW)
-  - memory/reference_post_sheet_format_hook.md (REWRITTEN — broader trigger)
-  - memory/MEMORY.md (+3 index lines, 1 line edited)
+[Memory files updated/added (this session)]
+  - NEW memory/feedback_monday_ep_hong_chenhui_second.md
+  - NEW memory/feedback_emr_cell_age_gender_prefix.md
+  - NEW memory/feedback_age_emr_canonical.md
+  - NEW memory/feedback_doctor_rr_auto_random.md
+  - NEW memory/feedback_lottery_weighted_shuffle.md
+  - NEW memory/feedback_main_to_subtable_two_blank_rows.md
+  - NEW memory/feedback_skill_trigger_match_must_invoke.md
+  - REWRITTEN memory/reference_post_sheet_format_hook.md (broader trigger)
+  - memory/MEMORY.md (+7 index lines, 1 line edited)
