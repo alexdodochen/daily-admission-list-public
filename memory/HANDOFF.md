@@ -1,66 +1,50 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-07 late evening
+  HANDOFF — Last Updated: 2026-05-08 evening
 ============================================
 
 [What this session did]
-  1. Reschedule 6 patients off 5/7 admission: 3 to 5/8 Fri (黃和泉/陳建諭/歐黃江),
-     3 to 5/12 Tue (許慶山/宋哲光/蔡建添). V-mark on 5/7, created 5/8 (3 patients),
-     rebuilt 5/12 (existing 7 + new 3 = 10 patients).
-  2. Cathlab ADD: 黃和泉 5/8 H2 1801, 蔡建添 5/13 H1 2100. Other 4 left as-is per user.
-  3. 5/8 ordering N-V (3 rows: 黃和泉/陳建諭/歐黃江).
-  4. Re-discovered chk-checkbox DEL flow — already known on remote 5/6. Rebased + dedup.
-  5. Deployed user-level SessionStart + SessionEnd hooks for cross-session continuity.
+  1. 5/10 admission list audit (image vs sheet vs EMR): rejected image age (admission system shows EMR_age+1, NOT canonical), kept sheet ages. Fixed 4 fields (王雅音/王福財 科別 內科重症→心臟血管科, 王福財 床號 09B37D, 林魏金英 入院提示 1). Fetched 王福財 EMR (chart 09835366 was missing from cache); corrected age 88→87 (EMR DOB 1938/11/06). Merged into emr_data_20260510.json (now 8 entries).
+  2. New rule: Mon cathlab + EP (RF ablation/PFA/etc) → second=洪晨惠 強制 (broader than old 黃鼎鈞-Mon special case). Applied to 5/11: UPT 郭永泉 + 蘇招治 added 洪晨惠 as doctor2 (陳清發 already had her).
+  3. cathlab_keyin.py.fix_diag extended: now UPTs attendingdoctor2 (`second`) too, not just recommendationDoctor (`third`). Backwards-compatible.
+  4. V1 header drift fixed across 14 sheets: 5/9, 5/10, 5/12-17, 5/19-20, 5/11-14 had `每日續等清單` → now `改期` (CLAUDE.md spec).
+  5. New rule: EMR cell first line = `<age> y/o <gender>`. Updated process_emr.py (auto-prefix on future writes); built backfill_emr_age_gender.py and ran across 29 sheets (~210 EMR cells now prefixed). Old archive sheets (4/06–4/12) skipped — sub-table charts not in main data.
+  6. PostToolUse format hook upgraded: now fires on any Bash with date + sheet-mutation hint (was: only 4 named scripts). Catches `python -c batch_write_cells` etc that previously bypassed it.
 
 [Current state]
-  - Branch: main, clean, pushed up to 68086ed.
-  - Sheets touched: 20260507 (V col), 20260508 (new), 20260512 (rebuilt). All unhidden.
-  - Cathlab on WEBCVIS:
-      5/8: 22 entries (added 黃和泉; 陳建諭/歐黃江 stay at H2 1230/1530 per user).
-      5/13: 12 entries (added 蔡建添; 許慶山/宋哲光 already at C1 0800).
-  - User-level hooks live (effective NEXT session — not this one):
-      ~/.claude/hooks/session_start_handoff.py — injects HANDOFF/MEMORY at session start
-      ~/.claude/hooks/session_end_marker.py — writes memory/.session_end_marker.json on end
-      Registered in ~/.claude/settings.json hooks.SessionStart + hooks.SessionEnd
+  - Branch: main, will be pushed via this /workflow-docs run.
+  - Cache: emr_data_20260503-07 + 20260510-14 retained (week-of, this is Friday so week_sunday=2026-05-03).
+  - WEBCVIS: 5/11 has 12 entries; all 3 EP cases have 洪晨惠 as doctor2.
+  - User-level hooks (~/.claude/hooks/session_start_handoff.py, session_end_marker.py) live from prior session; this session benefited from the SessionStart auto-injection.
 
 [Next steps]
-  - Verify next morning's 7:50 admission push for 5/8.
-  - User may manual-DEL 陳建諭 (5/8 H2 1230) and 歐黃江 (5/8 H2 1530) if they want
-    them re-keyed at H1 2100 non-schedule per rule 16 — they said leave for now.
-  - Confirm next session that the hooks fire correctly: SessionStart should inject this
-    HANDOFF + MEMORY into context. If not visible → check
-    ~/.claude/hooks/session_start_handoff.py runs OK (test snippet in
-    memory/reference_user_level_hooks.md).
+  - 5/8 (Fri) admission workflow: image OCR → lottery → EMR → ordering → SAME-DAY cathlab (Friday rule).
+  - 5/9 (Sat): typically no admissions.
+  - 5/10-14 sheets ordering N-V is NOT yet written (only cathlab keyed). If 住服 push needs N-V, run admission-ordering per date.
+  - Verify 5/8 morning push results.
 
-[Known issues / blockers]
-  - rebuild_date_sheet.py has A:G->A:H sub-table bug — workaround: inline write to A:H.
-    See memory/reference_rebuild_date_sheet_subtable_bug.md.
+[Known issues / waiting on user]
+  - Old sheets 4/06-4/12 have sub-table chart numbers not present in main data (different layout era) → backfill skipped them (no_main_demo). If user wants those backfilled, would need separate strategy (probably parse age/gender from the EMR text body).
+  - verify_cathlab.py false-positives (logged in prior HANDOFF): «不排導管» not in skip-keyword set, «檢查» substring too aggressive — still pending fix.
 
-[Don't repeat these mistakes]
-  - Always git fetch + check origin/main BEFORE starting work. This session I duplicated
-    5/6's DEL discovery + reinvented the chk-checkbox approach because I skipped fetch.
-    Project CLAUDE.md Session-start step #1 says fetch + git status -sb first.
-  - Don't auto-create date sheets without unhiding — user wants every sheet visible.
-  - Don't import rebuild_date_sheet.rebuild_one — A:G bug; inline 8-col write to A:H.
-  - When rebuilding an existing sheet, capture sub-table data from the JSON snapshot
-    (tgt_state) BEFORE deletion, not from live (live may be wiped after a failed retry).
-  - Use webcvis_del.py / webcvis_query.py / schedule_lookup.py as permanent helpers for
-    WEBCVIS work — don't write _cathlab_*.py / _inspect_*.py one-offs.
-  - Internal docs are ENGLISH ONLY (incl. MEMORY.md index hooks). Use Chinese only when
-    talking to the user, or in `*工作流程*.txt`.
+[Don't repeat]
+  - Don't write `python -c "...batch_write_cells..."` without the format hook catching it. Hook is now broad enough, but if you add a new mutation API, update SHEET_API_HINTS.
+  - Don't trust admission-list image age — always cross-reference EMR DOB. Image is consistently +1 (likely 虛歲).
+  - Don't add doctor2 update in a one-off script — use cathlab_keyin.py with second= field; fix_diag now UPTs attendingdoctor2.
+  - Don't introduce ad-hoc `_query_5_11.py` etc — use webcvis_query.py / webcvis_del.py / schedule_lookup.py / cathlab_keyin.py permanent helpers.
+  - Don't run --all-recent backfill in one shot — 60 reads/min quota; split into 15-sheet batches with a 75s gap.
 
-[Relevant files]
-  - Permanent (added 5/6 from another machine):
-      webcvis_del.py, webcvis_query.py, schedule_lookup.py
-  - Skill: .claude/skills/admission-reschedule/SKILL.md (PHASE 5 references helpers)
-  - Hooks (user-level, NOT in this repo):
-      ~/.claude/hooks/session_start_handoff.py
-      ~/.claude/hooks/session_end_marker.py
-      ~/.claude/settings.json (hooks section)
+[Key artifacts touched]
+  - Google Sheet 20260510 (4 main fields + 8 EMR prefixes + 王福財 EMR write + age fix)
+  - Google Sheet 20260507 onwards (29 sheets EMR prefix backfill, 14 sheets V1 header)
+  - WEBCVIS 5/11 (UPT 2 EP entries with 洪晨惠 as doctor2)
+  - Code: process_emr.py, cathlab_keyin.py, scripts/post_sheet_format_check.py
+  - New: backfill_emr_age_gender.py
+  - CLAUDE.md (rules 15, 22→23 added; Key Files updated)
+  - Skills: admission-cathlab-keyin.md (rule 8 broadened), admission-emr-extraction.md (C col format)
 
-[Important memory files]
-  - memory/reference_user_level_hooks.md (NEW — hook locations + testing)
-  - memory/feedback_new_sheet_must_unhide.md (5/7 — unhide newly created sheets)
-  - memory/reference_rebuild_date_sheet_subtable_bug.md (5/7 — 8-col write bug)
-  - memory/feedback_webcvis_del_checkbox.md (5/6 — chk-checkbox DEL mechanism, primary)
-  - memory/reference_webcvis_helpers.md (5/6 — 3 permanent Playwright helpers)
-  - Global ~/.claude/CLAUDE.md: language policy strengthened — internal docs ENGLISH ONLY.
+[Memory files updated/added]
+  - memory/feedback_monday_ep_hong_chenhui_second.md (NEW)
+  - memory/feedback_emr_cell_age_gender_prefix.md (NEW)
+  - memory/feedback_age_emr_canonical.md (NEW)
+  - memory/reference_post_sheet_format_hook.md (REWRITTEN — broader trigger)
+  - memory/MEMORY.md (+3 index lines, 1 line edited)

@@ -116,12 +116,15 @@ EMR 系統的姓名為正確來源。比對 Excel 並自動更新所有位置：
 - Round-robin N-S 的病人姓名欄
 - 醫師病人表格的姓名欄
 
-### 8. 寫入 Sheet（post 5/4 — 摘要功能停用）
-- **C 欄（EMR 原文）**：完整原文 + visit header（`【EMR來源門診：...】`），wrap_text=True
+### 8. 寫入 Sheet（post 5/4 — 摘要功能停用；post 5/8 — C 欄加年齡性別 prefix）
+- **C 欄（EMR 原文）**：`<age> y/o <gender>\n` (e.g. `63 y/o 男`) + `【EMR來源門診：...】\n` + 完整 EMR 原文，wrap_text=True
+  - age 從 EMR DOB → admission date 計算（`compute_age()`）；gender 從 `性別 : X` 解析
+  - 不要用 admission-list 圖片上的年齡（會比 EMR 多 1 — 可能虛歲）
 - **E 欄（術前診斷）**：DIAG_RULES auto-detect → 使用者審核
 - **F 欄（預計心導管）**：CATH_RULES auto-detect → 使用者審核
-- 無紀錄 → C 欄寫「無本院一年內主治醫師門診紀錄」
-- 需申請 → C 欄寫「本病歷號需要額外申請」
+- 無紀錄 → C 欄寫「<age> y/o <gender>\n無本院一年內主治醫師門診紀錄」
+- 需申請 → C 欄寫「<age> y/o <gender>\n本病歷號需要額外申請」
+- 既有 sheet 漏 prefix 一次性補：`python backfill_emr_age_gender.py YYYYMMDD` 或 `--all-recent`（idempotent）
 
 ## 特殊情況
 - EMR 系統用 frameset，內容在 mainFrame

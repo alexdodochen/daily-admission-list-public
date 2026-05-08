@@ -380,7 +380,17 @@ def main(date8):
                 # Prepend visit source header so user sees origin at a glance
                 src_tag = '' if matched else '(非本醫師門診)'
                 visit_header = f'【EMR來源門診：{visit}】{src_tag}\n' if visit else ''
-                emr_full = visit_header + emr_text
+                # Prepend age/gender so user sees demographics first line
+                age_prefix = ''
+                if info.get('name'):
+                    raw_name = info['name']
+                    birth = parse_birth_from_raw(raw_name)
+                    gender = parse_gender_from_raw(raw_name)
+                    if birth and gender:
+                        age = compute_age(birth, mi.get('admission_date', ''))
+                        if age is not None:
+                            age_prefix = f'{age} y/o {gender}\n'
+                emr_full = age_prefix + visit_header + emr_text
 
                 f_diag, g_cath = detect_fg(emr_text)
 

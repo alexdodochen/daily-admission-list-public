@@ -1,28 +1,22 @@
 ---
-name: PostToolUse hook auto-runs enforce_sheet_format after sheet writes
-description: scripts/post_sheet_format_check.py fires after Bash runs process_emr/generate_ordering/rebuild_date_sheet/refresh_emr.py with a YYYYMMDD arg
+name: Post-sheet-write format hook (broad trigger)
+description: PostToolUse hook in .claude/settings.json runs enforce_sheet_format(YYYYMMDD) after ANY Bash command mutating a date sheet — covers named scripts AND inline `python -c` with gspread mutation calls.
 type: reference
 ---
 
-`.claude/settings.json` has a PostToolUse Bash hook that runs `scripts/post_sheet_format_check.py` after every Bash tool call.
+`scripts/post_sheet_format_check.py` is a PostToolUse:Bash hook that auto-runs `enforce_sheet_format(YYYYMMDD)` so format never silently drifts.
 
-**What it does:**
-- Reads stdin JSON (the Bash command from `tool_input.command`)
-- Matches against trigger scripts: `process_emr.py`, `generate_ordering.py`, `rebuild_date_sheet.py`, `refresh_emr.py`
-- Extracts any `20\d{6}` token from the command (the date arg)
-- For each matched date → calls `gsheet_utils.enforce_sheet_format(date)`
-- Returns `additionalContext` JSON describing OK/FAIL per date
+**Trigger condition (both must match):**
+1. A `20YYMMDD` date token (sheet name) in the cmd
+2. Any sheet-mutation hint:
+   - Named scripts: `process_emr.py` / `generate_ordering.py` / `rebuild_date_sheet.py` / `refresh_emr.py` / `backfill_emr_age_gender.py`
+   - Direct gsheet_utils API: `batch_write_cells`, `write_range`, `write_doctor_table`, `set_dropdown_from_range`, `format_header_row`, `create_worksheet`
+   - Generic gspread mutation: `.update(`, `.batch_update(`, `.clear(`, `.append_row(`, `.insert_row(`, `.delete_rows(`, `.format(`
 
-**Silent for non-matching commands** (most Bash calls), so transcript stays clean.
+**Skip:** bare `enforce_sheet_format(<date>)` calls — that command IS a format refresh, no need to double-fire.
 
-**Doesn't fire for:**
-- Manual `python -c "..."` snippets (even if they write to sheets)
-- One-off `_*.py` scratch scripts (doesn't match trigger list)
-- enforce_sheet_format already-existing sheets that have format drift but aren't being written today
+**Why this matters:** Pre-5/8 the hook only matched 4 named scripts. Inline `python -c "...batch_write_cells..."` bypassed it → format drifted on 5/10 (5/8 incident). Broad-trigger upgrade (5/8) catches all sheet-mutating Bash, including future ad-hoc inline scripts.
 
-**Activation caveat:**
-- Hook is registered in `.claude/settings.json` but the settings watcher only watches dirs that had a settings file at session start.
-- New `.claude/settings.json` doesn't activate mid-session — needs `/hooks` reload OR next session.
+**Activation caveat:** New `.claude/settings.json` only activates next session or via `/hooks` reload. **Script content updates** (changing the .py the hook calls) take effect immediately on next Bash. Both files are tracked → push propagates to other machines.
 
-**Trigger list maintenance:**
-- If a new sheet-writing script appears (e.g. one for ordering, one-off rebuild), add to the `TRIGGER_SCRIPTS` tuple in `scripts/post_sheet_format_check.py`.
+**Don't bypass:** if you find a sheet write that isn't picked up, ADD the new pattern to `SHEET_API_HINTS` or `TRIGGER_SCRIPTS` in the hook script — don't manually call `enforce_sheet_format` every time.

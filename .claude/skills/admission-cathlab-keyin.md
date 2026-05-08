@@ -106,7 +106,15 @@ python verify_cathlab.py 20260427  # 驗 4/27 入院日 對應的 4/28 cathlab
 
    舊規則「第二位放 note」已廢，**不要再用 note**。`cathlab_keyin.py` ADD + UPT 兩階段都會處理 `third`。
 
-8. **黃鼎鈞 Mon cathlab → second 強制 `洪晨惠`**（同 memory 檔）：即使時段表 Mon 沒寫黃鼎鈞，凡 Mon 排到黃鼎鈞的病人一律 `second=洪晨惠`。Sun 入院 → Mon cathlab 適用；Mon 入院 → Tue cathlab 走 Tue 池規則不適用此條。
+8. **Mon cathlab + EP procedure → `second=洪晨惠`（強制，廣義規則）**（2026-05-08，見 `feedback_monday_ep_hong_chenhui_second.md`）：
+
+   凡 cathlab day 落在 Monday 且 procedure 屬於 EP（RF ablation / PFA / AF・AFL・PSVT ablation / EP study / 任何 ablation / 含 device implant PPM・ICD・CRT），無論主治是誰，`second` 一律強制 `洪晨惠`。
+   - 若時段表已給一個 second（例如 `黃鼎鈞(浩、晨)` → second=葉立浩）→ 既有 second 留 `attendingdoctor2`，洪晨惠改放 `third` (recommendationDoctor)。
+   - 黃鼎鈞 Mon 全 EP（舊規則）變成此條的特例，已被涵蓋。
+   - Sun 入院 → Mon cathlab 適用；Mon 入院 → Tue cathlab 走 Tue 池規則不適用。
+   - Reschedule 把病人從別天搬到 Mon 也要重新評估 EP → 加洪晨惠。
+
+   **`cathlab_keyin.py.fix_diag` 已支援 UPT `attendingdoctor2`**（2026-05-08 擴充），舊 entry 補 second 改建小 JSON 跑 keyin → Phase 1 SKIP（已存）+ Phase 2 UPT 自動補 second。
 
 ## 不要再做的事
 

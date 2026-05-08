@@ -177,12 +177,13 @@ def add_patient(page, p, existing):
 
 def fix_diag(page, p):
     diag = p.get('diagnosis', ''); proc = p.get('procedure', '')
+    scode = DOCTOR_CODES.get(p.get('second')) if p.get('second') else ''
     tcode = DOCTOR_CODES.get(p.get('third')) if p.get('third') else ''
-    if not diag and not proc and not tcode: return
+    if not diag and not proc and not scode and not tcode: return
     diag = _normalize_diag(diag)
     diag_json = _build_json(diag, _resolve_diag_id(diag))
     proc_json = _build_json(proc, PROC_IDS.get(proc, ''))
-    if not diag_json and not proc_json and not tcode: return
+    if not diag_json and not proc_json and not scode and not tcode: return
     found = page.evaluate('''(c) => {
         let rows=document.querySelectorAll("#row tr");
         for(let r of rows){let el=r.querySelector("#hes_patno");
@@ -198,6 +199,8 @@ def fix_diag(page, p):
         if(pj){document.querySelector('[name="phcjson"]').value=pj;
             let f=document.querySelector('[name="preheartcatheter"]'); if(f)f.value=pt;}
     }''', [diag_json, proc_json, diag, proc])
+    if scode:
+        page.select_option('select[name="attendingdoctor2"]', value=scode)
     if tcode:
         page.select_option('select[name="recommendationDoctor"]', value=tcode)
     time.sleep(0.3)
