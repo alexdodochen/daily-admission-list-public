@@ -1,59 +1,46 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-08 late evening
+  HANDOFF — Last Updated: 2026-05-10 (5/10 evening session)
 ============================================
 
 [What this session did]
-  1. 5/10 admission audit + ordering: fixed 4 sheet fields, fetched 王福財 EMR (chart 09835366), corrected age 88→87 (EMR DOB-canonical). Generated N-V ordering for 8 patients with 許志新 pinned #1, mid 3 doctors random.shuffle (廖→詹→陳).
-  2. New rule: Mon cathlab + EP procedure → second=洪晨惠 強制 (broader than 黃鼎鈞-Mon). Applied to 5/11: UPT 郭永泉/蘇招治 doctor2.
-  3. cathlab_keyin.py.fix_diag extended to UPT attendingdoctor2 (was only third).
-  4. New rule: EMR cell first line = `<age> y/o <gender>`. Built backfill_emr_age_gender.py + ran across 29 sheets (~210 cells).
-  5. PostToolUse format hook upgraded: any Bash with date+sheet-mutation hint (was: 4 named scripts only). Catches inline `python -c batch_write_cells` that bypassed pre-5/8.
-  6. V1 header drift fix on 14 sheets (每日續等清單→改期).
-  7. Late-session — caught self-criticism + structural fix: built `lottery_utils.py` (weighted_doctor_shuffle), CLAUDE.md «Step → Skill mapping» HARD-RULE table, and `UserPromptSubmit` hook (`scripts/skill_route_reminder.py`) that injects system-reminder when user message matches a skill trigger phrase. 8 case smoke test passed.
+  1. 5/11 admission list diff-update: image had 9 patients, sheet had 8 → inserted 馬允吉 (15943833) under 陳昭佑 + added L=急 for 梁淳斌; ran EMR fetch (PSVT / RF ablation auto-detected)
+  2. EMR summary feature fully retired (was on-demand Gemini-fill since 5/4; now header-only D column, no auto / no on-demand, "做摘要" trigger removed)
+  3. 5/11 N-V ordering written, then re-written with pin (黃鼎鈞#1, 黃睦翔#2 manual override)
+  4. Added EXTRA_REMINDERS mechanism to skill_route_reminder.py — per-skill HARD-RULE injection on UserPromptSubmit; first user is admission-ordering with "read sub-table E fresh" rule
+  5. New cross-repo sync rule: after every update, audit whether change should propagate to other 3 alexdodochen repos
 
 [Current state]
-  - Branch: main, latest commit pending push (commit 918c326 already pushed earlier this session; this round adds lottery_utils + skill_route_reminder hook + 4 new memory files + CLAUDE.md mapping table).
-  - Sheets touched today: 20260510 (sub-tables shifted +2 rows for 2-blank-row gap, N-V ordering written, age/gender prefix on all 8 EMR cells), 20260511 cathlab UPT, 14 sheets V1 header fix, 29 sheets EMR prefix backfill.
-  - User-level hooks (~/.claude/hooks/session_start_handoff.py + session_end_marker.py) live from prior session.
-  - PROJECT-level hooks (this repo): PostToolUse format hook (broad trigger) + NEW UserPromptSubmit skill_route_reminder hook. Both registered in .claude/settings.json.
+  - Branch: main, 1 commit ahead of origin/main, modified files staged in working tree
+  - Latest sheet state (20260511): main A-L 9 patients, sub-tables 6 doctors (張獻元/劉嚴文/陳昭佑(2)/黃鼎鈞/黃睦翔/陳儒逸(3)) all populated with EMR + F/G + E manual order, N-V written with 黃鼎鈞 pin
+  - Format check (PostToolUse hook) passed on every write
+  - No PHI leak; no public mirror push attempted yet
 
 [Next steps]
-  - 5/8 (Fri) admission workflow when ready: image OCR → lottery → EMR → ordering → SAME-DAY cathlab.
-  - 5/9 (Sat): typically no admissions.
-  - 5/11 cathlab is fully prepped (12 entries, 3 EP cases all have 洪晨惠).
-  - When next session starts: SessionStart hook should auto-inject this HANDOFF + MEMORY. UserPromptSubmit hook will start advising on skill routing.
-  - 5/10-14 sheets ordering N-V status: 5/10 NOW done; 5/11-14 still NOT done (only cathlab keyed).
+  - 5/12 cathlab keyin (排導管 / key-in導管) — all 9 patients, 6 doctors all have Tue slots:
+      劉嚴文 AM-H1 / 陳昭佑 AM-H2 / 陳儒逸 AM-C1 / 張獻元 PM-H2 / 黃鼎鈞 PM-C1 / 黃睦翔 PM-C2
+    Special: 陳莊梅 H 欄=「建議再入院日2026/05/15」 — possibly skip 5/12 cathlab and reschedule; ask user
+    Special: Mon 5/11 admit → Tue 5/12 cathlab; Mon-EP-洪晨惠 rule does NOT apply (that rule fires only on Mon cathlab)
+  - User instruction: cross-repo audit — none of this session's changes auto-applied to other 3 repos; user should manually open them if propagating EXTRA_REMINDERS / cross-repo-sync rule
 
-[Known issues / pending]
-  - 4/06–4/12 archive sheets EMR prefix (no_main_demo era) — only if user wants.
-  - verify_cathlab.py false positives («不排導管», 「檢查」 substring too aggressive) — carried forward.
-  - lottery_utils.py not yet wired into admission-ordering skill body — skill still has inline weighted-pool logic. Same algorithm, different code paths. If we want one source of truth, refactor skill to call helper. Optional.
-  - Skill descriptions could mention lottery_utils for discovery — not done this session.
+[Known issues / blockers]
+  - None
 
-[Don't repeat]
-  - Don't bypass skills when the user's message matches a skill trigger phrase. The new UserPromptSubmit hook will warn — read its system-reminder. The literal trigger phrases live in `scripts/skill_route_reminder.py` TRIGGERS dict + CLAUDE.md «Step → Skill mapping» table.
-  - Don't write `python -c "...batch_write_cells..."` — fall back to Skill or named helper. Format hook now catches it (broad trigger), but inline still bypasses skill rules.
-  - Don't `random.shuffle(names)` for doctor order — use lottery_utils.weighted_doctor_shuffle (or skill internals). *N tickets matter.
-  - Don't ask the user «要隨機還是依默認» for doctor order — random is the only default.
-  - Don't trust admission-list image age — always EMR DOB-based.
-  - When creating/rebuilding date sheet, leave 2 blank rows between main A-L and first sub-table (not 1).
+[Don't repeat these mistakes]
+  - DO NOT skip reading sub-table E col before asking user about multi-patient doctor order — user keys order into E directly. Hook now injects this reminder when admission-ordering trigger fires; respect it.
+  - DO NOT call Gemini to fill D=EMR摘要 even on user request — feature retired 5/10. If user says "做摘要", explain feature is removed and offer to show C col raw.
+  - DO NOT auto-edit other repos when implementing a generic change — list it in workflow-docs Step 6 audit and let user open the other repo separately.
 
-[Key artifacts touched]
-  - Code: process_emr.py, cathlab_keyin.py, scripts/post_sheet_format_check.py
-  - NEW: backfill_emr_age_gender.py, lottery_utils.py, scripts/skill_route_reminder.py
-  - .claude/settings.json (UserPromptSubmit registered)
-  - CLAUDE.md (rule 2 weighted, rule 15 Mon-EP broadened, rule 23 EMR prefix added, Step→Skill mapping table, Key Files updated)
-  - Skills: admission-cathlab-keyin.md (rule 8 broadened), admission-emr-extraction.md (C col format)
-  - Google Sheet: 20260510 (heavy edits), 20260511 (UPT 2 EP), 14×V1 header, 29×EMR prefix backfill
-  - WEBCVIS: 5/11 doctor2 UPTs
+[Relevant files]
+  - CLAUDE.md (rules 18, 22; skill mapping table; sheet layout note)
+  - .claude/skills/admission-emr-extraction.md (summary section reworded)
+  - .claude/skills/admission-ordering.md (HARD RULE preamble + Step 1 code template with E parsing)
+  - scripts/skill_route_reminder.py (EXTRA_REMINDERS dict + apply logic)
+  - 每日入院清單工作流程.txt (D col placeholder description x2)
+  - memory/feedback_no_emr_summary.md (rewritten in English with retirement policy)
+  - memory/feedback_subtable_E_must_read_fresh.md (new)
+  - memory/feedback_cross_repo_sync_check.md (new)
 
-[Memory files updated/added (this session)]
-  - NEW memory/feedback_monday_ep_hong_chenhui_second.md
-  - NEW memory/feedback_emr_cell_age_gender_prefix.md
-  - NEW memory/feedback_age_emr_canonical.md
-  - NEW memory/feedback_doctor_rr_auto_random.md
-  - NEW memory/feedback_lottery_weighted_shuffle.md
-  - NEW memory/feedback_main_to_subtable_two_blank_rows.md
-  - NEW memory/feedback_skill_trigger_match_must_invoke.md
-  - REWRITTEN memory/reference_post_sheet_format_hook.md (broader trigger)
-  - memory/MEMORY.md (+7 index lines, 1 line edited)
+[Important memory files]
+  - feedback_no_emr_summary.md (5/10 retirement update — D never written, no auto/no on-demand)
+  - feedback_subtable_E_must_read_fresh.md (5/10 new — read E from live Sheet before computing N-V)
+  - feedback_cross_repo_sync_check.md (5/10 new — propagate generic changes across alexdodochen repos)

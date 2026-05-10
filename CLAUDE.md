@@ -119,7 +119,7 @@ Full details in `每日入院清單工作流程.txt`.
 |---|---|---|
 | 匯入入院名單 / 讀取圖片匯入 / (給入院名單圖) | 1. Image → Sheet | `admission-image-to-excel` |
 | 抽籤 / 排序 / 排入院順序 / 抽住院籤 | 2. Lottery + sub-tables | `admission-lottery` |
-| 提取EMR / 做摘要 / EMR extraction | 3. EMR fetch + write | `admission-emr-extraction` |
+| 提取EMR / EMR extraction | 3. EMR fetch + write | `admission-emr-extraction` |
 | 重抓 EMR / refresh EMR / 重跑 EMR / 更新本週 EMR | 3'. EMR refresh batch | `admission-emr-refresh` |
 | 排住院序 / 排入院序 / 設定入院順序 / 生成入院序列 | 4. N-V ordering | `admission-ordering` |
 | 排導管 / key-in導管 / 導管排程 | 5. Cathlab keyin | `admission-cathlab-keyin` |
@@ -157,11 +157,11 @@ Critical rules:
 15. **Second doctor priority**: 時段表 entries like 「黃鼎鈞(浩、晨)」 (two seconds) → first (葉立浩=浩) → `attendingdoctor2`; second (洪晨惠=晨) → **`recommendationDoctor`**. `cathlab_keyin.py` supports `third` JSON field; old "put in note" approach is obsolete. See `memory/feedback_cathlab_third_doctor.md`. **Mon cathlab + EP procedure (RF ablation/PFA/AF·AFL·PSVT ablation/EP study/device implant) → `second=洪晨惠` 強制** — broader rule (5/8) supersedes the older 黃鼎鈞-Mon special case; if 時段表 already gives a `second`, push 洪晨惠 to `third` (recommendationDoctor). `cathlab_keyin.py.fix_diag` UPTs `attendingdoctor2` (5/8 extension) so re-running keyin on existing entries patches the field. See `memory/feedback_monday_ep_hong_chenhui_second.md`.
 16. **詹世鴻 Friday exception**: Friday admission with 詹世鴻 → treat as **non-schedule doctor** — lottery/ordering goes after schedule doctors; cathlab is non-schedule (H1 2100+, note="本日無時段"). Both systems consistent.
 17. **Post-edit format check**: After any write/modify to a date sheet's patient data, **always** read back to verify (main A-L, N-V ordering, sub-table title/count/blank gap, no residual merges, chart no consistent). Fix on the spot, don't leave loose ends (see `memory/feedback_post_edit_format_check.md`). **Easiest**: `from gsheet_utils import enforce_sheet_format; enforce_sheet_format('YYYYMMDD')` — idempotent, refreshes BLUE/WHITE bg + LEFT align + bold + WRAP. **Required** after any diff/insert/delete/write_range.
-18. **N-V write must re-read sub-table F/G/H NOW** (HARD): Cached values from earlier in session don't count. The user manually adjusts 術前診斷/預計心導管/註記 between lottery/EMR/format-check and your N-V write. Skip this → ordering's diagnosis/cathlab/note all wrong. 8-col layout: F=術前診斷, G=預計心導管, H=註記. See `memory/feedback_subtable_H_to_R_ordering.md`.
+18. **N-V write must re-read sub-table E/F/G/H NOW** (HARD): Cached values from earlier in session don't count. The user manually adjusts E (手動設定入院序) / F (術前診斷) / G (預計心導管) / H (註記) directly in the Sheet between lottery/EMR/format-check and your N-V write. Skip this → ordering's per-doctor patient order/diagnosis/cathlab/note all wrong. 8-col layout: E=col 5, F=6, G=7, H=8. **For multi-patient doctors, if E is fully filled, sort by E and don't re-ask the user.** See `memory/feedback_subtable_H_to_R_ordering.md` + `memory/feedback_subtable_E_must_read_fresh.md`.
 19. **Cathlab ADD must scan whole week (Mon-Fri)** (HARD): For each patient in JSON, Playwright-query 5 days for chart no. If chart exists on **any** day (not just N+1) → STOP, list "patient already scheduled MM/DD ROOM TIME", remove from JSON, **never auto-ADD** to N+1. See `memory/feedback_cathlab_week_check_before_keyin.md` (5/2: 康李金春 5/6 CRT existed, mistakenly ADDed to 5/5 廖瑀 H1 2100).
 20. **陳則瑋 + 劉秉彥 OPD → cathlab second=劉秉彥**: 陳則瑋 admission patient with sub-table C col 「(門診)... 劉秉彥 ...」 → JSON `second=劉秉彥`. Limited to 劉秉彥 (not a general rule). See `memory/feedback_chen_zewei_liu_bingyan_second.md`.
 21. **Workflow auto-chain boundary**: Image → Sheet is one step. **Every other step (lottery / EMR / ordering / cathlab) requires explicit user trigger** — even if the user provides multiple resources upfront ("把工作都跑完" + image + EMR URL + JSON). Stop after each step. See `memory/feedback_no_auto_lottery.md`.
-22. **EMR summary on demand only**: Sub-table is 8-col A-H. D=EMR摘要 is a placeholder — `process_emr.py` writes only C (raw EMR) + F (術前診斷) + G (預計心導管). D stays empty until the user explicitly asks for a summary (then call Gemini to fill that single row). No auto-generated summary. See `memory/feedback_no_emr_summary.md`.
+22. **EMR summary feature fully retired (5/10)**: Sub-table is 8-col A-H. D=EMR摘要 is a header-only placeholder — column stays for layout stability, but **no summary is ever written**, neither automatic nor on-demand. Don't call Gemini to fill D. Don't accept "做摘要" as a trigger. `process_emr.py` writes only C (raw EMR) + F (術前診斷) + G (預計心導管). See `memory/feedback_no_emr_summary.md`.
 
 23. **EMR cell first line = `<age> y/o <gender>`** (5/8 rule): Sub-table C col always begins with `<age> y/o <gender>\n` before the `【EMR來源門診：…】` header. Age = EMR DOB-based (`compute_age()` from `parse_birth_from_raw`); admission-list image age is +1 (虛歲) and is NOT canonical — always trust EMR DOB. `process_emr.py` writes the prefix automatically; backfill old sheets via `python backfill_emr_age_gender.py YYYYMMDD` (idempotent). See `memory/feedback_emr_cell_age_gender_prefix.md` + `memory/feedback_age_emr_canonical.md`.
 
@@ -193,7 +193,7 @@ Below main data: doctor sub-tables (8 cols A-H per block):
   [Patient rows]
   [blank row gap]
 
-  D=EMR摘要 is a placeholder column (left empty by process_emr; user calls Gemini on demand to fill).
+  D=EMR摘要 is a header-only placeholder column — never written by anyone (summary feature retired 5/10).
 ```
 
 **Creating a new date sheet** — duplicate a recent sheet → `unmergeCells` on the entire range → `batch_clear` → write new main data → build doctor sub-tables with `write_doctor_table`. Unmerge is critical: merged title rows from the source (e.g. "李文煌（1人）" at A:H) will otherwise swallow writes at the same row index.

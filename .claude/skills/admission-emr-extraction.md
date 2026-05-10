@@ -1,12 +1,12 @@
 ---
 name: admission-emr-extraction
-description: Use when extracting EMR records from Web EMR system for admission list patients. Triggered after lottery step completes, or when user says "提取EMR", "EMR extraction". Handles batch browser automation to query each patient's chart, extract raw clinical notes, auto-detect F/G (術前診斷/預計心導管), correct names, and write to sub-table. Post 5/4: no summary generation — only raw EMR + F/G prefill.
+description: Use when extracting EMR records from Web EMR system for admission list patients. Triggered after lottery step completes, or when user says "提取EMR", "EMR extraction". Handles batch browser automation to query each patient's chart, extract raw clinical notes, auto-detect F/G (術前診斷/預計心導管), correct names, and write to sub-table. Summary feature retired (5/10): D=EMR摘要 column header stays as placeholder but is never written.
 ---
 
-# EMR 原文批次擷取（post 5/4 — 摘要功能已停用）
+# EMR 原文批次擷取（摘要功能已全面停用 — 5/10 起）
 
 ## Overview
-從 Web EMR 系統批次擷取入院名單病人的門診紀錄原文，寫入子表格 C 欄（EMR 原文）+ E/F 欄（auto-detect 術前診斷/預計心導管，由 process_emr.py 的 DIAG_RULES/CATH_RULES 在 raw EMR 上跑）。**5/4 起不再生成四段式摘要**，由使用者直接看 C 欄 raw EMR 判讀。
+從 Web EMR 系統批次擷取入院名單病人的門診紀錄原文，寫入子表格 C 欄（EMR 原文）+ E/F 欄（auto-detect 術前診斷/預計心導管，由 process_emr.py 的 DIAG_RULES/CATH_RULES 在 raw EMR 上跑）。**摘要功能已全面停用** — 不論 auto 或 on-demand，D 欄永遠留空，使用者直接看 C 欄 raw EMR 判讀。不接受「做摘要」trigger。
 
 ## Prerequisites
 - Chrome 已開啟 Web EMR：http://hisweb.hosp.ncku/Emrquery/
@@ -116,7 +116,7 @@ EMR 系統的姓名為正確來源。比對 Excel 並自動更新所有位置：
 - Round-robin N-S 的病人姓名欄
 - 醫師病人表格的姓名欄
 
-### 8. 寫入 Sheet（post 5/4 — 摘要功能停用；post 5/8 — C 欄加年齡性別 prefix）
+### 8. 寫入 Sheet（摘要功能已全面停用；post 5/8 — C 欄加年齡性別 prefix）
 - **C 欄（EMR 原文）**：`<age> y/o <gender>\n` (e.g. `63 y/o 男`) + `【EMR來源門診：...】\n` + 完整 EMR 原文，wrap_text=True
   - age 從 EMR DOB → admission date 計算（`compute_age()`）；gender 從 `性別 : X` 解析
   - 不要用 admission-list 圖片上的年齡（會比 EMR 多 1 — 可能虛歲）
@@ -172,12 +172,12 @@ for i, pt in enumerate(RETRY):
    - `leftFrame.evaluate` 找 `t.includes('門診') && t.includes(doctor)` 的連結 → click
    - `mainFrame.wait_for_function(...)` 等內容，`innerText` 拿原文
    - 截掉 `[Medicine]` 之後的段落（見 `feedback_emr_html_parsing.md`）
-3. 存成 `emr_data_{YYYYMMDD}.json` 給下一階段 `process_emr_{YYYYMMDD}.py` 做摘要 + 寫 sheet
+3. 存成 `emr_data_{YYYYMMDD}.json` 給下一階段 `process_emr.py` 寫 sheet（C/F/G）
 
 ### 寫 Sheet（8-col 子表格）
 
 - **C 欄 value**：完整 EMR 原文 + visit header（`【EMR來源門診：醫師, 科別診次, 日期】`）
-- **D 欄 value**：**留空** — D=EMR摘要 是 placeholder 容器，使用者按需求 call Gemini 才填，process_emr 不主動寫
+- **D 欄 value**：**永遠留空** — D=EMR摘要 是 header-only placeholder。摘要功能已停用，no auto / no on-demand。不接受「做摘要」trigger。
 - **F 欄 value**：DIAG_RULES auto-detect 結果（術前診斷）
 - **G 欄 value**：CATH_RULES auto-detect 結果（預計心導管）
 

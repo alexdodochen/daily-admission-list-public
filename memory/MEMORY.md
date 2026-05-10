@@ -43,7 +43,7 @@
 - [cathlab ADD 前必掃整週 chart](feedback_cathlab_week_check_before_keyin.md) — Mon-Fri 五天都查，已存在任何一天 → STOP 給使用者看，不自動 ADD（5/2 踩過：康李金春 5/6 CRT 已排，被我誤 ADD 5/5 廖瑀 H1 2100）
 - [圖→subtable→EMR 自動跑；lottery 等命令](feedback_no_auto_lottery.md) — 給圖自動接 subtable + EMR；lottery/ordering/cathlab 必須等使用者明說才跑（5/4 踩過 2 次糾正）
 - [入院提示文字註記要搬到子表格 H 欄](feedback_admission_hint_to_subtable_note.md) — K 欄非純數字的文字（建議再入院日 / 陪病確診 / 無床延期）抽到子表格 H 欄；K 欄原樣保留
-- [D=EMR摘要 placeholder + 不主動寫](feedback_no_emr_summary.md) — Sub-table 8 欄 A-H canonical；D=EMR摘要 留空白，使用者要時 call Gemini 才填那一格；process_emr 寫 C/F/G 不寫 D（5/4 上午曾嘗試 7-col migration，下午反轉）
+- [D=EMR摘要 column retired — header-only, never written](feedback_no_emr_summary.md) — 8-col A-H canonical; D=EMR摘要 stays as header placeholder, no auto/no on-demand summary; process_emr writes C/F/G only; reject "做摘要" trigger (updated 5/10)
 - [diff-update sub-table 只動 ADD/DELETE](feedback_diff_update_subtable_minimal.md) — 重新匯入截圖時，既有 row 完全不碰；只新增截圖多的、刪除截圖沒有的（5/4 踩過：整塊 clear+rewrite 連 EMR 都洗掉）
 - [WEBCVIS DEL — 列清單 → 我同意 → 跑自動化](feedback_webcvis_del_manual.md) — 流程：列 DEL 候選（chart/name/date/room/time）→ 等使用者明確 OK → 跑 Playwright DEL → verify。失敗才回頭請手動。前兩個 approach 失敗（form submit / force-enable），下次換 row-click→handler / dialog accept（5/5 修正 2 次）
 - [改期功能已重啟 → 完整搬資料 + cathlab DEL/ADD](feedback_reschedule_active.md) — 使用者說「重啟改期功能」就跑完整搬遷（V 標記 + 主資料 + 子表格 rebuild + cathlab 移動），覆寫 CLAUDE.md rule 5「manual flag only」舊規則
@@ -61,3 +61,5 @@
 - [Lottery shuffle is WEIGHTED by *N tickets](feedback_lottery_weighted_shuffle.md) — `主治醫師抽籤表` `*2` means 2 tickets; pool=[A,A,B,C] shuffle dedup; use `lottery_utils.weighted_doctor_shuffle()` (added 5/8)
 - [Main → first sub-table = 2 blank rows](feedback_main_to_subtable_two_blank_rows.md) — gap between main A-L and first sub-table title must be exactly 2 blank rows; insert_rows then enforce_format (added 5/8)
 - [Skill trigger phrase match → MUST invoke skill](feedback_skill_trigger_match_must_invoke.md) — literal trigger phrase in user message ⇒ Skill tool first, no inline reimplementation; CLAUDE.md is reminder, skill is procedural truth (added 5/8)
+- [Sub-table E col (manual order) must be read fresh](feedback_subtable_E_must_read_fresh.md) — N-V ordering must re-read sub-table E (手動設定入院序) from live Sheet before asking user; user keys order into E directly, doesn't dictate in chat (added 5/10)
+- [After project update, audit cross-repo sync to other 4 alexdodochen repos](feedback_cross_repo_sync_check.md) — generic patterns (hooks, anti-bypass, PHI guards, env setup) propagate; project-specific clinical/data logic stays; never auto-edit sister repos (added 5/10)

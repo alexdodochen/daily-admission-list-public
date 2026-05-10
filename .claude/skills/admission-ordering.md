@@ -30,11 +30,25 @@ description: Use when assigning patient admission order (排住院序) for a spe
 | 五 | **當日週五**（週六無抽籤表） | E (col 5) | **詹世鴻週五 = 非時段醫師** |
 | 六 | 無（通常無入院） | — | |
 
+## ⚠️ HARD RULE — sub-table E 欄是順序的真相
+
+**在 round-robin 之前，永遠當下重讀 Google Sheet 子表格 E 欄（手動設定入院序）。**
+
+使用者習慣自己手 key 順序到 E 欄（不是用對話告訴 Claude），所以：
+- ✅ 必做：`ws.get_all_values()` 後解析每個 sub-table 的 col 5（index 4）= 手動序號
+- ❌ 別做：靠對話記憶 / 自己 JSON / 上次跑的結果 / 「上次討論過順序」
+- ❌ 別做：問使用者多病人醫師順序之前不先讀 E 欄
+
+**為什麼：** 5/10 踩過——我直接問使用者「陳昭佑/陳儒逸 怎麼排」，使用者回「我都有 key 在手動設定入院序 2 1 3 E 欄 你怎麼最近常常沒看到? 你是不是只讀自己的 json 檔案 沒有讀 google sheet」。E 欄填了我沒讀 → 多問一輪。
+
+**怎麼用：** Step 1 讀資料時就把所有 sub-table 的 (姓名、病歷號、E 欄手動序、F、G、H) 全部一次撈出來。E 有值 → 用 E；E 空 → 才問使用者。
+
 ## 流程
 
-### 1. 讀取資料
+### 1. 讀取資料（含 E 欄手動序）
 
 ```python
+import re
 from gsheet_utils import get_worksheet
 
 ws = get_worksheet('20260424')
@@ -43,6 +57,39 @@ data = ws.get_all_values()
 # 主資料 A-L: data[1:N] (row 2 起，header 是 row 1)
 # N-V 序列: data[i][13:22] (N=13, V=21)
 # 子表格: 掃描 A 欄尋找「醫師名（N人）」模式
+
+# 一次撈 sub-table (姓名/病歷號/E手動序/F/G/H) — 必做，不要憑記憶
+subtables = {}  # {doctor: [{name, chart, manual_order, diag, cath, note}, ...]}
+i = 0
+while i < len(data):
+    r = data[i]
+    if r and r[0] and re.match(r'^.+（\d+人）$', r[0]):
+        doctor = r[0].split('（')[0]
+        j = i + 2  # skip title + header
+        rows = []
+        while j < len(data):
+            rr = data[j]
+            if not rr or not rr[0]: break
+            if re.match(r'^.+（\d+人）$', rr[0]): break
+            rows.append({
+                'name': rr[0], 'chart': rr[1] if len(rr)>1 else '',
+                'manual_order': rr[4] if len(rr)>4 else '',  # E 欄
+                'diag': rr[5] if len(rr)>5 else '',          # F 欄
+                'cath': rr[6] if len(rr)>6 else '',          # G 欄
+                'note': rr[7] if len(rr)>7 else '',          # H 欄
+            })
+            j += 1
+        subtables[doctor] = rows
+        i = j
+    else:
+        i += 1
+
+# 多病人醫師：sort by manual_order if all set; else ask user
+for doc, rows in subtables.items():
+    if len(rows) >= 2:
+        if all(r['manual_order'] for r in rows):
+            rows.sort(key=lambda r: int(r['manual_order']))
+        # else: ask user
 ```
 
 ### 2. 核對抽籤表醫師名單

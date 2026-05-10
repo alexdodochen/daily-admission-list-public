@@ -92,7 +92,7 @@
   5. 在主資料下方排列各醫師病人表格（8 欄 A-H）
      A=姓名  B=病歷號  C=EMR  D=EMR摘要
      E=手動設定入院序  F=術前診斷  G=預計心導管  H=註記
-     ─ D=EMR摘要 為 placeholder：process_emr 不主動寫，使用者按需 call Gemini 才填
+     ─ D=EMR摘要 為 header-only placeholder：摘要功能已停用（5/10），永遠留空，不接受「做摘要」指令
      ─ F、G 欄有下拉選單（與導管排程網站選項同步）
      ─ 整理表起始列與萃取資料相隔至少 2 行空白
      ─ 【格式統一】每個醫師區塊都要套用完整格式：
@@ -417,7 +417,7 @@
           S 欄=病歷號（文字格式，保留前導零）
           V 欄填 YYYYMMDD → 人工改期註記（不做 N+1 cathlab，另行處理）
     資料下方 = 各醫師病人表格（8 欄 A-H）
-      A=姓名  B=病歷號  C=EMR  D=EMR摘要(placeholder, on-demand)
+      A=姓名  B=病歷號  C=EMR  D=EMR摘要(header-only, 永遠留空)
       E=手動設定入院序  F=術前診斷(下拉)  G=預計心導管(下拉)  H=註記
 
 

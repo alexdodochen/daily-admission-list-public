@@ -49,7 +49,6 @@ TRIGGERS = {
     'admission-emr-extraction': [
         r'提取.{0,5}EMR',
         r'EMR\s*extraction',
-        r'做.{0,5}EMR.{0,5}摘要',
     ],
     'admission-emr-refresh': [
         r'重抓.{0,15}EMR',
@@ -132,6 +131,21 @@ TRIGGERS = {
     ],
 }
 
+# Per-skill extra HARD-RULE reminders. Appended after the generic skill route
+# reminder when that skill's trigger fires. Use sparingly — only for rules the
+# model has demonstrably forgotten under conversation memory pressure.
+EXTRA_REMINDERS = {
+    'admission-ordering': (
+        '⚠ HARD RULE for admission-ordering: BEFORE asking the user about '
+        'multi-patient doctor order, you MUST first do a fresh '
+        '`ws.get_all_values()` on the date sheet and parse each sub-table\'s '
+        'col E (手動設定入院序, index 4 in 8-col layout). User keys order '
+        'into E directly in the Sheet — they do NOT dictate it in chat. '
+        'If E is fully filled, sort by int(E) and skip asking. '
+        'See `memory/feedback_subtable_E_must_read_fresh.md` + CLAUDE.md rule #18.'
+    ),
+}
+
 
 def find_matches(msg: str) -> list[tuple[str, str]]:
     out = []
@@ -177,6 +191,11 @@ def main() -> None:
         'format gaps). If multiple skills match, run them in workflow order. '
         'See `memory/feedback_skill_trigger_match_must_invoke.md`.'
     )
+
+    # Append per-skill extra reminders for matched skills.
+    extras = [EXTRA_REMINDERS[s] for s, _ in matches if s in EXTRA_REMINDERS]
+    if extras:
+        reminder = reminder + '\n\n' + '\n\n'.join(extras)
 
     print(json.dumps({
         'hookSpecificOutput': {
