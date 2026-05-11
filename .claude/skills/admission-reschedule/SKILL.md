@@ -43,6 +43,8 @@ Before any sheet/cathlab writes, confirm via AskUserQuestion (3 questions):
    - Default: **main A-L + sub-table**
 3. **Cathlab old entries**: list DEL candidates / no list (default: list)
 
+**Single-patient lean mode (1 patient, 1 target date):** skip the 3-question confirm and proceed with defaults (keep+V mark / main+sub-table / list DEL). Pause is only on PHASE 5 DEL list (always required). Per `memory/feedback_reschedule_lean_mode.md`.
+
 ## Execution sequence
 
 ### PHASE 0 — Capture source
@@ -50,6 +52,8 @@ Before any sheet/cathlab writes, confirm via AskUserQuestion (3 questions):
 For each reschedule patient:
 - `capture_main_row(source_ws, name)` — full 12-col list from main A-L
 - `capture_sub_row(source_ws, name)` — full 8-col sub-table row (preserves EMR/diagnosis/cathlab/note)
+
+⚠️ **Never print sub-table C (EMR raw) / D (EMR 摘要) content during capture.** Both are 1k-10k chars and contribute zero signal to the move — they're copied verbatim, not analyzed. Print only `len(C)` / `len(D)` for sanity. Same applies to logging or any `print()` of captured data. Per `memory/feedback_reschedule_lean_mode.md`.
 
 ### PHASE 1 — Mark V column on source
 
@@ -198,6 +202,8 @@ DO NOT write a one-off Playwright DEL script. The 5/6 session burned 3 trial-and
 - Punting WEBCVIS DEL to "user does it manually" by default. Correct flow: list → user OK → `webcvis_del.py` → verify → fallback to manual only if helper provably fails.
 - ❌ **Writing to generic `cathlab_patients_reschedule.json`** when prior session left a tracked stale version → cathlab_keyin runs the wrong data. Use unique filename or Read-then-Write. (5/6 踩過 10-patient Phase 2 UPT)
 - ❌ **Re-writing one-off Playwright DEL scripts** — burned 3 versions to find the checkbox mechanism. Use `webcvis_del.py`. If it breaks, fix the helper, don't fork a new script.
+- ❌ **Printing sub-table C (EMR) / D (摘要) content during capture** — 1k-10k chars per patient pure waste. Capture into variable, never `print()`. Single-patient 5/11 case: 4339+549 chars printed twice → user feedback「每次都做好久」. (5/11 踩過)
+- ❌ **Multiple `update_cell` calls when one `batch_write_cells` works** — V mark + main row + sub-title + sub-row should be 1 API call, not 4. Use `batch_write_cells({(ws, row, col): value, ...})`. (5/11 踩過)
 
 ## Coordination with other skills
 
