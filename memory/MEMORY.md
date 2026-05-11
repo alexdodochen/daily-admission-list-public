@@ -63,3 +63,4 @@
 - [Skill trigger phrase match → MUST invoke skill](feedback_skill_trigger_match_must_invoke.md) — literal trigger phrase in user message ⇒ Skill tool first, no inline reimplementation; CLAUDE.md is reminder, skill is procedural truth (added 5/8)
 - [Sub-table E col (manual order) must be read fresh](feedback_subtable_E_must_read_fresh.md) — N-V ordering must re-read sub-table E (手動設定入院序) from live Sheet before asking user; user keys order into E directly, doesn't dictate in chat (added 5/10)
 - [After project update, audit cross-repo sync to other 4 alexdodochen repos](feedback_cross_repo_sync_check.md) — generic patterns (hooks, anti-bypass, PHI guards, env setup) propagate; project-specific clinical/data logic stays; never auto-edit sister repos (added 5/10)
+- [改期單病人用精簡流程 — 不印 EMR、合併 batch_write](feedback_reschedule_lean_mode.md) — 印超長 C/D 欄是純浪費 token；多個 update_cell 合併成單一 batch_write_cells（5/11 王玉珍 case）
