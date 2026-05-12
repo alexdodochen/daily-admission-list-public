@@ -414,6 +414,33 @@ def write_doctor_table(ws, start_row, doctor_name, patients, num_cols=8):
 
     end_row = start_row + 1 + len(patients)
 
+    # Force B col (chart no) to TEXT format + stringValue per feedback_chart_no_text_format.md
+    # (write_row with USER_ENTERED would strip leading zeros — bug surfaced 5/11)
+    if num_cols >= 2 and len(patients) > 0:
+        chart_reqs = [{
+            "repeatCell": {
+                "range": {"sheetId": ws.id,
+                          "startRowIndex": start_row + 1,
+                          "endRowIndex": end_row,
+                          "startColumnIndex": 1, "endColumnIndex": 2},
+                "cell": {"userEnteredFormat": {"numberFormat": {"type": "TEXT"}}},
+                "fields": "userEnteredFormat.numberFormat",
+            }
+        }]
+        for pi, pt in enumerate(patients):
+            chart_reqs.append({
+                "updateCells": {
+                    "rows": [{"values": [{"userEnteredValue": {"stringValue": str(pt.get('chart_no', ''))}}]}],
+                    "range": {"sheetId": ws.id,
+                              "startRowIndex": start_row + 1 + pi,
+                              "endRowIndex": start_row + 2 + pi,
+                              "startColumnIndex": 1, "endColumnIndex": 2},
+                    "fields": "userEnteredValue",
+                }
+            })
+        sh.batch_update({"requests": chart_reqs})
+        time.sleep(0.3)
+
     # Explicit WHITE background + normal text on patient rows
     # (critical — duplicated sheets may retain blue/formatted residue;
     #  user has flagged 白底跑掉 multiple times. See

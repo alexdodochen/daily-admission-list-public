@@ -1,36 +1,45 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-11 (5/11 reschedule session)
+  HANDOFF — Last Updated: 2026-05-12 (Tue evening session)
 ============================================
 
 [What this session did]
-  1. 5/11 王玉珍 (17222056) 改 5/14 住院 + 5/15 cathlab：V mark 5/11 N=9, append 5/14 main row 4 + 陳儒逸 sub-table 第3人, cathlab ADD 5/15 C1 1100 (second=蘇奕嘉), cathlab DEL 5/12 0930
-  2. User feedback: 改期流程太慢/太耗 token — 印整段 EMR (C 4339 chars + D 549 chars) 是純浪費；多次 update_cell 應合併
-  3. 新 memory: feedback_reschedule_lean_mode.md — 單病人 reschedule 預設精簡模式
+  1. Built EMR divUserSpec verify hook: verify_main_emr.py + scripts/post_main_emr_verify.py + fetch_emr.py auto-saves session URL to `_emr_session.txt`. Fires after `process_emr.py YYYYMMDD` → cross-checks every main A-L row's 姓名/性別/年齡 against EMR divUserSpec, auto-corrects mismatches. Rule origin: 5/12 user mandate after 董相路/董相鉻 OCR-vs-sheet mismatch.
+  2. Race-condition lesson: divUserSpec refresh is async vs leftFrame — must stamp divUserSpec.innerText before BTQuery click. Initial verify version waited only on leftFrame → off-by-one corrupted 9 cells (謝翠英→董相路 etc.), reverted, fixed.
+  3. 5/13 sheet diff-update: image had 8 patients, sheet had 5 → added 徐郁貞 (黃鼎鈞) + 王坤楓 (黃睦翔, 無資料病人) + 段寶春 (柯呈諭; EMR fixed name 段晉春→段寶春). K col updates 譚翠翠 / 張皓傑. Verified 董相路 name via EMR re-fetch (sheet was correct, image OCR misread 路→鉻).
+  4. 5/14 sheet diff-update: image had 4 patients, sheet had 3 → added 李高玉珠 (劉嚴文; EMR fixed name 李高玉→李高玉珠, age 85→84). 王玉珍 K col `3` → `3(5/11無床延期)` + sub-table H note.
+  5. Cathlab keyin: 5/13 cathlab — 9 charts SKIP exists (all pre-keyed), 9 UPT OK. 5/14 cathlab — 3 ADD (徐郁貞 C1 0601, 段寶春 C2 1800, 王坤楓 H2 1800) + 5 SKIP exists, 8 UPT OK (including 黃鼎鈞 existing 3 補上 second=葉立浩 + third=洪晨惠).
 
 [Current state]
-  - Branch: main, in sync with origin/main (尚未 push 本次變更)
-  - 5/11 sheet: 王玉珍 row 10 V=20260514 (改期標記)
-  - 5/14 sheet: 陳儒逸 sub-table 3 人 (林森政/陳謝秀英/王玉珍), main A-L 3 列
-  - 5/15 WEBCVIS: xa-CATH1 0800 林森政, 0930 陳謝秀英, 1100 王玉珍 (新增)
-  - 5/12 WEBCVIS: 王玉珍 0930 已 DEL
-  - Format check (PostToolUse hook) passed on 5/11 + 5/14
+  - Branch: main, fast-forward rebased to origin/main earlier this session
+  - Local mods staged for commit: verify_main_emr.py, scripts/post_main_emr_verify.py, fetch_emr.py (URL save), .claude/settings.json (+2nd hook), CLAUDE.md (Key Files += verify + hook), memory/*.md (3 new + index)
+  - Pre-existing local mods carried in: gsheet_utils.py (chart_no TEXT format in write_doctor_table), scripts/post_sheet_format_check.py + skill_route_reminder.py (stdin encoding fix), memory/feedback_subtable_order_from_main_table.md
+  - 5/13 sheet (20260513): 8 patients, sub-tables 黃鼎鈞(4)/柯呈諭(2)/林佳凌(1)/黃睦翔(1) — EMR fully filled (王坤楓 = 無資料病人)
+  - 5/14 sheet (20260514): 4 patients, sub-tables 陳儒逸(3)/劉嚴文(1) — EMR fully filled
+  - WEBCVIS cathlab 5/13: 15 total entries, all 9 our patients OK; 5/14: 12 total entries, all 8 our patients OK
+  - EMR verify hook tested end-to-end via manual hook payload — pipeline works
 
 [Next steps]
-  - 5/12 cathlab keyin (Tue admission 5/11 → cath 5/12) 仍待跑 — 8 患者 (扣除 reschedule 出去的 王玉珍)
-  - 留意 5/14 sheet 的 main+sub gap 是否需要插入 2 列空行（per feedback_main_to_subtable_two_blank_rows.md）；當前 main rows 2-4, sub-table title row 5（無 gap）→ 視 enforce_sheet_format 是否已補
+  - Activate new hook in current Claude session: `/hooks` reload OR start fresh session (script edits already live; settings.json hook entry needs reload)
+  - User must confirm: 李高玉珠 K col `3(6/13無床)` — `6/13` likely OCR typo for `5/13` (6/13 is future date, doesn't fit context). Need visual recheck of image.
+  - Optional: 5/14 admit (4 patients) → 5/15 cathlab keyin not yet done. 王玉珍 17222056 already on 5/15 11:00 C1 (from her reschedule). If proceeding: 3 charts to ADD — 李高玉珠 (劉嚴文 Fri slot), 陳謝秀英 (陳儒逸 Fri slot), 林森政 (陳儒逸 Fri slot). User didn't explicitly request this.
 
 [Known issues / blockers]
-  - 無
+  - 李高玉珠 K col date ambiguity (6/13 vs 5/13) — awaiting user confirmation
 
 [Don't repeat these mistakes]
-  - 改期單病人不要印 sub-table C/D 整段 EMR/summary（>4000 字元純廢 token）。capture 進變數但不 print，只印長度。
-  - 多個 update_cell 寫入應合併成單一 batch_write_cells（V mark + main row + sub-title + sub-row 一次寫入）
-  - 工作前先確認 DNS / 網路：本 session 第一次 sheet 讀取 DNS fail，重試即通
+  - DO NOT ask user to visually confirm name discrepancies between OCR and sheet — re-fetch EMR divUserSpec (it works even for no_visit charts). See feedback_name_conflict_refetch_emr.md.
+  - DO NOT wait only on leftFrame when reading divUserSpec — divUserSpec lives in a different frame and refreshes async; must stamp divUserSpec.innerText and wait for sentinel-clear. See feedback_emr_verify_divuserspec_race.md.
+  - DO NOT batch-apply verify corrections before validating the first one or two — if a race bug exists it silently corrupts every row. Spot-check first chart's output before applying.
 
 [Relevant files]
-  - 5/11 sheet (V mark row 10), 5/14 sheet (main row 4 + sub-table row 5/9), 5/15 WEBCVIS
-  - memory/feedback_reschedule_lean_mode.md (新)
-  - memory/MEMORY.md (索引更新)
+  - verify_main_emr.py (new)
+  - scripts/post_main_emr_verify.py (new)
+  - fetch_emr.py (URL save at startup)
+  - .claude/settings.json (2nd PostToolUse hook entry)
+  - CLAUDE.md (Key Files += verify + hook entries)
+  - _emr_session.txt (gitignored, current session URL)
 
 [Important memory files]
-  - feedback_reschedule_lean_mode.md (5/11 new — 單病人 reschedule 精簡模式)
+  - reference_post_main_emr_verify_hook.md (new — hook design + activation)
+  - feedback_emr_verify_divuserspec_race.md (new — race-fix rule with example)
+  - feedback_name_conflict_refetch_emr.md (new — re-fetch instead of asking user)

@@ -9,6 +9,12 @@
             "command": "python scripts/post_sheet_format_check.py",
             "timeout": 60,
             "statusMessage": "Verifying sheet format..."
+          },
+          {
+            "type": "command",
+            "command": "python scripts/post_main_emr_verify.py",
+            "timeout": 300,
+            "statusMessage": "Cross-checking main 姓名/年齡/性別 vs EMR divUserSpec..."
           }
         ]
       }

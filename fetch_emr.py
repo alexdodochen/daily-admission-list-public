@@ -214,6 +214,11 @@ if __name__ == '__main__':
         sys.exit(1)
     url = sys.argv[1]
     out = sys.argv[2]
+    try:
+        with open('_emr_session.txt', 'w', encoding='utf-8') as _sf:
+            _sf.write(url)
+    except Exception:
+        pass
     pts = []
     i = 3
     while i < len(sys.argv):

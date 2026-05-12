@@ -31,6 +31,7 @@ import sys
 
 try:
     sys.stdout.reconfigure(encoding='utf-8')
+    sys.stdin.reconfigure(encoding='utf-8')
 except Exception:
     pass
 

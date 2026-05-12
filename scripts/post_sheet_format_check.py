@@ -24,6 +24,12 @@ import os
 import re
 import sys
 
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stdin.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
 TRIGGER_SCRIPTS = (
     "process_emr.py",
     "generate_ordering.py",
