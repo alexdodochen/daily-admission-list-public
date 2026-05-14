@@ -68,3 +68,5 @@
 - [Name conflict (OCR vs sheet) → re-fetch EMR divUserSpec, never ask user to visually confirm](feedback_name_conflict_refetch_emr.md) — divUserSpec is populated regardless of visit; fetch_emr.py gives the answer even for no_visit charts (added 5/12)
 - [PostToolUse hook: verify_main_emr after process_emr](reference_post_main_emr_verify_hook.md) — auto-runs verify_main_emr.py YYYYMMDD after process_emr.py; reads `_emr_session.txt`; covers ALL main rows not just JSON-fetched ones (added 5/12)
 - [divUserSpec stamp required to avoid off-by-one race](feedback_emr_verify_divuserspec_race.md) — leftFrame-only wait returns previous chart's divUserSpec; stamp divUserSpec.innerText before BTQuery click (added 5/12 after 9-cell corruption)
+- [Doctor name char variant: 林佳淩 (EMR) vs 林佳凌 (sheets)](feedback_doctor_name_variant_lin_jialing.md) — silent 100% EMR fetch failure for 2 wks; fetch_emr.py NAME_ALIASES normalises; watch for similar char variants on other doctors (added 5/14)
+- [F/G column widths set to 160px in enforce_sheet_format](feedback_fg_column_width.md) — F=姓名/術前診斷, G=性別/預計心導管 default ~100px truncates sub-table content; user-requested wider (added 5/14)

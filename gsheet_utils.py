@@ -699,6 +699,18 @@ def enforce_sheet_format(sheet_name):
             }
         })
 
+    # F (col 6) = 姓名 (main) + 術前診斷 (sub-table); G (col 7) = 性別 (main) + 預計心導管 (sub-table).
+    # Default ~100 px truncates 術前診斷/預計心導管 — widen to 160.
+    for col_idx in (6, 7):
+        requests.append({
+            "updateDimensionProperties": {
+                "range": {"sheetId": sid, "dimension": "COLUMNS",
+                          "startIndex": col_idx - 1, "endIndex": col_idx},
+                "properties": {"pixelSize": 160},
+                "fields": "pixelSize",
+            }
+        })
+
     # Run in batches of 50 to avoid request size limits
     for batch in [requests[k:k+50] for k in range(0, len(requests), 50)]:
         if batch:

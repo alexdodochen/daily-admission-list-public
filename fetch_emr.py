@@ -100,17 +100,31 @@ def _read_name(page):
 
 FALLBACK_DOCTORS = ['劉秉彥', '趙庭興', '蔡惟全', '許志新', '陳柏升', '李貽恒']
 
+NAME_ALIASES = {
+    '林佳凌': ['林佳凌', '林佳淩'],
+    '林佳淩': ['林佳凌', '林佳淩'],
+}
+
+
+def _name_variants(name):
+    return NAME_ALIASES.get(name, [name])
+
 
 def _click_visit(page, doctor):
     fallback_js = json.dumps(FALLBACK_DOCTORS, ensure_ascii=False)
+    variants_js = json.dumps(_name_variants(doctor), ensure_ascii=False)
     return page.evaluate(f"""() => {{
         let d = window.frames['leftFrame'].document;
         let links = d.querySelectorAll('a');
+        let variants = {variants_js};
         for (let link of links) {{
             let t = (link.innerText || '').trim();
-            if (t.includes('門診') && t.includes('{doctor}')) {{
-                link.click();
-                return {{visit: t, matched: true}};
+            if (!t.includes('門診')) continue;
+            for (let v of variants) {{
+                if (t.includes(v)) {{
+                    link.click();
+                    return {{visit: t, matched: true}};
+                }}
             }}
         }}
         let allow = {fallback_js};
