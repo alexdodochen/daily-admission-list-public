@@ -25,9 +25,15 @@ import gsheet_utils as gu
 # comorbidity entries like `* (ICD-10:I495)` (sick sinus) don't bleed into primary Dx.
 DIAG_RULES = [
     # Acute / time-critical
-    (['STEMI', 'ST elevation myocardial'], 'STEMI'),
+    # NSTEMI checked BEFORE STEMI — 'non ST elevation' contains 'ST elevation' substring
+    # so STEMI rule would mis-fire if STEMI were checked first. Same reason 'ST elevation'
+    # has been dropped from STEMI keywords; rely on the 'STEMI' abbrev itself.
     (['NSTEMI', 'non-ST elevation', 'non ST elevation'], 'Others:NSTEMI'),
-    (['unstable angina'], 'Unstable'),
+    (['STEMI'], 'STEMI'),
+    # Unstable angina rule moved DOWN below CAD — when a single Dx item lists both
+    # ("Unstable angina, ... CAD - 2VD ...", "CAD with unstable angina", etc.) human
+    # consistently picks CAD. Keep Unstable only for pure "unstable angina" cases
+    # without CAD co-mention. See _fg_learning_report.md (5/15).
     # Specific structural valves
     (['severe AS', 'aortic stenosis'], 'AS'),
     (['severe AR', 'aortic regurgitation'], 'AR'),
@@ -53,16 +59,19 @@ DIAG_RULES = [
     (['dilated cardiomyopathy', 'DCM'], 'DCM'),
     (['hypertrophic cardiomyopathy', 'HCM'], 'HCM'),
     (['pulmonary hypertension', 'pulmonary HTN'], 'Pulmonary HTN'),
-    # Symptom-driven
-    (['syncope'], 'Syncope'),
-    # (Removed ISR / in-stent restenosis — too aggressive; CAD rule below catches these correctly.)
-    # CAD family — broadest, last. Trigger words expanded per learning analysis.
-    (['angina pectoris', 'angina'], 'Angina pectoris'),
+    # CAD family — moved UP above soft comorbidities. Per 5/15 learning analysis,
+    # when CAD keyword appears in a Dx item, human picks CAD regardless of co-mentioned
+    # Unstable / Angina / CHF / Syncope / VPC.
     (['CAD', 'coronary artery disease',
       'chest pain', 'chest tightness', 'chest tigthness',
       'ACS', 'acute coronary syndrome',
       'I259', 'I250', 'I251',
       'TET (+)', 'TMT (+)', 'THL (+)', 'TET+', 'TMT+', 'THL+'], 'CAD'),
+    # Soft comorbidities — only fire when CAD is absent from this Dx item.
+    (['unstable angina'], 'Unstable'),
+    (['angina pectoris', 'angina'], 'Angina pectoris'),
+    # Symptom-driven (after CAD per learning)
+    (['syncope'], 'Syncope'),
 ]
 
 # CATH matching runs against [Assessment & Plan] section after past-tense PCI is stripped.
@@ -70,7 +79,13 @@ DIAG_RULES = [
 CATH_RULES = [
     (['CRT-D', 'CRT-P', 'CRT upgrade', 'cardiac resynchronization'], 'CRT'),
     (['TAVI', 'transcatheter aortic valve'], 'TAVI'),
-    (['plan PCI', 'plan for PCI', 'arrange PCI', 'PCI for', 'primary PCI', '→PCI', '→ PCI', 'PCI ', 'intervention'], 'PCI'),
+    # PCI rule — only forward-looking triggers. Bare 'PCI' / 'intervention' kept
+    # firing on `s/p percutaneous coronary intervention (PCI)` historical mentions
+    # even after clean_past_tense_pci, because `intervention` appears outside the
+    # `s/p ...` clause. Human consistently picks Left heart cath. when this admission
+    # is for re-cath, not a planned PCI. See _fg_learning_report.md (5/15).
+    (['plan PCI', 'plan for PCI', 'arrange PCI', 'PCI for admission',
+      'primary PCI', '→PCI', '→ PCI', 'POBA', 'rotablation'], 'PCI'),
     (['RF ablation', 'RFA', 'ablation'], 'RF ablation'),
     (['PPM', 'pacemaker implant'], 'PPM'),
     (['EP study'], 'EP study'),
@@ -115,25 +130,43 @@ F_TO_G_DEFAULT = {
 
 
 def extract_dx_section(emr_text):
-    """Return primary diagnosis lines + ICD-10 codes from [Diagnosis] section.
-    - Strips `* (Dx)` and `* (Dx)N.` prefixes so numbered items become parseable
-    - Keeps ICD-10 codes on their own lines (cardiac codes I250/I259 are useful
-      fallback when free-text Dx doesn't mention CAD)
-    - Drops `Description :` header rows."""
-    parts = re.split(r'\[(Diagnosis|Subjective|Objective|Assessment & Plan)\]', emr_text)
+    """Return primary diagnosis lines from the Dx block.
+
+    Supports two EMR formats:
+      A. `[Diagnosis] ... [Subjective]` section-marker form (older)
+      B. `* (Dx)1. ... \n * (ICD-10：...)` numbered form (current Web EMR)
+
+    Strips `* (Dx)` prefix so numbered items become parseable.
+    """
     diag_text = ''
-    for i, part in enumerate(parts):
-        if part == 'Diagnosis' and i + 1 < len(parts):
-            diag_text = parts[i + 1]
-            break
+
+    # Format B (current Web EMR): `* (Dx)` numbered items until `* (ICD-10` block,
+    # PLUS the `* (ICD-10` block itself (so detect_via_icd has codes to scan).
+    # Boundary: free-text Dx ends where `* (ICD` block starts; ICD block ends where
+    # `[Subjective]` or end-of-text starts.
+    m_dx = re.search(r'\*\s*\(Dx\)(.*?)(?=\n\s*\*\s*\(ICD|\Z)', emr_text, flags=re.DOTALL)
+    m_icd_block = re.search(r'((?:\n\s*\*\s*\(ICD[^\n]*\n?)+)', emr_text)
+    if m_dx:
+        diag_text = m_dx.group(1)
+        if m_icd_block:
+            diag_text = diag_text + '\n' + m_icd_block.group(1)
+
+    # Format A fallback (legacy)
+    if not diag_text:
+        parts = re.split(r'\[(Diagnosis|Subjective|Objective|Assessment & Plan)\]', emr_text)
+        for i, part in enumerate(parts):
+            if part == 'Diagnosis' and i + 1 < len(parts):
+                diag_text = parts[i + 1]
+                break
+
     if not diag_text:
         return ''
+
     out = []
     for line in diag_text.split('\n'):
         s = line.strip()
         if not s or s.startswith('Description'):
             continue
-        # Normalise the "* (Dx)" / "* (Dx)1." prefix off
         s = re.sub(r'^\*?\s*\(Dx\)\s*', '', s)
         out.append(s)
     return '\n'.join(out)
@@ -169,16 +202,32 @@ def detect_via_icd(dx_text):
 
 
 def clean_past_tense_pci(text):
-    """Strip historical PCI mentions so CATH PCI doesn't fire on `s/p PCI on 2020`."""
+    """Strip historical PCI mentions so CATH PCI doesn't fire on `s/p PCI on 2020`.
+
+    Note (5/15 learning): patterns must allow many words between `s/p` and `PCI`
+    because real EMR Dx text expands the acronym, e.g. `s/p percutaneous coronary
+    intervention (PCI)` — the original literal-adjacent pattern missed this
+    completely, letting 22 cases mis-fire the PCI rule.
+    """
     patterns = [
-        r's/p\s+PCI[^\n]*',
-        r'post[\-\s]+PCI[^\n]*',
-        r'status\s+post[^\n]*PCI[^\n]*',
-        r'PCI\s+on\s+\d{4}[/\-]?\d{0,2}[/\-]?\d{0,2}',
+        # `s/p ... PCI ... <end-of-line>` — allow expansion like `percutaneous coronary intervention (PCI)`
+        r's/p[^\n]{0,200}?PCI[^\n]*',
+        r'post[\-\s][^\n]{0,200}?PCI[^\n]*',
+        r'status\s+post[^\n]{0,200}?PCI[^\n]*',
+        r'PCI\s+(?:on|in)\s+\d{4}[/\-]?\d{0,2}[/\-]?\d{0,2}',
         r'PCI\s+done[^\n]*',
         r'previous\s+PCI[^\n]*',
         r'history\s+of\s+PCI[^\n]*',
         r'old\s+PCI[^\n]*',
+        # Past-tense PCI by year-suffix even without s/p prefix: `PCI ... 2020`, `PCI ... [2024/4/5]`
+        r'PCI[^\n]{0,80}\[?\d{4}[/\-]\d{1,2}[/\-]?\d{0,2}\]?',
+        # Past-tense ablation — `s/p AFL ablation`, `post ablation 2024`, etc.
+        r's/p[^\n]{0,200}?ablation[^\n]*',
+        r'post[\-\s][^\n]{0,200}?ablation[^\n]*',
+        r'status\s+post[^\n]{0,200}?ablation[^\n]*',
+        r'previous\s+ablation[^\n]*',
+        r'history\s+of\s+ablation[^\n]*',
+        r'ablation[^\n]{0,40}\[?\d{4}[/\-]\d{1,2}[/\-]?\d{0,2}\]?',
     ]
     for p in patterns:
         text = re.sub(p, ' ', text, flags=re.IGNORECASE)
@@ -199,49 +248,193 @@ def match_rules(text, rules):
     return ''
 
 
+_SOFT_COMORBID_F = {'Unstable', 'Angina pectoris', 'Syncope', 'VPC', 'CHF'}
+_CAD_HINT_RE = re.compile(
+    r'\b(CAD|coronary\s+artery\s+disease)\b|\bI25[019]\b',
+    re.IGNORECASE,
+)
+
+
+def _cad_anywhere(text):
+    return bool(_CAD_HINT_RE.search(text))
+
+
 def detect_diag(dx_text):
-    """Apply DIAG_RULES with numbered-item priority.
+    """Apply DIAG_RULES with numbered-item priority + soft-comorbidity CAD override.
+
     Numbered Dx (`2.CAD ... 4.pAf`) means item 2 is more important than item 4,
     so iterate items in order and take the first that matches a rule.
+
+    Soft-comorbidity override (5/15 learning): when first-matching F is
+    Unstable / Angina pectoris / Syncope / VPC, but CAD keyword appears
+    ANYWHERE in dx_text, return 'CAD' instead. Cath-lab admission bias —
+    these comorbidities co-mentioned with CAD always indicate CAD admission.
+    Not applied to CHF or pAf — data shows both directions (sometimes CHF/pAf
+    is the primary F).
+
     Strip ICD-10 lines BEFORE keyword matching so comorbidity codes don't pollute,
-    but keep them available for the ICD fallback at the end."""
+    but keep them available for the ICD fallback at the end.
+    """
     if not dx_text:
         return ''
     text_no_icd = '\n'.join([l for l in dx_text.split('\n') if not l.strip().startswith('* (ICD')])
+    cad_present = _cad_anywhere(dx_text)  # check full text including ICD codes
+
     items = re.findall(r'(?:^|\n)\s*\d+\s*[\.\)]\s*([^\n]+)', text_no_icd)
     if items:
         for item in items:
             m = match_rules(item, DIAG_RULES)
             if m:
+                if m in _SOFT_COMORBID_F and cad_present:
+                    return 'CAD'
                 return m
     m = match_rules(text_no_icd, DIAG_RULES)
     if m:
+        if m in _SOFT_COMORBID_F and cad_present:
+            return 'CAD'
         return m
     # Last resort: cardiac ICD-10 codes
     return detect_via_icd(dx_text)
 
 
+# Plan-section rules (5/15 learning): attending writes admission reason +
+# procedure in the bottom of EMR. These are the highest-signal cues:
+# `5/11 ADMISSION / 5/12 AF ablation(Vari-pulse)`, `Adm for LAAO`,
+# `Arrange admission for right cath`, `5/12 TRA PCI for LAD`, `Admission on
+# 5/10. Cath study on 5/11.`, `5/17 adm / EVICD on 5/18pm`, etc.
+
+PLAN_F_RULES = [
+    # Arrhythmia ablation → specific F (more specific than Dx mention)
+    (['AFL ablation', 'atrial flutter ablation', 'typical flutter ablation', 'atypical flutter ablation'], 'Atrial flutter'),
+    (['AF ablation', 'Af ablation', 'Afib ablation', 'AFFERA', 'PVI', 'pulmonary vein isolation', 'varipulse', 'vari-pulse'], 'pAf'),
+    (['VPC ablation', 'PVC ablation'], 'VPC'),
+    (['PSVT ablation', 'SVT ablation'], 'PSVT'),
+    # Valve interventions → valve F
+    (['TAVI', 'transcatheter aortic valve'], 'AS'),
+    (['M-TEER', 'MTEER', 'MitraClip', 'mitral TEER'], 'MR'),
+    # Generator replacement
+    (['generator replacement', 'ppm replacement', 'icd replacement',
+      'crt replacement', 'change generator'], 'Generator replacement'),
+]
+
+PLAN_G_RULES = [
+    # KEY 5/15 INSIGHT: G is the cath-lab BOOKING slot, not the procedure outcome.
+    # Even when plan says "TRA PCI" / "PCI for LAD", the cath lab books as
+    # "Left heart cath." (PCI is the intervention performed AFTER staging angio).
+    # The only G values that override Left heart cath. are special bookings:
+    # TAVI, CRT, EVICD/ICD, M-TEER, LAAO Occluder, RF ablation, Myocardial biopsy,
+    # PTA, PPM, Right heart cath., Both-sided cath., Carotid stenting,
+    # EP study, primary PCI (STEMI only — rare).
+    #
+    # Plan PCI / TRA PCI / arrange PCI are all booked as Left heart cath.
+    # See _fg_learning_report.md (5/15): 23 PCI-prediction cases all human-chose LHC.
+    (['EVICD', 'EVCID', 'AICD', 'ICD implant', 'ICD implantation'], 'ICD'),
+    (['CRT-D', 'CRT-P', 'CRT upgrade', 'cardiac resynchronization', 'CRT implant'], 'CRT'),
+    (['TAVI', 'transcatheter aortic valve'], 'TAVI'),
+    (['M-TEER', 'MTEER', 'MitraClip', 'mitral TEER'], 'M-TEER'),
+    (['LAAO', 'left atrial appendage occlusion', 'Watchman'], 'LAAO Occluder'),
+    (['AFL ablation', 'AF ablation', 'Af ablation', 'Afib ablation',
+      'VPC ablation', 'PVC ablation', 'PSVT ablation', 'SVT ablation',
+      'VT ablation', 'PVI', 'pulmonary vein isolation',
+      'varipulse', 'vari-pulse', 'AFFERA',
+      'RF ablation', 'RFA', 'ablation'], 'RF ablation'),
+    (['EP study'], 'EP study'),
+    # Primary PCI for STEMI — only true PCI booking. Everything else falls through to LHC.
+    (['primary PCI'], 'PCI'),
+    (['PPM implant', 'permanent pacemaker', 'pacemaker implant', 'PPM'], 'PPM'),
+    (['both-sided cath', 'BHC'], 'Both-sided cath.'),
+    (['right cath', 'right heart cath', 'RHC'], 'Right heart cath.'),
+    # 'biopsy' alone is too broad (matches `[Pre-PCI medication] biopsy ...` etc).
+    # Require explicit `myocardial biopsy` / `EMB` to fire.
+    (['myocardial biopsy', 'EMB'], 'Myocardial biopsy'),
+    (['PTA'], 'PTA'),
+    (['carotid stenting', 'carotid angiography'], 'Carotid angiography + stenting'),
+    # Generic cath — also catches "TRA PCI" / "PCI for ..." / "POBA" / "stenting"
+    # by falling through here (PCI plan-keywords removed above to force this default).
+    (['cath study', 'catheterization', 'CAG', 'LHC', 'left heart cath',
+      'cath on', 'cath via', 'PCI for', 'PCI on', 'TRA PCI', 'TFA PCI',
+      'POBA', 'rotablation', 'stenting', 'plan PCI', 'arrange PCI'], 'Left heart cath.'),
+]
+
+# When plan yields G but no F, derive F from G when unambiguous
+PLAN_G_TO_F = {
+    'PCI': 'STEMI',          # primary PCI → STEMI admission
+    'Left heart cath.': 'CAD',
+    'PTA': 'PAOD',
+    'TAVI': 'AS',
+    'M-TEER': 'MR',
+    'LAAO Occluder': 'pAf',
+    'CRT': 'CHF',
+    'Carotid angiography + stenting': 'Carotid stenting',
+}
+
+_PROCEDURE_KEYWORDS_RE = re.compile(
+    r'\b(?:PCI|POBA|stenting|rotablation|ablation|biopsy|EVICD|EVCID|AICD|ICD|PPM|'
+    r'CRT|TAVI|LAAO|Watchman|M-TEER|MTEER|MitraClip|cath|CAG|LHC|RHC|PTA|'
+    r'TEE|EMB|PVI|AFFERA|ANS|varipulse|vari-pulse|admission|adm)\b',
+    re.IGNORECASE,
+)
+_ADMISSION_CUE_RE = re.compile(
+    r'(?:\b(?:adm(?:ission)?|arrange|plan)\b'
+    r'|^\s*\d{1,2}[/-]\d{1,2}\s)',
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def extract_plan_signal(emr_text):
+    """Return the admission-plan lines that carry the attending's intent.
+
+    Strategy: scan the bottom 60 lines of the EMR for any line containing
+    a procedure keyword OR an admission/arrange cue. Concatenate kept lines.
+    Empty result means the EMR has no recognisable plan section — fall back to
+    Dx-based detection.
+    """
+    if not emr_text:
+        return ''
+    lines = emr_text.split('\n')
+    tail = lines[-60:] if len(lines) > 60 else lines
+    kept = []
+    for line in tail:
+        s = line.strip()
+        if not s:
+            continue
+        if _PROCEDURE_KEYWORDS_RE.search(s) or _ADMISSION_CUE_RE.search(s):
+            kept.append(s)
+    return '\n'.join(kept)
+
+
 def detect_fg(emr_text):
-    """Detect (F, G) using Dx-only matching for F and plan-cleaned matching for G,
-    with F→G default fallback."""
-    dx = extract_dx_section(emr_text)
-    f_diag = detect_diag(dx) if dx else match_rules(emr_text, DIAG_RULES)
+    """Detect (F, G) using PLAN section as primary signal (5/15 learning).
 
-    if '[Assessment & Plan]' in emr_text:
-        plan_sec = emr_text.split('[Assessment & Plan]')[1][:1500]
-    else:
-        plan_sec = emr_text
+    Priority order:
+      1. Plan section (bottom of EMR) — attending's stated admission reason + procedure
+      2. Dx section (numbered items) — fallback when plan is missing/unclear
 
-    # Plan-driven F overrides for procedure-defined diagnoses
-    pl = plan_sec.lower()
-    if 'generator replacement' in pl or 'ppm replacement' in pl \
-            or 'icd replacement' in pl or 'crt replacement' in pl \
-            or 'change generator' in pl:
-        f_diag = 'Generator replacement'
+    Cleans past-tense PCI mentions before matching so historical s/p PCI doesn't
+    fire the PCI rule.
+    """
+    plan_signal = extract_plan_signal(emr_text)
+    plan_clean = clean_past_tense_pci(plan_signal) if plan_signal else ''
 
-    g_cath = match_rules(clean_past_tense_pci(plan_sec), CATH_RULES)
+    # G from plan
+    g_cath = match_rules(plan_clean, PLAN_G_RULES) if plan_clean else ''
+
+    # F from plan (specific arrhythmia / valve / generator overrides)
+    f_diag = match_rules(plan_clean, PLAN_F_RULES) if plan_clean else ''
+
+    # If plan gave G but not F → derive
+    if g_cath and not f_diag:
+        f_diag = PLAN_G_TO_F.get(g_cath, '')
+
+    # Fallback: Dx-based F if plan signal didn't classify F
+    if not f_diag:
+        dx = extract_dx_section(emr_text)
+        f_diag = detect_diag(dx) if dx else match_rules(emr_text, DIAG_RULES)
+
+    # Fallback: G from F default if plan signal didn't classify G
     if not g_cath and f_diag:
         g_cath = F_TO_G_DEFAULT.get(f_diag, '')
+
     return f_diag, g_cath
 
 def parse_name_from_raw(raw):
@@ -394,11 +587,17 @@ def main(date8):
 
                 f_diag, g_cath = detect_fg(emr_text)
 
+                # Read current F/G — preserve human-vetted values
+                # (5/15 rule: never overwrite human F/G during re-run; auto-detect
+                # rules may be wrong, human judgment is authoritative).
+                cur_f = (row[5].strip() if len(row) > 5 else '')
+                cur_g = (row[6].strip() if len(row) > 6 else '')
+
                 # 8-col layout: F=術前診斷, G=預計心導管. D=EMR摘要 left empty.
                 updates.append((f'C{pr}', emr_full))
-                if f_diag:
+                if f_diag and not cur_f:
                     updates.append((f'F{pr}', f_diag))
-                if g_cath:
+                if g_cath and not cur_g:
                     updates.append((f'G{pr}', g_cath))
 
                 prefill.append({
