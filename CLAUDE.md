@@ -61,7 +61,7 @@ Hospital admission management system for the cardiology department (成大醫院
 
 All scripts share `gsheet_utils.py` (singleton gspread client, read/write/format/dropdown helpers). Each workflow step has a corresponding skill in `.claude/skills/`. Data flow:
 
-1. **Image → Sheet** (`admission-image-to-excel`): OCR screenshot → write A-L of date sheet (e.g., `20260408`). If sheet exists, performs **diff-update** (match by chart no → add new / remove cancelled / preserve existing EMR/F/G/ordering).
+1. **Image → Sheet** (`admission-image-to-excel`): OCR screenshot → write A-L of date sheet (e.g., `20260408`). If sheet exists, performs **diff-update** (match by chart no → add new / remove cancelled / preserve existing EMR/F/G/ordering). **New patients get `N` in sub-table H 註記** so user can spot them — see `memory/feedback_diff_update_new_patient_N_marker.md`.
 2. **Lottery** (`admission-lottery`): Random draw → doctor sub-tables (A-H below main data) + round-robin ordering basis.
 3. **EMR extraction** (`admission-emr-extraction`): Playwright reads Web EMR (`http://hisweb.hosp.ncku/Emrquery/`) → writes C (raw EMR) in sub-tables → auto-prefills E (術前診斷) / F (預計心導管). **Summary feature dropped 5/4** — D column removed entirely from sub-table layout (see `memory/feedback_no_emr_summary.md`).
 4. **Ordering** (`admission-ordering`): After user confirms F/G, writes N-V columns.

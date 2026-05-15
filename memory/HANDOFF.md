@@ -1,35 +1,40 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-14 (Thu)
+  HANDOFF — Last Updated: 2026-05-15 (Fri)
 ============================================
 
 [What this session did]
-  1. Root-caused «林佳淩 EMR 兩週都抓不到» — EMR system uses 林佳淩 (淩, 氵), our sheets/cathlab_keyin/schedule/工作流程.txt all use 林佳凌 (凌, 冫). JS `t.includes('林佳凌')` failed on `'林佳淩'` link text → fallback whitelist (doesn't include either) → no_visit for every patient of hers.
-  2. Fixed in fetch_emr.py: NAME_ALIASES dict + variants loop in `_click_visit`. Validated by re-fetching 5/13 chart 08473654 (董相路) → matched `(門診)2026/04/24 林佳淩 心臟血管科07診`, returned 883-char EMR.
-  3. Widened F/G columns to 160 px in `enforce_sheet_format` (gsheet_utils.py) per user request «讓 FG 欄寬益點 不然都看不到術前診斷還有預計心導管». Applied retroactively to 10 date sheets (5/11–5/22).
-  4. Memory + index updated; CLAUDE.md fetch_emr.py entry mentions NAME_ALIASES.
+  1. 5/18 diff-update — added 李全福 (05696379, 黃鼎鈞) as the only new patient vs existing sheet. Main row 6 insert + 黃鼎鈞 sub-table 王瑞香 後新增 row 28 + 標題 (2人)→(3人). Existing 9 patients (with EMR + manual order + F/G) untouched.
+  2. Fetched + wrote 李全福 EMR (3602 chars, visit 2026/05/15 黃鼎鈞), F=AF / G=RF ablation (clinical judgment: AF s/p ablation 2019 + recurrent now Afib + LVEF 43.9% + Mon EP doctor).
+  3. New rule absorbed: diff-update 新 patient → sub-table H="N" 標記. Applied to 李全福 H28=N.
+  4. New rule absorbed: H column 加入 enforce_sheet_format 寬度規則 (160px). Re-applied to 10 sheets (5/11–5/22).
+  5. Generalized rule: all locate/move/modify ops 一律先以病歷號定位 (was cross-sheet-only rule, now universal).
 
 [Current state]
-  - Branch: main, in sync with origin/main pre-session
-  - Local mods staged: fetch_emr.py (NAME_ALIASES), gsheet_utils.py (F/G width), CLAUDE.md (Key Files note), memory/MEMORY.md (+2), memory/feedback_doctor_name_variant_lin_jialing.md (new), memory/feedback_fg_column_width.md (new), memory/HANDOFF.md (this)
-  - Date sheets touched: 20260511,12,13,14,17,18,19,20,21,22 — F/G now 160 px
+  - Branch: main, up-to-date with origin pre-session
+  - Local modifications staged for commit: gsheet_utils.py (H col width), CLAUDE.md (diff-update note), memory/MEMORY.md (3 entries), memory/feedback_fg_column_width.md (F/G→F/G/H), memory/feedback_search_by_chart_no.md (universal), memory/feedback_diff_update_new_patient_N_marker.md (NEW), memory/feedback_fg_just_fill_user_will_check.md (NEW)
+  - Sheets touched: 20260518 (李全福 add + EMR write), 20260511-20260522 (H col re-widened)
 
 [Next steps]
-  - Optional: re-run `process_emr.py 20260513` to backfill 董相路 sub-table C with the proper EMR cell (currently has «無本院一年內主治醫師門診紀錄»). User didn't request — skip unless asked.
-  - Watch for similar silent failures on other doctors; if one shows 0 visits across multiple JSONs, dump EMR link list for one of their charts and check for char variants → add to NAME_ALIASES (don't rewrite sheets/code).
+  - 5/18 lottery + ordering (user trigger): «排住院序» when ready. 李全福 已備好 N 標記, F=AF, G=RF ablation.
+  - 5/18 cathlab keyin: after ordering, «排導管». Mon+EP rule → 洪晨惠 second for any EP procedure.
+  - Optional: F/G 李全福 是 Claude 判斷的, user 會 review — 若覺得不對請改子表格 F28/G28.
 
 [Known issues / blockers]
   - 無
 
 [Don't repeat these mistakes]
-  - DO NOT assume EMR uses the same Han character variant as the sheet. JS `.includes()` is byte-exact; 凌/淩, 鈞/鈞, 諭/諭, 翔/翔 are different code points. When EMR fetch returns 0 visits across multiple sessions for the same doctor → suspect char variant first, not «doctor has no recent OPD».
-  - DO NOT rewrite all systems (cathlab_keyin / schedule / 工作流程.txt) to match EMR. The fix surface is `fetch_emr.py` NAME_ALIASES — one place, doesn't disturb user-facing materials.
-  - DO NOT skip running `enforce_sheet_format(date)` after sheet edits — it now also enforces F/G widths.
+  - DO NOT compare full A-L row when diffing — chart no only (per session rule «比對病歷號就好»). Pulling EMR/F/G text into comparison wastes tokens.
+  - DO NOT ask «要不要把 F/G 改成 X» for clinical judgment calls — just write best read, user re-checks before lottery (per feedback_fg_just_fill_user_will_check.md).
+  - DO NOT forget H="N" on diff-inserted new patients — user scans H col for new ones during the week.
+  - DO NOT use ws.batch_clear + rewrite for sub-table changes (PreToolUse hook blocks it) — use ws.insert_row for row-level INSERT, batch_write_cells for value updates.
 
 [Relevant files]
-  - fetch_emr.py (NAME_ALIASES added)
-  - gsheet_utils.py (F/G col width in enforce_sheet_format)
-  - CLAUDE.md (Key Files entry updated)
+  - gsheet_utils.py (col 8 added to F/G width rule)
+  - CLAUDE.md (diff-update note → N marker)
+  - emr_data_20260518.json (merged 10 charts now, includes 李全福)
 
 [Important memory files]
-  - feedback_doctor_name_variant_lin_jialing.md (new — char variant SOP)
-  - feedback_fg_column_width.md (new — F/G 160 px rule)
+  - feedback_diff_update_new_patient_N_marker.md (NEW)
+  - feedback_fg_just_fill_user_will_check.md (NEW)
+  - feedback_search_by_chart_no.md (broadened to universal rule)
+  - feedback_fg_column_width.md (F/G → F/G/H)

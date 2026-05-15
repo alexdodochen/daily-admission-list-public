@@ -699,9 +699,9 @@ def enforce_sheet_format(sheet_name):
             }
         })
 
-    # F (col 6) = 姓名 (main) + 術前診斷 (sub-table); G (col 7) = 性別 (main) + 預計心導管 (sub-table).
-    # Default ~100 px truncates 術前診斷/預計心導管 — widen to 160.
-    for col_idx in (6, 7):
+    # F (col 6) = 姓名 (main) + 術前診斷 (sub-table); G (col 7) = 性別 (main) + 預計心導管 (sub-table);
+    # H (col 8) = 年齡 (main) + 註記 (sub-table). Default ~100 px truncates clinical content — widen to 160.
+    for col_idx in (6, 7, 8):
         requests.append({
             "updateDimensionProperties": {
                 "range": {"sheetId": sid, "dimension": "COLUMNS",
