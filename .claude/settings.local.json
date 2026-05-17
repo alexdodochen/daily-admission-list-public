@@ -10,7 +10,18 @@
       "Bash(rm \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-doc.md\")",
       "Bash(rm -rf \"C:/Users/dr/Downloads/Y/每日入院名單 Claude/.claude/skills/workflow-docs/\")",
       "Bash(cp \"C:/Users/user/.claude/skills/admission-lottery/SKILL.md\" \"D:/心臟內科 總醫師/行政總醫師/每日入院名單/.claude/skills/admission-lottery.md\")",
-      "Bash(cp \"C:/Users/user/.claude/skills/admission-ordering/SKILL.md\" \"D:/心臟內科 總醫師/行政總醫師/每日入院名單/.claude/skills/admission-ordering.md\")"
+      "Bash(cp \"C:/Users/user/.claude/skills/admission-ordering/SKILL.md\" \"D:/心臟內科 總醫師/行政總醫師/每日入院名單/.claude/skills/admission-ordering.md\")",
+      "Skill(admission-ordering)",
+      "Bash(python -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python _ordering_20260518.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c \"from gsheet_utils import enforce_sheet_format; enforce_sheet_format\\('20260518'\\); print\\('format OK'\\)\")",
+      "Bash(git fetch *)",
+      "Bash(rm -f _emr_result_20260519.txt _fmt_0513.log _read_0513.txt _read_0513_nv.txt _sched_thu.txt _write_nv_0513.log _write_nv_0513.py)",
+      "Bash(ls _*.* emr_data_*.json)",
+      "Bash(python scripts/pre_push_check.py)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

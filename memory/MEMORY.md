@@ -49,6 +49,7 @@
 - [改期功能已重啟 → 完整搬資料 + cathlab DEL/ADD](feedback_reschedule_active.md) — 使用者說「重啟改期功能」就跑完整搬遷（V 標記 + 主資料 + 子表格 rebuild + cathlab 移動），覆寫 CLAUDE.md rule 5「manual flag only」舊規則
 - [PostToolUse hook 自動跑 enforce_sheet_format (broad)](reference_post_sheet_format_hook.md) — fires on ANY Bash with `20YYMMDD` + sheet-mutation API hint (named scripts, batch_write_cells, .update(, etc); upgraded 5/8 after `python -c` inline bypass)
 - [N-V Q 欄不要預填 V / 不要模仿手動標記](feedback_q_col_no_default_v.md) — Q 備註(住服) 預設空白；5/5 sheet Q 欄那一堆 "V" 是使用者自己手 key 的標記（不是慣例），不要拿去模仿。Meta：別從鄰近 sheet 推 col 慣例，照 spec 寫（5/5 修正 2 次）
+- [Q 備註(住服) must NOT contain K col floor/bed number codes](feedback_q_col_no_floor_numbers.md) — Only genuine free-text住服 instructions (e.g., "住南投提早通知") go into Q; numeric codes ("3","1","2,3","3C") stay out (added 5/17)
 - [WEBCVIS DEL 真實機制 = 第一格 chk checkbox](feedback_webcvis_del_checkbox.md) — `<input type=checkbox name=chk>` onclick 啟用 #deleteButton → click → confirm → submit。hes_referno 常為空不可靠。用 `webcvis_del.py` 不要再寫一次性 script（5/6 三版才成功）
 - [cathlab_patients_*.json 必 gitignored + unique 名](feedback_cathlab_json_unique_filename.md) — 5/6 踩過 stale 5/5 JSON 重跑 10 人 Phase 2 UPT。改 unique filename 或 Read-then-Write 露出錯
 - [WEBCVIS Playwright permanent helpers](reference_webcvis_helpers.md) — webcvis_query.py / webcvis_del.py / schedule_lookup.py 三件常用，別再寫 ad-hoc Playwright script

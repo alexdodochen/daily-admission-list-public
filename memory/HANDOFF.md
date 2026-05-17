@@ -1,40 +1,41 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-15 (Fri)
+  HANDOFF — Last Updated: 2026-05-17 (evening)
 ============================================
 
 [What this session did]
-  1. 5/18 diff-update — added 李全福 (05696379, 黃鼎鈞) as the only new patient vs existing sheet. Main row 6 insert + 黃鼎鈞 sub-table 王瑞香 後新增 row 28 + 標題 (2人)→(3人). Existing 9 patients (with EMR + manual order + F/G) untouched.
-  2. Fetched + wrote 李全福 EMR (3602 chars, visit 2026/05/15 黃鼎鈞), F=AF / G=RF ablation (clinical judgment: AF s/p ablation 2019 + recurrent now Afib + LVEF 43.9% + Mon EP doctor).
-  3. New rule absorbed: diff-update 新 patient → sub-table H="N" 標記. Applied to 李全福 H28=N.
-  4. New rule absorbed: H column 加入 enforce_sheet_format 寬度規則 (160px). Re-applied to 10 sheets (5/11–5/22).
-  5. Generalized rule: all locate/move/modify ops 一律先以病歷號定位 (was cross-sheet-only rule, now universal).
+  1. Image import (20260519): diff-update detected zero changes (screenshot identical
+     to existing sheet, all 6 chart numbers matched) — no writes, EMR/F/G/V preserved.
+  2. Admission ordering (20260518): wrote N-V 10-patient round-robin for 2026-05-18
+     (Monday admission → Tuesday cathlab). All 5 doctors have Tue schedule slots.
+     E col was pre-filled by user; no manual ordering prompt needed.
+  3. User correction (Q col): numeric bed/floor codes ("3","1","2,3") must NOT go into
+     Q 備註(住服) — Q stays empty unless K col has genuine住服 free-text instruction.
 
 [Current state]
-  - Branch: main, up-to-date with origin pre-session
-  - Local modifications staged for commit: gsheet_utils.py (H col width), CLAUDE.md (diff-update note), memory/MEMORY.md (3 entries), memory/feedback_fg_column_width.md (F/G→F/G/H), memory/feedback_search_by_chart_no.md (universal), memory/feedback_diff_update_new_patient_N_marker.md (NEW), memory/feedback_fg_just_fill_user_will_check.md (NEW)
-  - Sheets touched: 20260518 (李全福 add + EMR write), 20260511-20260522 (H col re-widened)
+  - Branch: main, clean (only .claude/settings.local.json unstaged — gitignored)
+  - Deploy / run state: N/A (no server changes this session)
+  - Latest commit: 95db651 feat(diff-update): N marker for new patients
 
 [Next steps]
-  - 5/18 lottery + ordering (user trigger): «排住院序» when ready. 李全福 已備好 N 標記, F=AF, G=RF ablation.
-  - 5/18 cathlab keyin: after ordering, «排導管». Mon+EP rule → 洪晨惠 second for any EP procedure.
-  - Optional: F/G 李全福 是 Claude 判斷的, user 會 review — 若覺得不對請改子表格 F28/G28.
+  - 20260518 ordering done → cathlab keyin for 5/19 Tue: trigger admission-cathlab-keyin
+  - 20260519 lottery + ordering: emr_data_20260519.json exists; sub-tables appear done
+    (EMR + F/G written, E col filled, V markers set) — run admission-ordering for 20260519
+  - Verify 20260519 sheet state before starting (check if ordering already done)
 
 [Known issues / blockers]
-  - 無
+  - None
 
 [Don't repeat these mistakes]
-  - DO NOT compare full A-L row when diffing — chart no only (per session rule «比對病歷號就好»). Pulling EMR/F/G text into comparison wastes tokens.
-  - DO NOT ask «要不要把 F/G 改成 X» for clinical judgment calls — just write best read, user re-checks before lottery (per feedback_fg_just_fill_user_will_check.md).
-  - DO NOT forget H="N" on diff-inserted new patients — user scans H col for new ones during the week.
-  - DO NOT use ws.batch_clear + rewrite for sub-table changes (PreToolUse hook blocks it) — use ws.insert_row for row-level INSERT, batch_write_cells for value updates.
+  - Q 備註(住服): do NOT copy K col bed/floor numbers ("3","1","2,3","3C") into Q.
+    Only genuine住服 free-text (e.g., "住南投提早通知") belongs in Q. K parenthetical
+    delay notes ("(5/4無床延期)") go into R 備註. (Corrected 2026-05-17)
+  - Wrong gspread function: use `get_worksheet()`, NOT `get_sheet()` (doesn't exist).
 
 [Relevant files]
-  - gsheet_utils.py (col 8 added to F/G width rule)
-  - CLAUDE.md (diff-update note → N marker)
-  - emr_data_20260518.json (merged 10 charts now, includes 李全福)
+  - memory/feedback_q_col_no_floor_numbers.md  ← NEW this session
+  - emr_data_20260519.json  ← keep (current week), used by process_emr.py if re-run
+  - _emr_session.txt  ← keep (EMR session URL for post_main_emr_verify hook)
 
 [Important memory files]
-  - feedback_diff_update_new_patient_N_marker.md (NEW)
-  - feedback_fg_just_fill_user_will_check.md (NEW)
-  - feedback_search_by_chart_no.md (broadened to universal rule)
-  - feedback_fg_column_width.md (F/G → F/G/H)
+  - memory/feedback_q_col_no_floor_numbers.md  (new — Q col must not contain floor codes)
+  - memory/MEMORY.md  (index updated with new Q col entry)
