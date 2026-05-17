@@ -225,7 +225,7 @@ final_doctor_order = slot_docs + non_slot
 
 | 欄 | 來源 |
 |---|---|
-| Q 備註(住服) | 主資料 K 欄（入院提示）中 住服相關 free text（如「住南投提早通知」「非導管床」） |
+| Q 備註(住服) | **Only** genuine住服 action-text from K col (e.g., "住南投提早通知"). **Leave empty** when K contains only a numeric floor/bed code ("3","1","2,3","3C","3 F2","321") — those are not住服 instructions. Corrected 2026-05-17. |
 | R 備註 | **優先：子表格 H 欄『註記』**（如「12C可」「張倉惟 12C可」「王思翰 4/21無床延期」「Afib」「CTA for TAVI 可能住到5/1」「改周一住」）；H 為空才 fallback 到主資料 K 欄 parenthetical（如「(4/13無床延床)」） |
 | S 病歷號 | 主資料 I 欄（**TEXT 格式寫入**，前導 0 不可丟） |
 | T 術前診斷 | 子表格 F 欄 |
