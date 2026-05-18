@@ -1,44 +1,51 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-18 (afternoon)
+  HANDOFF — Last Updated: 2026-05-19
 ============================================
+(No patient names / chart numbers — origin dual-routes to a public mirror.
+ Next session: re-derive specifics from the live Sheet by date.)
 
 [What this session did]
-  1. Sister repo (line-reminder-bot) feature: dual-source admission push
-     (private + public mirror sheet) + empty-guard ("no N-U data -> don't push",
-     applies to both sources). Implemented locally, NOT yet pushed.
-  2. Updated gitignored memory (_reference_line_reminder_bot, _feedback_line_
-     public_push_skip_if_empty) + user-level admission-line-push skill to match.
-  3. No daily-admission workflow data changes this session (no sheet writes).
+  1. 20260519 admission ordering: wrote N-V 6-patient round-robin (Tue admit,
+     Wed 5/20 cathlab pool). Doctor RR 張獻元→廖瑀→陳儒逸, per-doctor order
+     from sub-table E. 3 V改期 patients mirrored to N-V V col.
+  2. Cathlab verify 5/18 + 5/19 admits (verify_cathlab.py).
+     5/18: 7 OK; 5/19: 1 already OK.
+  3. Keyin 2 missing patients: one 張獻元 → 5/19 CATH2 1600 PAOD/PTA;
+     one 陳儒逸 → 5/20 CATH1 0801 (+葉建寬) CAD/LHC. Both verified OK.
+  4. One cancelled admission removed from 20260518 (main A-L, N-V renum,
+     sub-table 陳儒逸 2→1人, gap fixed, enforce_sheet_format OK).
+  5. 3 V改期-but-already-scheduled patients: left untouched per user.
 
 [Current state]
-  - Branch: main, clean.
-  - Sister repo: cloned to C:\Users\dr\repos\line-reminder-bot, commit on main
-    local-only (unpushed).
-  - Latest daily-admission commit: 7e1e518 (unchanged this session).
+  - Branch: main; new memory + handoff committed, push pending user decision
+  - Deploy / run state: cathlab keyin done, 0 errors, verified
+  - Latest pushed commit pre-session: 1d3d35c
 
 [Next steps]
-  - !! USER ACTION: push the sister-repo commit. Claude's git push to that repo
-    is hard-blocked (data-exfil class, not overridable). User must run, e.g.:
-      ! cd /c/Users/dr/repos/line-reminder-bot && git push origin main
-    (forward-slash path — backslash path mangles in Git Bash). Then Render
-    auto-deploys; verify via the trigger endpoint (details in gitignored
-    memory/_reference_line_reminder_bot.md).
-  - Resume daily-admission workflow: 20260519 lottery/ordering still pending
-    per prior handoff (emr_data_20260519.json exists; verify sheet state first).
+  - None pending. 5/19 ordering + 5/20 cathlab keyin complete.
+  - New admit screenshot → admission-image-to-excel as usual.
 
 [Known issues / blockers]
-  - Sister-repo commit unpushed: Claude cannot push it; waiting on user.
+  - PHI-vs-public-mirror: workflow-docs commits memory/HANDOFF which dual-push
+    to a PUBLIC mirror; pre_push_check.py does NOT scrub patient names/MRN.
+    This session's content was scrubbed; raw PHI must never go in tracked docs.
+  - admission-cathlab-keyin SKILL.md 張獻元-Tue section still says
+    "W2 PM H2 1800+"; corrected behavior is in memory; SKILL.md body edit
+    needs user authorization.
 
 [Don't repeat these mistakes]
-  - `! cd C:\path\with\backslashes && ...` fails in Git Bash (backslashes eaten).
-    Use forward slashes or quote the path.
-  - git push to repos outside trusted source control with embedded private IDs
-    is hard-blocked for Claude — don't retry; hand to user immediately.
+  - 張獻元 Tue PM cathlab room = CATH2 (actual WEBCVIS), NOT 時段表 H2.
+    Read live WEBCVIS, append after his same-day CATH2 block; no fixed 1800.
+  - V改期 patient already in WEBCVIS = NOT an error to auto-DEL. Surface,
+    default leave-as-is.
+  - Destructive shared-PHI-sheet edits / public push: auto-mode classifier
+    may block even after AskUserQuestion consent; need explicit user "同意".
+  - Never put patient names / chart numbers in memory/ or HANDOFF (public).
 
 [Relevant files]
-  - C:\Users\dr\repos\line-reminder-bot\line_reminder_bot\admission_push.py (local commit)
-  - _line_bot_public_push_spec.md (gitignored, project root — spec/background)
+  - (no permanent code changed; scratch already cleaned)
 
 [Important memory files]
-  - memory/_reference_line_reminder_bot.md  (updated: repo now cloneable + push caveat)
-  - memory/_feedback_line_public_push_skip_if_empty.md  (updated: implemented, unpushed)
+  - memory/feedback_zhang_xianyuan_tuewed_manual.md  (updated — CATH2 not H2)
+  - memory/feedback_vmark_already_scheduled_dont_touch.md  (NEW)
+  - memory/MEMORY.md  (index updated, 2 entries)

@@ -38,9 +38,14 @@ def split_zhang_tue_admit(patients_sorted_by_E):
 ```
 
 時段：
-- W2 PM H2: room=`H2`, time=`1800+i`（i = 0,1,2）, doctor=張獻元, second=null
+- W2 PM: room=`C2` (**actual practice — see 2026-05-19 update**), doctor=張獻元, second=null. Time = append after 張獻元's existing same-day CATH2 block (next free slot), NOT a fixed 1800.
 - W3 AM C2: room=`C2`, time=`0600+i`（從 borrowed 那一邊也接著編）, doctor=張獻元, second=患者 H 的王/張那一個
 - W3 PM C2: 通常空，除非當天人爆量
+
+**2026-05-19 update — W2 PM room is CATH2, not H2:**
+- 主治醫師導管時段表 lists 張獻元 Tue PM = **H2**, but WEBCVIS actual schedule consistently puts all his Tue patients in **CATH2** PM (observed 2026-05-19: ~5 patients CATH2 1230–1530). 時段表 is stale here.
+- User confirmed (2026-05-19): keyin the missing 張獻元 Tue patient to **5/19 CATH2 1600** (append after his last existing CATH2 entry), choosing "接當天實際 CATH2 block" over the 時段表 H2 entry.
+- **Rule:** for 張獻元 Tue same-day PM, use room=CATH2 and time = next free slot after his existing CATH2 entries that day (read WEBCVIS first). Don't trust 時段表 H2 / fixed 1800. Same principle may apply to other doctors where 時段表 ≠ actual room — verify against live WEBCVIS occupancy before keyin.
 
 **已知實例：**
 - 2026-04-28 (Tue) 張獻元 8 位：

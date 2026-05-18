@@ -78,3 +78,5 @@
 - [process_emr.py 不可覆寫人工 F/G](feedback_process_emr_no_overwrite.md) — re-runs must check cur_f/cur_g and skip when non-empty; rule improvements are forward-only (added 5/15)
 - [Diff-update 新加入病人 → 子表格 H 註記填 N](feedback_diff_update_new_patient_N_marker.md) — image diff-update insert 新 row 時，sub-table H 同時寫 "N" 標記，用戶一眼看到本週新增的病人 (added 5/15)
 - [F/G 該填就填 — 不要問先用戶會再檢查](feedback_fg_just_fill_user_will_check.md) — clinical judgment call: write best read straight to cell, don't ask «要不要改成 X»; user has a re-check step before lottery (added 5/15)
+- [張獻元 Tue PM cathlab 實際在 CATH2 非時段表 H2](feedback_zhang_xianyuan_tuewed_manual.md) — 時段表 stale; verify live WEBCVIS, append after his same-day CATH2 block (user-confirmed 5/19, room update)
+- [V改期 但已在排程 → 不要動，問使用者](feedback_vmark_already_scheduled_dont_touch.md) — verify_cathlab「竟然在排程中!」不是 error；V 只是排除 N+1 auto-keyin，不是 DEL trigger (added 5/19)
