@@ -1,41 +1,44 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-17 (evening)
+  HANDOFF — Last Updated: 2026-05-18 (afternoon)
 ============================================
 
 [What this session did]
-  1. Image import (20260519): diff-update detected zero changes (screenshot identical
-     to existing sheet, all 6 chart numbers matched) — no writes, EMR/F/G/V preserved.
-  2. Admission ordering (20260518): wrote N-V 10-patient round-robin for 2026-05-18
-     (Monday admission → Tuesday cathlab). All 5 doctors have Tue schedule slots.
-     E col was pre-filled by user; no manual ordering prompt needed.
-  3. User correction (Q col): numeric bed/floor codes ("3","1","2,3") must NOT go into
-     Q 備註(住服) — Q stays empty unless K col has genuine住服 free-text instruction.
+  1. Sister repo (line-reminder-bot) feature: dual-source admission push
+     (private + public mirror sheet) + empty-guard ("no N-U data -> don't push",
+     applies to both sources). Implemented locally, NOT yet pushed.
+  2. Updated gitignored memory (_reference_line_reminder_bot, _feedback_line_
+     public_push_skip_if_empty) + user-level admission-line-push skill to match.
+  3. No daily-admission workflow data changes this session (no sheet writes).
 
 [Current state]
-  - Branch: main, clean (only .claude/settings.local.json unstaged — gitignored)
-  - Deploy / run state: N/A (no server changes this session)
-  - Latest commit: 95db651 feat(diff-update): N marker for new patients
+  - Branch: main, clean.
+  - Sister repo: cloned to C:\Users\dr\repos\line-reminder-bot, commit on main
+    local-only (unpushed).
+  - Latest daily-admission commit: 7e1e518 (unchanged this session).
 
 [Next steps]
-  - 20260518 ordering done → cathlab keyin for 5/19 Tue: trigger admission-cathlab-keyin
-  - 20260519 lottery + ordering: emr_data_20260519.json exists; sub-tables appear done
-    (EMR + F/G written, E col filled, V markers set) — run admission-ordering for 20260519
-  - Verify 20260519 sheet state before starting (check if ordering already done)
+  - !! USER ACTION: push the sister-repo commit. Claude's git push to that repo
+    is hard-blocked (data-exfil class, not overridable). User must run, e.g.:
+      ! cd /c/Users/dr/repos/line-reminder-bot && git push origin main
+    (forward-slash path — backslash path mangles in Git Bash). Then Render
+    auto-deploys; verify via the trigger endpoint (details in gitignored
+    memory/_reference_line_reminder_bot.md).
+  - Resume daily-admission workflow: 20260519 lottery/ordering still pending
+    per prior handoff (emr_data_20260519.json exists; verify sheet state first).
 
 [Known issues / blockers]
-  - None
+  - Sister-repo commit unpushed: Claude cannot push it; waiting on user.
 
 [Don't repeat these mistakes]
-  - Q 備註(住服): do NOT copy K col bed/floor numbers ("3","1","2,3","3C") into Q.
-    Only genuine住服 free-text (e.g., "住南投提早通知") belongs in Q. K parenthetical
-    delay notes ("(5/4無床延期)") go into R 備註. (Corrected 2026-05-17)
-  - Wrong gspread function: use `get_worksheet()`, NOT `get_sheet()` (doesn't exist).
+  - `! cd C:\path\with\backslashes && ...` fails in Git Bash (backslashes eaten).
+    Use forward slashes or quote the path.
+  - git push to repos outside trusted source control with embedded private IDs
+    is hard-blocked for Claude — don't retry; hand to user immediately.
 
 [Relevant files]
-  - memory/feedback_q_col_no_floor_numbers.md  ← NEW this session
-  - emr_data_20260519.json  ← keep (current week), used by process_emr.py if re-run
-  - _emr_session.txt  ← keep (EMR session URL for post_main_emr_verify hook)
+  - C:\Users\dr\repos\line-reminder-bot\line_reminder_bot\admission_push.py (local commit)
+  - _line_bot_public_push_spec.md (gitignored, project root — spec/background)
 
 [Important memory files]
-  - memory/feedback_q_col_no_floor_numbers.md  (new — Q col must not contain floor codes)
-  - memory/MEMORY.md  (index updated with new Q col entry)
+  - memory/_reference_line_reminder_bot.md  (updated: repo now cloneable + push caveat)
+  - memory/_feedback_line_public_push_skip_if_empty.md  (updated: implemented, unpushed)
