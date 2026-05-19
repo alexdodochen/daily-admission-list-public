@@ -80,3 +80,4 @@
 - [F/G 該填就填 — 不要問先用戶會再檢查](feedback_fg_just_fill_user_will_check.md) — clinical judgment call: write best read straight to cell, don't ask «要不要改成 X»; user has a re-check step before lottery (added 5/15)
 - [張獻元 Tue PM cathlab 實際在 CATH2 非時段表 H2](feedback_zhang_xianyuan_tuewed_manual.md) — 時段表 stale; verify live WEBCVIS, append after his same-day CATH2 block (user-confirmed 5/19, room update)
 - [V改期 但已在排程 → 不要動，問使用者](feedback_vmark_already_scheduled_dont_touch.md) — verify_cathlab「竟然在排程中!」不是 error；V 只是排除 N+1 auto-keyin，不是 DEL trigger (added 5/19)
+- [麒翔 app deliverable — repo / PyInstaller / fast-path / zip](reference_qixiang_app_deliverable.md) — daily_admission_list_app build→dist→每日入院名單 for 麒翔.zip; static/templates=loose patch, .py=full rebuild; Python zipfile not PS (added 5/19)
