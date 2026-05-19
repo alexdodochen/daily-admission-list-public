@@ -1,52 +1,59 @@
 ============================================
-  HANDOFF — Last Updated: 2026-05-19 (late)
+  HANDOFF — Last Updated: 2026-05-19 (5/20 pipeline run)
 ============================================
-(No patient names / chart numbers — origin dual-routes to a public mirror.
- Sister-repo / LINE infra specifics live in gitignored memory/_*.md.)
+(No patient names / chart numbers — origin dual-routes to a PUBLIC mirror.
+ Next session: re-derive specifics from the live Sheet by date.)
 
 [What this session did]
-  1. Sibling app daily_admission_list_app (排班 Key班 DayList APP): Step 5
-     editable dry-run (時段/房/時間/2nd-doctor/註記 overrides + auto time
-     by session), OCR '?' stripped at source, EMR collapse UI contrast,
-     ②/③ button relabels, 房→dropdown, black borders. Commits e9254d6 +
-     acb012f — pushed (triggers public-app mirror Action).
-  2. Rebuilt + repackaged the 麒翔 deliverable zip (PyInstaller full rebuild
-     once, then fast-path loose-file patch). See new memory reference.
-  3. line-reminder-bot: dual-source push (1ea1571, pushed/deployed/verified)
-     + date-gated empty behavior @2026-06-01 (22d92f2).
+  1. 20260520 sheet status review, then diff-update from user's late
+     screenshot: +2 new patients (1 陳柏偉, 1 黃鼎鈞); existing 5 rows
+     fully untouched (EMR/F/G/manual marks preserved), new sub-table
+     rows stamped H="N" per diff-update new-patient rule.
+  2. EMR fetch (fetch_emr.py) for the 2 new charts only, via user
+     session URL; process_emr.py wrote C + age/gender prefix + auto
+     F/G. verify_main_emr hook: all main rows match divUserSpec.
+     EMR-DOB age corrected both new patients (image age was 虛歲 +1).
+  3. 排住院序: N-V 7-patient round-robin. Weighted doctor RR
+     林佳凌→陳柏偉→黃鼎鈞 (Wed admit → Thu lottery col, all 時段組).
+     Per-doctor order from sub-table E (user keyed E directly in Sheet,
+     also hand-adjusted F/G/H). R 備註 sourced from sub-table H.
+  4. 導管排程 (5/21 Thu, N+1): week-scan (webcvis_query 5/18-5/22)
+     caught 5/7 charts ALREADY scheduled 5/21 (prior session) →
+     excluded per HARD RULE, no re-ADD. Built clean
+     cathlab_patients_20260520.json (overwrote a STALE unrelated file;
+     Read-then-Write exposed the staleness). cathlab_keyin.py ADDed
+     only the 2 new (H2 0600 / C1 1100). verify_cathlab: 7 OK / 0 / 0.
 
 [Current state]
-  - daily-admission-list repo: main, clean, in sync (+ this workflow-docs sync).
-  - daily_admission_list_app: main = acb012f, pushed.
-  - line-reminder-bot clone (C:\Users\dr\repos\line-reminder-bot): main =
-    22d92f2, AHEAD 1 — NOT pushed.
+  - Branch: main; working tree clean (operational-only, no repo code
+    changed). This handoff/memory sync is the only commit.
+  - Deploy / run state: 5/20 pipeline fully complete + verified.
+  - Latest pushed commit pre-session: 3c3b764
 
 [Next steps]
-  - !! USER ACTION: push line-reminder-bot date-gate commit 22d92f2. Claude
-    push to that repo is hard-blocked. User runs:
-      ! cd /c/Users/dr/repos/line-reminder-bot && git push origin main
-    (forward-slash path). Behavior change only visible from 2026-06-01.
-  - Daily-admission workflow: resume normally on next admit screenshot.
+  - None for 5/20. New admit screenshot → admission-image-to-excel.
 
 [Known issues / blockers]
-  - line-reminder-bot 22d92f2 unpushed (waiting on user; carried 2 sessions).
-  - 6/1+ side effect (by design): on normal days the LINE group gets TWO
-    messages (real private list + public "無入院序資料" notice).
+  - CARRY-OVER (2 sessions): line-reminder-bot commit 22d92f2 still
+    UNPUSHED. Claude push to that repo is hard-blocked. User must run:
+      ! cd /c/Users/dr/repos/line-reminder-bot && git push origin main
+    (forward-slash path). Date-gate behavior visible only from 6/1.
+  - Intermittent DNS blip resolving sheets.googleapis.com this session;
+    retry / dangerouslyDisableSandbox cleared it. Environment-transient.
 
 [Don't repeat these mistakes]
-  - `! cd C:\back\slash\path` mangles in Git Bash — use /c/Users/... .
-  - git push to repos outside trusted source control w/ embedded private ID
-    is hard-blocked for Claude — hand to user, don't retry.
-  - Re-zip deliverables with Python zipfile, NOT PowerShell 5.1 (.NET writes
-    spec-violating backslash entries).
-  - .py change in the app → needs full PyInstaller rebuild (frozen PYZ);
-    static/templates are loose → fast-path patch only.
+  - cathlab_patients_<date>.json may be STALE from a prior week — always
+    Read it before reuse; rebuild clean. (Hit + handled this session.)
+  - Week-scan BEFORE any cathlab ADD: charts already scheduled on ANY
+    Mon-Fri day must be dropped from JSON, never re-ADDed.
+  - Never put patient names / chart numbers in memory/ or HANDOFF
+    (dual-pushed to public mirror).
 
 [Relevant files]
-  - C:\Users\dr\Downloads\Y\排班 Key班 DayList APP\ (sibling app, own repo)
-  - C:\Users\dr\Downloads\Y\每日入院名單 for 麒翔.zip (deliverable)
+  - (no permanent code changed; scratch cleaned at session end)
+  - cathlab_patients_20260520.json / emr_data_20260520.json kept
+    (current week — prune next Monday)
 
 [Important memory files]
-  - memory/reference_qixiang_app_deliverable.md  (NEW — build/zip pipeline)
-  - memory/_feedback_line_public_push_skip_if_empty.md  (date-gate table)
-  - memory/_reference_line_reminder_bot.md  (repo cloneable + push caveat)
+  - No memory updates this session (pure operational; all behavior
+    already covered by existing feedback_* rules).
